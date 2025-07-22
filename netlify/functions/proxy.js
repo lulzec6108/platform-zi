@@ -2,14 +2,14 @@
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
-  const GAS_URL = process.env.GAS_URL;
+  const GAS_APP_URL = process.env.GAS_APP_URL;
   
-  if (!GAS_URL) {
+  if (!GAS_APP_URL) {
     return {
       statusCode: 500,
       body: JSON.stringify({ 
         success: false,
-        message: 'GAS_URL environment variable is not set' 
+        message: 'GAS_APP_URL environment variable is not set' 
       })
     };
   }
@@ -30,7 +30,7 @@ exports.handler = async function(event, context) {
 
     console.log(`Proxying ${httpMethod} ${action} to GAS`);
     
-    const response = await fetch(GAS_URL, {
+    const response = await fetch(GAS_APP_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

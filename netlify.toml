@@ -9,7 +9,8 @@
   # Auto launch browser
   autoLaunch = true
   # Environment variables untuk development
-  environment = { GAS_URL = "https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec" }
+  [dev.environment]
+    GAS_APP_URL = "https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec"
 
 [[redirects]]
   from = "/api/*"
