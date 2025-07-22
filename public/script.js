@@ -39,19 +39,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fungsi UI & Kontrol State ---
     function showLogin() {
-        const loginView = document.getElementById('login-page'); // FIX: ID yang benar
+        const loginView = document.getElementById('login-page');
         const mainContentView = document.getElementById('main-content');
-        if (loginView) loginView.style.display = 'block';
-        if (mainContentView) mainContentView.style.display = 'none';
+        if (loginView) loginView.classList.remove('d-none');
+        if (mainContentView) mainContentView.classList.add('d-none');
         sessionStorage.removeItem('user');
         setupLoginListeners();
     }
 
     function showMainContent() {
         try {
-            const loginView = document.getElementById('login-page'); // FIX: ID yang benar
+            const loginView = document.getElementById('login-page');
             const mainContentView = document.getElementById('main-content');
-            const userInfo = document.getElementById('user-info'); // FIX: Elemen yang benar
+            const userInfo = document.getElementById('user-info');
 
             const user = JSON.parse(sessionStorage.getItem('user'));
             if (!user) {
@@ -59,14 +59,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // FIX: Tampilkan nama dan pilar di elemen yang ada
             if (userInfo) userInfo.textContent = `${user.nama} (${user.pilar})`;
 
-            if (loginView) loginView.style.display = 'none';
-            if (mainContentView) mainContentView.style.display = 'block';
+            if (loginView) loginView.classList.add('d-none');
+            if (mainContentView) mainContentView.classList.remove('d-none');
             
             setupMainContentListeners();
-            loadDashboard();
+            const dashboardView = document.getElementById('dashboard-view');
+            if(dashboardView) showView(dashboardView);
+            loadDashboard(); 
+
         } catch (error) {
             const loginError = document.getElementById('login-error');
             if(loginError) {
@@ -112,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupMainContentListeners() {
         if (mainContentLoaded) return;
 
-        const logoutButton = document.getElementById('logout-btn'); // FIX: ID yang benar
+        const logoutButton = document.getElementById('logout-btn'); 
         if (logoutButton) {
             logoutButton.addEventListener('click', function() {
                 showLogin();
