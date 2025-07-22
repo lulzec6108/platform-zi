@@ -199,13 +199,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Memuat Data ---
     async function loadDashboard() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
-        const result = await callGasApi('getDashboardTugasStatus', 'GET', { username: user.username });
-        if (result && result.success) {
-            document.getElementById('total-tugas').textContent = result.data.total;
-            document.getElementById('belum-dikerjakan').textContent = result.data.belumDikerjakan;
-            document.getElementById('dalam-progress').textContent = result.data.dalamProgress;
-            document.getElementById('selesai').textContent = result.data.selesai;
+        const response = await callGasApi('getDashboardData', 'GET');
+        const tableBody = document.getElementById('dashboard-table-body'); // Asumsi dari HTML baru
+
+        if (!tableBody) return;
+        tableBody.innerHTML = ''; // Kosongkan tabel sebelum mengisi
+
+        if (response.success && response.data) {
+            // Fungsi untuk memberi warna pada status
+            const getStatusBadge = (status) => {
+                let color = 'grey'; // Default
+                if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('sudah')) color = 'green';
+                if (status.toLowerCase().includes('revisi')) color = 'orange';
+                if (status.toLowerCase().includes('belum') || status.toLowerCase().includes('n/a')) color = 'red';
+                return `<span class="new badge ${color}" data-badge-caption="${status}"></span>`;
+            };
+
+            response.data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item['Kode']}</td>
+                    <td>${item['Pilar']}</td>
+                    <td>${item['Nama Tugas']}</td>
+                    <td>${item['PIC']}</td>
+                    <td>${getStatusBadge(item['Status Pengerjaan'])}</td>
+                    <td>${getStatusBadge(item['Status Ketua Pilar'])}</td>
+                    <td>${getStatusBadge(item['Status Admin'])}</td>
+                    <td><a class="waves-effect waves-light btn-small">Detail</a></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            tableBody.innerHTML = '<tr><td colspan="8" class="center-align">Gagal memuat data atau tidak ada data.</td></tr>';
         }
     }
 

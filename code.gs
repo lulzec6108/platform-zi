@@ -57,16 +57,25 @@ function doPost(e) {
   
   const action = payload.action;
 
+  let response;
   switch (action) {
     case 'login':
-      return handleLogin(payload.payload);
+      response = handleLogin(payload.payload);
+      break;
+    case 'getDashboardData':
+      response = getDashboardData();
+      break;
     case 'saveBuktiDukung':
-      return handleSaveBuktiDukung(payload.payload);
+      response = handleSaveBuktiDukung(payload.payload);
+      break;
     case 'setStatusPenilaian':
-      return handleSetStatusPenilaian(payload.payload);
+      response = handleSetStatusPenilaian(payload.payload);
+      break;
     default:
-      return sendJSON({ success: false, message: 'Aksi POST tidak valid.' });
+      response = { success: false, message: 'Aksi POST tidak valid.' };
   }
+
+  return sendJSON(response);
 }
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA ---
@@ -234,4 +243,56 @@ function getUserInfo(username) {
     }
   }
   return {};
+}
+
+function getDashboardData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const userSheet = ss.getSheetByName('user');
+    const tugasSheet = ss.getSheetByName('MappingTugas');
+    const buktiSheet = ss.getSheetByName('BuktiDukung');
+
+    // 1. Baca semua data dari sheet
+    const userData = userSheet.getDataRange().getValues();
+    const tugasData = tugasSheet.getDataRange().getValues();
+    const buktiData = buktiSheet.getDataRange().getValues();
+
+    // 2. Buat Peta (Map) untuk pencarian cepat
+    const userMap = new Map(userData.slice(1).map(row => [row[0], row[2]])); // username -> Nama Lengkap
+    const buktiMap = new Map();
+    buktiData.slice(1).forEach(row => {
+        const key = `${row[0]}_${row[1]}`; // key: 'username_kodehirarki'
+        buktiMap.set(key, {
+            statusKetua: row[5] || 'Belum direview',
+            statusAdmin: row[7] || 'Belum direview'
+        });
+    });
+
+    // 3. Proses dan gabungkan data
+    const tugasHeaders = tugasData[0];
+    const dashboardData = tugasData.slice(1).map(row => {
+        const picUsername = row[0];
+        const kodeHirarki = row[6];
+        const buktiKey = `${picUsername}_${kodeHirarki}`;
+        const bukti = buktiMap.get(buktiKey);
+
+        const statusPengerjaan = bukti ? 'Sudah dikerjakan' : 'Belum dikerjakan';
+
+        return {
+            'Kode': kodeHirarki,
+            'Pilar': row[1],
+            'Nama Tugas': row[5], // Menggunakan 'Tingkatan 4' sebagai Nama Tugas
+            'PIC': userMap.get(picUsername) || picUsername, // Tampilkan nama lengkap jika ada
+            'Status Pengerjaan': statusPengerjaan,
+            'Status Ketua Pilar': bukti ? bukti.statusKetua : 'N/A',
+            'Status Admin': bukti ? bukti.statusAdmin : 'N/A'
+        };
+    });
+
+    return { success: true, data: dashboardData };
+
+  } catch (e) {
+    Logger.log('Error in getDashboardData: ' + e.toString());
+    return { success: false, message: 'Gagal mengambil data: ' + e.toString() };
+  }
 }
