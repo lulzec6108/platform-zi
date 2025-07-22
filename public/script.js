@@ -65,8 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (mainContentView) mainContentView.classList.remove('d-none');
             
             setupMainContentListeners();
-            const dashboardView = document.getElementById('dashboard-view');
-            if(dashboardView) showView(dashboardView);
+            const dashboardElement = document.getElementById('dashboard-view');
+            if(dashboardElement) showView(dashboardElement);
             loadDashboard(); 
 
         } catch (error) {
@@ -79,9 +79,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Navigasi & Tampilan ---
-    function showView(view) {
-        [dashboardView, tugasView, linkPendukungView].forEach(v => v.style.display = 'none');
-        view.style.display = 'block';
+    function showView(viewToShow) {
+        const allViews = [
+            document.getElementById('dashboard-view'),
+            document.getElementById('tugas-saya-view'), 
+            document.getElementById('link-pendukung-view')
+        ];
+
+        allViews.forEach(v => {
+            if (v) v.style.display = 'none';
+        });
+
+        if (viewToShow) viewToShow.style.display = 'block';
     }
 
     // --- Setup Event Listeners ---
@@ -121,18 +130,33 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        const navDashboard = document.getElementById('nav-dashboard');
-        const navTugas = document.getElementById('nav-tugas');
-        const navLinkPendukung = document.getElementById('nav-link-pendukung');
+        const navDashboard = document.getElementById('dashboard-link');
+        const navTugas = document.getElementById('tugas-saya-link');
+        const navLinkPendukung = document.getElementById('link-pendukung-link');
 
         if (navDashboard) {
-            navDashboard.addEventListener('click', (e) => { e.preventDefault(); showView(dashboardView); loadDashboard(); });
+            navDashboard.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                const view = document.getElementById('dashboard-view');
+                showView(view); 
+                loadDashboard(); 
+            });
         }
         if (navTugas) {
-            navTugas.addEventListener('click', (e) => { e.preventDefault(); showView(tugasView); loadTugas(); });
+            navTugas.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                const view = document.getElementById('tugas-saya-view');
+                showView(view); 
+                loadTugas(); 
+            });
         }
         if (navLinkPendukung) {
-            navLinkPendukung.addEventListener('click', (e) => { e.preventDefault(); showView(linkPendukungView); loadLinkPendukung(); });
+            navLinkPendukung.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                const view = document.getElementById('link-pendukung-view');
+                showView(view); 
+                loadLinkPendukung(); 
+            });
         }
 
         const modalSubmitButton = document.getElementById('modalSubmitButton');
