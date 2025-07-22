@@ -79,21 +79,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showMainContent() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
-        if (!user) {
+        try {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            if (!user) {
+                showLogin();
+                return;
+            }
+
+            // PENTING: Update UI dengan info user
+            if (namaUser) namaUser.textContent = user.nama;
+            if (pilarUser) pilarUser.textContent = user.pilar;
+
+            if (loginView) loginView.style.display = 'none';
+            if (mainContentView) mainContentView.style.display = 'block';
+            
+            setupMainContentListeners();
+            loadDashboard();
+        } catch (error) {
+            // Tampilkan error apapun yang terjadi ke layar!
+            if(loginError) {
+                loginError.textContent = `Terjadi error setelah login: ${error.message}`;
+            }
+            // Tampilkan kembali form login jika terjadi error fatal
             showLogin();
-            return;
         }
-
-        // PENTING: Update UI dengan info user
-        if (namaUser) namaUser.textContent = user.nama;
-        if (pilarUser) pilarUser.textContent = user.pilar;
-
-        if (loginView) loginView.style.display = 'none';
-        if (mainContentView) mainContentView.style.display = 'block';
-        
-        setupMainContentListeners();
-        loadDashboard();
     }
 
     // --- Navigasi & Tampilan ---
