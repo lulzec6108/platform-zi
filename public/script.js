@@ -1,6 +1,8 @@
 // script.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded: Script is running.');
+
     const loginSection = document.getElementById('login-section');
     const mainContent = document.getElementById('main-content');
     const loginForm = document.getElementById('login-form');
@@ -76,8 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Otentikasi ---
     let loginListenerAttached = false;
     function setupLoginListeners() {
+        console.log('Attempting to set up login listeners...');
         if (loginForm && !loginListenerAttached) {
+            console.log('Login form found. Attaching submit listener.');
             loginForm.addEventListener('submit', async function(e) {
+                console.log('SUBMIT EVENT CAPTURED!');
                 e.preventDefault();
                 loginError.textContent = '';
                 const username = loginForm.username.value;
@@ -264,5 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Inisialisasi Awal ---
+    console.log('Initializing page view...');
     showMainContent(); // Cek sesi dan tampilkan halaman yang sesuai
 });
