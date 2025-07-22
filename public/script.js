@@ -15,10 +15,12 @@ async function callApi(action, method = 'GET', data = {}) {
             method: 'POST', // Selalu gunakan POST untuk Netlify Functions
             headers: {
                 'Content-Type': 'application/json',
+                'x-api-key': window.API_KEY // Akan diganti saat runtime
             },
             body: JSON.stringify({
                 ...data,
-                action: action // Sertakan juga di body untuk kompatibilitas
+                action: action, // Sertakan juga di body untuk kompatibilitas
+                apiKey: window.API_KEY // Sertakan juga di body sebagai fallback
             })
         };
 
@@ -37,6 +39,9 @@ async function callApi(action, method = 'GET', data = {}) {
         throw new Error(`Gagal terhubung ke server: ${error.message}`);
     }
 }
+
+// Inisialisasi API key dari environment atau config
+window.API_KEY = 'YOUR_API_KEY'; // Akan diganti saat runtime
 
 // Variabel global
 let currentUser = null;
