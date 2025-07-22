@@ -7,14 +7,18 @@ function isValidRequest(e) {
   const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
   if (!SCRIPT_API_KEY) return false; // Jika API Key belum diatur di server, tolak semua
 
-  // Jadikan e.headers menjadi objek kosong jika tidak ada untuk mencegah error
-  const headers = e.headers || {};
-  const requestApiKey = headers['x-api-key'] || headers['X-Api-Key']; // Cek header dalam format lowercase dan camel-case
+  // Pemeriksaan defensif untuk memastikan 'e' dan 'e.headers' ada
+  if (!e || !e.headers) {
+    Logger.log('Error: Event object or headers are missing.');
+    return false;
+  }
 
-  // Log untuk debugging
-  Logger.log(`Received Key: ${requestApiKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
+  // Cek header dalam format lowercase dan camel-case untuk keandalan
+  const receivedKey = e.headers['x-api-key'] || e.headers['X-Api-Key'];
 
-  return requestApiKey === SCRIPT_API_KEY;
+  Logger.log(`Received Key: ${receivedKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
+
+  return receivedKey === SCRIPT_API_KEY;
 }
 
 // Fungsi doGet untuk menangani permintaan GET dari Netlify
@@ -55,38 +59,40 @@ function doGet(e) {
 
 // Fungsi doPost untuk menangani permintaan POST
 function doPost(e) {
+  // Selalu validasi request terlebih dahulu
   if (!isValidRequest(e)) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Akses Ditolak" }))
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Akses Ditolak: API Key tidak valid.' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  var result = {};
+  let payload;
   try {
-    var requestData = JSON.parse(e.postData.contents);
-    var action = requestData.action;
-
-    // Router untuk menentukan fungsi mana yang dipanggil berdasarkan 'action' di body JSON
-    switch (action) {
-      case "login":
-        result = login(requestData.payload.username, requestData.payload.password);
-        break;
-      case "saveBuktiDukung":
-        result = saveBuktiDukung(requestData.payload.username, requestData.payload.kodeHirarki, requestData.payload.nilai, requestData.payload.jenis);
-        break;
-      case "setStatusPenilaian":
-       result = setStatusPenilaian(requestData.payload.username, requestData.payload.kodeHirarki, requestData.payload.role, requestData.payload.status, requestData.payload.catatan);
-       break;
-      default:
-        result = { success: false, message: "Aksi POST tidak valid" };
-    }
+    payload = JSON.parse(e.postData.contents);
   } catch (err) {
-    result = { success: false, message: "Error di server: " + err.message };
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Gagal mem-parsing data request.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const action = payload.action;
+
+  // Router untuk menentukan fungsi mana yang dipanggil berdasarkan 'action' di body JSON
+  switch (action) {
+    case "login":
+      result = login(payload.payload.username, payload.payload.password);
+      break;
+    case "saveBuktiDukung":
+      result = saveBuktiDukung(payload.payload.username, payload.payload.kodeHirarki, payload.payload.nilai, payload.payload.jenis);
+      break;
+    case "setStatusPenilaian":
+      result = setStatusPenilaian(payload.payload.username, payload.payload.kodeHirarki, payload.payload.role, payload.payload.status, payload.payload.catatan);
+      break;
+    default:
+      result = { success: false, message: "Aksi POST tidak valid" };
   }
 
   return ContentService.createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA (TIDAK ADA PERUBAHAN DI SINI) ---
 function login(username, password) {

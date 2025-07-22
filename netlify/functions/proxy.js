@@ -24,17 +24,19 @@ exports.handler = async function(event, context) {
     const options = {
       method: method,
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8',
+        // UBAH: Menggunakan application/json agar GAS mengurai header dengan benar
+        'Content-Type': 'application/json',
         'x-api-key': apiKey
       },
       redirect: 'follow'
     };
 
-    if (method === 'POST') {
-      // Netlify Functions otomatis mem-parse body jika Content-Type adalah application/json.
-      // Kita perlu mengubahnya kembali menjadi string agar GAS bisa membacanya dari e.postData.contents.
-      options.body = typeof event.body === 'string' ? event.body : JSON.stringify(event.body);
-    } else if (method === 'GET') {
+    // Body request diambil langsung dari event yang diterima dari frontend
+    if (method === 'POST' && event.body) {
+      options.body = event.body;
+    }
+
+    if (method === 'GET') {
       // Gabungkan query string dari request asli ke URL GAS
       const queryString = new URLSearchParams(event.queryStringParameters).toString();
       if (queryString) {
@@ -44,13 +46,23 @@ exports.handler = async function(event, context) {
 
     console.log('Sending request to GAS...');
     const response = await fetch(url, options);
-    const data = await response.json();
+    const data = await response.text(); // Baca sebagai teks dulu untuk debug
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    };
+    try {
+      // Coba parse sebagai JSON
+      const jsonData = JSON.parse(data);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify(jsonData)
+      };
+    } catch (error) {
+      // Jika gagal, berarti GAS mengembalikan HTML (halaman error)
+      console.error("Failed to parse GAS response as JSON. Response was:", data);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ message: 'Server GAS merespons dengan format yang tidak terduga.', details: data })
+      };
+    }
 
   } catch (error) {
     console.error('Error in proxy function:', error);
