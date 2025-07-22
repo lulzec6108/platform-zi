@@ -46,23 +46,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const mainContentView = document.getElementById('main-content');
         if (loginView) loginView.classList.remove('d-none');
         if (mainContentView) mainContentView.classList.add('d-none');
-        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('zi_user');
         setupLoginListeners();
     }
 
-    function showMainContent() {
+    function showMainContent(user) {
         try {
             const loginView = document.getElementById('login-page');
             const mainContentView = document.getElementById('main-content');
             const userInfo = document.getElementById('user-info');
 
-            const user = JSON.parse(sessionStorage.getItem('user'));
-            if (!user) {
-                showLogin();
-                return;
+            if (userInfo) {
+                userInfo.textContent = `${user.nama} (${user.pilar})`;
             }
-
-            if (userInfo) userInfo.textContent = `${user.nama} (${user.pilar})`;
 
             if (loginView) loginView.classList.add('d-none');
             if (mainContentView) mainContentView.classList.remove('d-none');
@@ -119,9 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await callGasApi('login', 'POST', { username, password });
 
-                if (result && result.success) {
-                    sessionStorage.setItem('user', JSON.stringify(result));
-                    showMainContent();
+                if (result && result.success && result.user) {
+                    sessionStorage.setItem('zi_user', JSON.stringify(result.user));
+                    showMainContent(result.user);
                 } else {
                     if (loginError) {
                         loginError.textContent = result ? result.message : 'Login gagal!';
@@ -200,12 +196,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Memuat Data ---
     async function loadDashboard() {
         showLoader(true);
-        const user = JSON.parse(sessionStorage.getItem('user'));
-        if (!user || !user.username) {
+        const userString = sessionStorage.getItem('zi_user');
+        if (!userString) {
             console.error("Tidak dapat memuat dashboard, user tidak ditemukan di session.");
             hideLoader();
             return;
         }
+        const user = JSON.parse(userString);
 
         const response = await callGasApi('getDashboardData', 'POST', { username: user.username });
         const tableBody = document.getElementById('dashboard-table-body');
@@ -248,7 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadTugas() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
+        const userString = sessionStorage.getItem('zi_user');
+        const user = JSON.parse(userString);
         const result = await callGasApi('getTugas', 'GET', { username: user.username, role: user.role, pilar: user.pilar });
 
         const tugasTableBody = document.getElementById('tugas-table-body');
@@ -309,7 +307,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Modal Tugas ---
     function openTugasModal(tugas) {
-        const user = JSON.parse(sessionStorage.getItem('user'));
+        const userString = sessionStorage.getItem('zi_user');
+        const user = JSON.parse(userString);
 
         const modalTugasJudul = document.getElementById('modalTugasJudul');
         const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
@@ -361,9 +360,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Inisialisasi Aplikasi ---
     function init() {
         initMaterialize(); // Panggil inisialisasi di sini
-        const user = sessionStorage.getItem('user');
-        if (user) {
-            showMainContent();
+        const userString = sessionStorage.getItem('zi_user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            showMainContent(user);
         } else {
             showLogin();
         }

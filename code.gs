@@ -48,34 +48,32 @@ function doPost(e) {
     return sendJSON({ success: false, message: 'Akses Ditolak' });
   }
 
-  let payload;
-  try {
-    payload = JSON.parse(e.postData.contents);
-  } catch (err) {
-    return sendJSON({ success: false, message: 'Gagal mem-parsing data request.' });
-  }
-  
-  const action = payload.action;
-
   let response;
-  switch (action) {
-    case 'login':
-      response = handleLogin(payload.payload);
-      break;
-    case 'getDashboardData':
-      response = getDashboardData(payload);
-      break;
-    case 'saveBuktiDukung':
-      response = handleSaveBuktiDukung(payload.payload);
-      break;
-    case 'setStatusPenilaian':
-      response = handleSetStatusPenilaian(payload.payload);
-      break;
-    default:
-      response = { success: false, message: 'Aksi POST tidak valid.' };
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    switch (payload.action) {
+      case 'login':
+        response = handleLogin(payload.payload); 
+        break;
+      case 'getDashboardData':
+        response = getDashboardData(payload.payload); 
+        break;
+      case 'saveBuktiDukung':
+        response = handleSaveBuktiDukung(payload.payload);
+        break;
+      case 'setStatusPenilaian':
+        response = handleSetStatusPenilaian(payload.payload);
+        break;
+      default:
+        response = { success: false, message: 'Aksi POST tidak valid.' };
+    }
+  } catch (err) {
+    response = { success: false, message: 'Invalid request: ' + err.toString() };
   }
 
-  return sendJSON(response);
+  return ContentService
+    .createTextOutput(JSON.stringify(response))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA ---
