@@ -4,21 +4,26 @@
 const API_BASE = '/.netlify/functions/proxy';
 const API_TIMEOUT = 15000; // 15 detik timeout
 
-// Inisialisasi Materialize
+// Inisialisasi Materialize dan komponen
 document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi komponen Materialize
     M.AutoInit();
     
-    // Set default API key (akan di-override dari environment variable di Netlify)
+    // Pastikan APP_CONFIG sudah diinisialisasi oleh config.js
     window.APP_CONFIG = window.APP_CONFIG || {
-        API_KEY: '' // Akan diisi dari environment variable di Netlify
+        API_KEY: '',
+        API_BASE: API_BASE
     };
     
-    // Log konfigurasi untuk debugging
+    // Log konfigurasi untuk debugging (sensor API key)
     console.log('APP_CONFIG:', {
         ...window.APP_CONFIG,
         API_KEY: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
     });
+    
+    // Cek API key
+    if (!window.APP_CONFIG.API_KEY) {
+        console.error('API key tidak ditemukan. Pastikan config.js dimuat dengan benar.');
+    }
 });
 
 // Fungsi untuk memanggil API dengan error handling yang lebih baik
@@ -40,44 +45,32 @@ async function callApi(action, method = 'GET', data = {}) {
             },
             body: JSON.stringify({
                 action,
-                ...data,
+                method, // Sertakan method dalam body untuk Netlify Functions
+                ...(method !== 'GET' && { data }), // Hanya sertakan data jika bukan GET
                 timestamp: new Date().toISOString()
             }),
             signal: controller.signal
         };
 
-        console.log(`[API] Request: ${action}`, { data });
-        
-        const response = await fetch(API_BASE, options);
+        console.log(`[API] Request: ${action}`, { 
+            method,
+            hasApiKey: !!window.APP_CONFIG.API_KEY,
+            apiKeyLast4: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
+        });
+
+        const response = await fetch(window.APP_CONFIG.API_BASE || API_BASE, options);
         clearTimeout(timeoutId);
 
-        const result = await response.json();
-        
         if (!response.ok) {
-            const error = new Error(result.message || 'Terjadi kesalahan pada server');
-            error.status = response.status;
-            error.response = result;
-            throw error;
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        return result;
+        const responseData = await response.json();
+        console.log(`[API] Response: ${action}`, responseData);
+        return responseData;
     } catch (error) {
-        console.error(`[API Error] ${action}:`, error);
-        
-        // Handle error spesifik
-        if (error.name === 'ConfigError') {
-            showError('Konfigurasi aplikasi tidak valid. Silakan refresh halaman.');
-        } else if (error.name === 'AbortError') {
-            showError('Waktu tunggu permintaan habis. Silakan coba lagi.');
-        } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-            showError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
-        } else if (error.status === 401) {
-            handleLogout();
-            showError('Sesi Anda telah berakhir. Silakan login kembali.');
-        } else {
-            showError(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
-        }
-        
+        console.error(`[API] Error: ${action}`, error);
         throw error;
     }
 }
