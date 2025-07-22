@@ -199,10 +199,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Memuat Data ---
     async function loadDashboard() {
-        const response = await callGasApi('getDashboardData', 'GET');
-        const tableBody = document.getElementById('dashboard-table-body'); // Asumsi dari HTML baru
+        showLoader(true);
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user || !user.username) {
+            console.error("Tidak dapat memuat dashboard, user tidak ditemukan di session.");
+            hideLoader();
+            return;
+        }
 
-        if (!tableBody) return;
+        const response = await callGasApi('getDashboardData', 'POST', { username: user.username });
+        const tableBody = document.getElementById('dashboard-table-body');
+
+        if (!tableBody) {
+            hideLoader();
+            return;
+        }
+
         tableBody.innerHTML = ''; // Kosongkan tabel sebelum mengisi
 
         if (response.success && response.data) {
@@ -232,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             tableBody.innerHTML = '<tr><td colspan="8" class="center-align">Gagal memuat data atau tidak ada data.</td></tr>';
         }
+        hideLoader();
     }
 
     async function loadTugas() {

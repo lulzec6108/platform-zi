@@ -63,7 +63,7 @@ function doPost(e) {
       response = handleLogin(payload.payload);
       break;
     case 'getDashboardData':
-      response = getDashboardData();
+      response = getDashboardData(payload);
       break;
     case 'saveBuktiDukung':
       response = handleSaveBuktiDukung(payload.payload);
@@ -189,14 +189,42 @@ function handleGetLinkPendukung() {
 }
 
 function handleLogin(payload) {
-  var sheet = ss.getSheetByName("Users");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == payload.username && data[i][1] == payload.password) {
-      return sendJSON({ success: true, nama: data[i][2], pilar: data[i][3], role: data[i][4], username: payload.username });
+  const { username, password } = payload;
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users'); // FIX: 'user' -> 'Users'
+    if (!sheet) {
+      return { success: false, message: 'Error: Sheet dengan nama \'Users\' tidak ditemukan.' };
     }
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    
+    const usernameIndex = headers.indexOf('Username');
+    const passwordIndex = headers.indexOf('Password');
+    const namaIndex = headers.indexOf('Nama Lengkap');
+    const pilarIndex = headers.indexOf('Pilar');
+    const roleIndex = headers.indexOf('Role');
+
+    for (const row of data) {
+      if (row[usernameIndex] === username && row[passwordIndex].toString() === password.toString()) {
+        return {
+          success: true,
+          user: {
+            username: row[usernameIndex],
+            nama: row[namaIndex],
+            pilar: row[pilarIndex],
+            role: row[roleIndex]
+          }
+        };
+      }
+    }
+    
+    return { success: false, message: 'Username atau password salah.' };
+
+  } catch (e) {
+    Logger.log('Login error: ' + e.toString());
+    return { success: false, message: 'Terjadi kesalahan pada server saat login.' };
   }
-  return sendJSON({ success: false, message: "Username atau password salah!" });
 }
 
 function handleSaveBuktiDukung(payload) {
@@ -245,54 +273,128 @@ function getUserInfo(username) {
   return {};
 }
 
-function getDashboardData() {
+function getDashboardData(payload) {
+  const { username } = payload;
+  if (!username) {
+    return { success: false, message: 'Username tidak ditemukan.' };
+  }
+
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const userSheet = ss.getSheetByName('user');
+    const usersSheet = ss.getSheetByName('Users');
     const tugasSheet = ss.getSheetByName('MappingTugas');
     const buktiSheet = ss.getSheetByName('BuktiDukung');
 
-    // 1. Baca semua data dari sheet
-    const userData = userSheet.getDataRange().getValues();
+    // 1. Dapatkan info user yang login
+    const usersData = usersSheet.getDataRange().getValues();
+    let currentUserInfo = null;
+    const usersHeaders = usersData.shift();
+    const userUsernameIndex = usersHeaders.indexOf('Username');
+    const userNamaIndex = usersHeaders.indexOf('Nama Lengkap');
+    const userPilarIndex = usersHeaders.indexOf('Pilar');
+    const userRoleIndex = usersHeaders.indexOf('Role');
+
+    for (const row of usersData) {
+      if (row[userUsernameIndex] === username) {
+        currentUserInfo = {
+          username: row[userUsernameIndex],
+          nama: row[userNamaIndex],
+          pilar: row[userPilarIndex],
+          role: row[userRoleIndex]
+        };
+        break;
+      }
+    }
+
+    if (!currentUserInfo) {
+      return { success: false, message: 'User tidak valid.' };
+    }
+
+    // 2. Buat map username -> nama lengkap
+    const usernameToNama = {};
+    usersData.forEach(row => {
+      usernameToNama[row[userUsernameIndex]] = row[userNamaIndex];
+    });
+
+    // 3. Baca data tugas dan bukti
     const tugasData = tugasSheet.getDataRange().getValues();
     const buktiData = buktiSheet.getDataRange().getValues();
+    const tugasHeaders = tugasData.shift();
+    const buktiHeaders = buktiData.shift();
 
-    // 2. Buat Peta (Map) untuk pencarian cepat
-    const userMap = new Map(userData.slice(1).map(row => [row[0], row[2]])); // username -> Nama Lengkap
-    const buktiMap = new Map();
-    buktiData.slice(1).forEach(row => {
-        const key = `${row[0]}_${row[1]}`; // key: 'username_kodehirarki'
-        buktiMap.set(key, {
-            statusKetua: row[5] || 'Belum direview',
-            statusAdmin: row[7] || 'Belum direview'
-        });
-    });
+    // Index kolom untuk performa
+    const tugasUsernameIndex = tugasHeaders.indexOf('Username');
+    const tugasPilarIndex = tugasHeaders.indexOf('Pilar');
+    const tugasKodeIndex = tugasHeaders.indexOf('Kode Hirarki');
+    const tugasNamaIndex = tugasHeaders.indexOf('Tingkatan 4'); // Nama tugas
+    const tugasRefIndex = tugasHeaders.indexOf('Link Referensi Melawi');
+    const tugasGDriveIndex = tugasHeaders.indexOf('Link GDrive Bukti');
 
-    // 3. Proses dan gabungkan data
-    const tugasHeaders = tugasData[0];
-    const dashboardData = tugasData.slice(1).map(row => {
-        const picUsername = row[0];
-        const kodeHirarki = row[6];
-        const buktiKey = `${picUsername}_${kodeHirarki}`;
-        const bukti = buktiMap.get(buktiKey);
+    const buktiUsernameIndex = buktiHeaders.indexOf('Username');
+    const buktiKodeIndex = buktiHeaders.indexOf('Kode Hirarki');
+    const buktiNilaiIndex = buktiHeaders.indexOf('Nilai');
+    const buktiJenisIndex = buktiHeaders.indexOf('Jenis');
+    const buktiStatusKetuaIndex = buktiHeaders.indexOf('Status Ketua');
+    const buktiCatatanKetuaIndex = buktiHeaders.indexOf('Catatan Ketua');
+    const buktiStatusAdminIndex = buktiHeaders.indexOf('Status Admin');
+    const buktiCatatanAdminIndex = buktiHeaders.indexOf('Catatan Admin');
 
-        const statusPengerjaan = bukti ? 'Sudah dikerjakan' : 'Belum dikerjakan';
+    // 4. Proses dan filter tugas
+    const hasil = [];
+    for (const row of tugasData) {
+      const pilar = row[tugasPilarIndex];
+      const tugasUsername = row[tugasUsernameIndex];
+      let tampil = false;
 
-        return {
-            'Kode': kodeHirarki,
-            'Pilar': row[1],
-            'Nama Tugas': row[5], // Menggunakan 'Tingkatan 4' sebagai Nama Tugas
-            'PIC': userMap.get(picUsername) || picUsername, // Tampilkan nama lengkap jika ada
-            'Status Pengerjaan': statusPengerjaan,
-            'Status Ketua Pilar': bukti ? bukti.statusKetua : 'N/A',
-            'Status Admin': bukti ? bukti.statusAdmin : 'N/A'
-        };
-    });
+      // Logika filter berdasarkan peran
+      const userRole = (currentUserInfo.role || '').toLowerCase();
+      if (userRole === 'admin') {
+        tampil = true;
+      } else if (userRole === 'ketua pilar' && currentUserInfo.pilar === pilar) {
+        tampil = true;
+      } else if (userRole === 'anggota' && currentUserInfo.username === tugasUsername) {
+        tampil = true;
+      }
 
-    return { success: true, data: dashboardData };
+      if (!tampil) continue;
+
+      // Cari bukti dukung
+      const kode = row[tugasKodeIndex];
+      let adaBukti = false;
+      let statusKetua = '', catatanKetua = '', statusAdmin = '', catatanAdmin = '';
+      for (const buktiRow of buktiData) {
+        if (buktiRow[buktiUsernameIndex] === tugasUsername && buktiRow[buktiKodeIndex] === kode) {
+          adaBukti = (buktiRow[buktiNilaiIndex] && buktiRow[buktiNilaiIndex].toString().trim() !== '') || 
+                     (buktiRow[buktiJenisIndex] && buktiRow[buktiJenisIndex].toString().trim() !== '');
+          statusKetua = buktiRow[buktiStatusKetuaIndex] || '';
+          catatanKetua = buktiRow[buktiCatatanKetuaIndex] || '';
+          statusAdmin = buktiRow[buktiStatusAdminIndex] || '';
+          catatanAdmin = buktiRow[buktiCatatanAdminIndex] || '';
+          break;
+        }
+      }
+
+      hasil.push({
+        'Kode': kode,
+        'Pilar': pilar,
+        'Nama Tugas': row[tugasNamaIndex],
+        'PIC': usernameToNama[tugasUsername] || tugasUsername,
+        'Status Pengerjaan': adaBukti ? 'Sudah dikerjakan' : 'Belum dikerjakan',
+        'Status Ketua Pilar': statusKetua,
+        'Status Admin': statusAdmin,
+        // Data tambahan untuk modal/detail
+        'tugasUsername': tugasUsername,
+        'catatanKetua': catatanKetua,
+        'catatanAdmin': catatanAdmin,
+        'linkReferensi': row[tugasRefIndex] || '',
+        'linkGDrive': row[tugasGDriveIndex] || ''
+      });
+    }
+
+    return { success: true, data: hasil };
 
   } catch (e) {
-    Logger.log('Error in getDashboardData: ' + e.toString());
-    return { success: false, message: 'Gagal mengambil data: ' + e.toString() };
+    Logger.log('getDashboardData Error: ' + e.toString() + ' Stack: ' + e.stack);
+    return { success: false, message: 'Terjadi kesalahan pada server saat mengambil data dashboard: ' + e.message };
   }
 }
