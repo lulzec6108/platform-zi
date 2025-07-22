@@ -61,8 +61,13 @@ function doGet(e) {
 function doPost(e) {
   // Selalu validasi request terlebih dahulu
   if (!isValidRequest(e)) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Akses Ditolak: API Key tidak valid.' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    // Untuk debugging, kita kirim kembali kunci yang diterima
+    const receivedKey = (e && e.headers) ? (e.headers['x-api-key'] || e.headers['X-Api-Key']) : "Headers not found";
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: false, 
+      message: 'Akses Ditolak: API Key tidak valid.',
+      debug_received_key: receivedKey 
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 
   let payload;

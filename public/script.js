@@ -94,7 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     sessionStorage.setItem('user', JSON.stringify(result));
                     showMainContent();
                 } else {
-                    loginError.textContent = result ? result.message : 'Login gagal!';
+                    let errorMessage = result ? result.message : 'Login gagal!';
+                    if (result && result.debug_received_key) {
+                        errorMessage += ` (Debug Info: Kunci yang diterima server adalah '${result.debug_received_key}')`;
+                    }
+                    loginError.textContent = errorMessage;
                 }
             });
             loginListenerAttached = true;
