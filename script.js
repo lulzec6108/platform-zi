@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fungsi Helper untuk API Call via Proxy ---
     async function callGasApi(action, method = 'GET', payload = {}) {
-        // DEBUG: Memanggil fungsi secara langsung untuk melewati redirect
-        let url = `/.netlify/functions/proxy`;
+        // Kembalikan ke URL proxy yang seharusnya
+        let url = `/api/proxy`;
         const options = {
             method: method,
             headers: {}

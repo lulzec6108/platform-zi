@@ -1,9 +1,7 @@
 [build]
-  # Direktori yang berisi file-file statis (HTML, CSS, JS)
-  # Perintah ini akan memastikan dependensi (node-fetch) terinstal
+  # Perintah ini memastikan dependensi (node-fetch) terinstal
   command = "npm install"
   publish = "public"
-  # Direktori tempat Netlify akan menemukan serverless functions
   functions = "netlify/functions"
 
 [[redirects]]
