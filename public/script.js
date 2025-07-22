@@ -15,15 +15,24 @@ async function callApi(action, method = 'GET', data = {}) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
+        // Siapkan headers
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Tambahkan API key ke headers jika tersedia
+        if (window.APP_CONFIG?.API_KEY) {
+            headers['x-api-key'] = window.APP_CONFIG.API_KEY;
+        } else {
+            console.warn('API key tidak ditemukan di window.APP_CONFIG');
+        }
+
         const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': window.APP_CONFIG?.API_KEY || ''
-            },
+            method: 'POST', // Selalu gunakan POST untuk Netlify Functions
+            headers: headers,
             body: JSON.stringify({
                 ...data,
-                action,
+                action: action,
                 timestamp: new Date().toISOString()
             }),
             signal: controller.signal
