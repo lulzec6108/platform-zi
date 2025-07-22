@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fungsi API Call ---
     async function callGasApi(action, method = 'GET', payload = {}) {
+        showLoader(); // Tampilkan loader
         const url = `/.netlify/functions/proxy`;
         const options = {
             method: method,
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return await response.json();
         } catch (error) {
             return { success: false, message: 'Tidak dapat terhubung ke server.' };
+        } finally {
+            hideLoader(); // Sembunyikan loader
         }
     }
 
@@ -253,6 +256,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 linkPendukungTableBody.appendChild(row);
             });
         }
+    }
+
+    // --- Fungsi Utilitas ---
+    function showLoader() {
+        const loader = document.getElementById('loader-overlay');
+        if (loader) loader.classList.remove('d-none');
+    }
+
+    function hideLoader() {
+        const loader = document.getElementById('loader-overlay');
+        if (loader) loader.classList.add('d-none');
     }
 
     // --- Modal Tugas ---
