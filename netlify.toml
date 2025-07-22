@@ -7,5 +7,5 @@
 [[redirects]]
   # Arahkan semua request dari /api/* ke fungsi proxy
   from = "/api/*"
-  to = "/.netlify/functions/proxy"
+  to = "/.netlify/functions/proxy?path=:splat"
   status = 200

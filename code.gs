@@ -2,18 +2,16 @@
 
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-// Fungsi untuk memeriksa apakah permintaan valid dengan membandingkan API Key
+// Fungsi untuk memvalidasi request menggunakan API Key
 function isValidRequest(e) {
-  const SCRIPT_PROPS = PropertiesService.getScriptProperties();
-  const API_KEY = SCRIPT_PROPS.getProperty('API_KEY');
-  
-  // Ambil API key dari header permintaan
-  const apiKeyFromHeader = e.headers['x-api-key'];
+  const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
+  if (!SCRIPT_API_KEY) return false; // Jika API Key belum diatur di server, tolak semua
 
-  if (apiKeyFromHeader && apiKeyFromHeader === API_KEY) {
-    return true;
-  }
-  return false;
+  // Jadikan e.headers menjadi objek kosong jika tidak ada untuk mencegah error
+  const headers = e.headers || {};
+  const requestApiKey = headers['x-api-key'] || headers['X-Api-Key']; // Cek header dalam format lowercase dan camel-case
+
+  return requestApiKey === SCRIPT_API_KEY;
 }
 
 // Fungsi doGet untuk menangani permintaan GET dari Netlify
