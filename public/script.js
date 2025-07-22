@@ -1,8 +1,25 @@
 // script.js (OPTIMIZED)
 
 // Konfigurasi
-const API_BASE = window.APP_CONFIG?.API_BASE || '/.netlify/functions/proxy';
+const API_BASE = '/.netlify/functions/proxy';
 const API_TIMEOUT = 15000; // 15 detik timeout
+
+// Inisialisasi Materialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi komponen Materialize
+    M.AutoInit();
+    
+    // Set default API key (akan di-override dari environment variable di Netlify)
+    window.APP_CONFIG = window.APP_CONFIG || {
+        API_KEY: '' // Akan diisi dari environment variable di Netlify
+    };
+    
+    // Log konfigurasi untuk debugging
+    console.log('APP_CONFIG:', {
+        ...window.APP_CONFIG,
+        API_KEY: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
+    });
+});
 
 // Fungsi untuk memanggil API dengan error handling yang lebih baik
 async function callApi(action, method = 'GET', data = {}) {
@@ -11,29 +28,19 @@ async function callApi(action, method = 'GET', data = {}) {
         throw new Error('Action harus berupa string yang valid');
     }
 
-    // Validasi API key
-    if (!window.APP_CONFIG?.API_KEY) {
-        const error = new Error('API key tidak ditemukan. Silakan refresh halaman.');
-        error.name = 'ConfigError';
-        throw error;
-    }
-
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-        // Siapkan headers
-        const headers = {
-            'Content-Type': 'application/json',
-            'x-api-key': window.APP_CONFIG.API_KEY
-        };
-
         const options = {
             method: 'POST', // Selalu gunakan POST untuk Netlify Functions
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': window.APP_CONFIG.API_KEY || ''
+            },
             body: JSON.stringify({
+                action,
                 ...data,
-                action: action,
                 timestamp: new Date().toISOString()
             }),
             signal: controller.signal
@@ -58,102 +65,38 @@ async function callApi(action, method = 'GET', data = {}) {
         console.error(`[API Error] ${action}:`, error);
         
         // Handle error spesifik
-        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-            throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
-        }
-        
-        if (error.name === 'AbortError') {
-            throw new Error('Waktu tunggu permintaan habis. Silakan coba lagi.');
-        }
-        
-        // Handle unauthorized (401) errors
-        if (error.status === 401) {
-            // Jangan logout jika ini adalah request login
-            if (action.toLowerCase() === 'login') {
-                throw new Error(error.response?.message || 'Username atau password salah');
-            } else {
-                handleLogout();
-                throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
-            }
+        if (error.name === 'ConfigError') {
+            showError('Konfigurasi aplikasi tidak valid. Silakan refresh halaman.');
+        } else if (error.name === 'AbortError') {
+            showError('Waktu tunggu permintaan habis. Silakan coba lagi.');
+        } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            showError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+        } else if (error.status === 401) {
+            handleLogout();
+            showError('Sesi Anda telah berakhir. Silakan login kembali.');
+        } else {
+            showError(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
         }
         
         throw error;
     }
 }
 
-// Inisialisasi API key dari config
-if (!window.APP_CONFIG?.API_KEY) {
-    console.warn('API_KEY tidak ditemukan di window.APP_CONFIG');
+// Fungsi untuk menampilkan error
+function showError(message) {
+    console.error('[Error]', message);
+    M.toast({
+        html: `<span>${message}</span>`,
+        classes: 'red',
+        displayLength: 4000
+    });
 }
 
-// Variabel global
-let currentUser = null;
-let allTasks = [];
-let currentView = 'dashboard';
-
-// Fungsi utilitas untuk validasi input
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-}
-
-// Fungsi untuk menampilkan notifikasi
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-hide setelah 5 detik
-    setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
-}
-
-// Tambahkan style untuk notifikasi
-const style = document.createElement('style');
-style.textContent = `
-    .notification {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        border-radius: 4px;
-        color: white;
-        z-index: 1000;
-        opacity: 0.95;
-        transform: translateY(100px);
-        transition: transform 0.3s ease-out;
-    }
-    
-    .notification.show {
-        transform: translateY(0);
-    }
-    
-    .notification.fade-out {
-        opacity: 0;
-        transition: opacity 0.3s ease-out;
-    }
-    
-    .notification.success { background-color: #4CAF50; }
-    .notification.error { background-color: #f44336; }
-    .notification.warning { background-color: #ff9800; }
-    .notification.info { background-color: #2196F3; }
-`;
-document.head.appendChild(style);
-
-// Fungsi untuk mengecek status autentikasi
-function checkAuth() {
-    const userData = sessionStorage.getItem('zi_user');
-    if (userData) {
-        // User sudah login
-        currentUser = JSON.parse(userData);
-        showMainContent();
-    } else {
-        // User belum login
-        showLogin();
+// Fungsi untuk menampilkan loading
+function showLoading(show = true) {
+    const loader = document.getElementById('loader-overlay');
+    if (loader) {
+        loader.style.display = show ? 'flex' : 'none';
     }
 }
 
@@ -175,7 +118,6 @@ async function handleLogin(event) {
         }
         
         // Tampilkan loading
-        const originalText = loginButton.innerHTML;
         loginButton.disabled = true;
         loginButton.innerHTML = '<i class="material-icons left">loop</i> Memproses...';
         
@@ -189,22 +131,8 @@ async function handleLogin(event) {
         
         if (response.success && response.user) {
             // Simpan data user
-            sessionStorage.setItem('zi_user', JSON.stringify(response.user));
-            currentUser = response.user;
-            
-            // Update API key jika dikembalikan oleh server
-            if (response.apiKey) {
-                window.APP_CONFIG = window.APP_CONFIG || {};
-                window.APP_CONFIG.API_KEY = response.apiKey;
-                console.log('API key updated from server');
-            }
-            
-            // Tampilkan notifikasi sukses
-            showNotification('Login berhasil', 'success');
-            
-            // Redirect ke dashboard
-            showMainContent();
-            loadDashboardData();
+            sessionStorage.setItem('user', JSON.stringify(response.user));
+            window.location.href = '/dashboard.html';
         } else {
             throw new Error(response.message || 'Login gagal');
         }
@@ -228,117 +156,87 @@ async function handleLogin(event) {
     }
 }
 
-// Fungsi untuk menampilkan error
-function showError(message) {
-    const errorElement = document.getElementById('login-error');
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-    }
-    M.toast({html: message, classes: 'red'});
-}
-
 // Fungsi untuk menangani logout
 function handleLogout() {
-    // Hapus data user dari sessionStorage
-    sessionStorage.removeItem('zi_user');
-    currentUser = null;
-    
-    // Tampilkan halaman login
-    showLogin();
-    
-    // Reset form login
-    document.getElementById('login-form').reset();
-    document.getElementById('login-error').style.display = 'none';
-    
-    M.toast({html: 'Anda telah logout'});
+    sessionStorage.removeItem('user');
+    window.location.href = '/';
 }
 
-// Fungsi untuk menampilkan halaman login
-function showLogin() {
-    document.getElementById('login-view').style.display = 'flex';
-    document.getElementById('main-content').style.display = 'none';
-    document.getElementById('username').focus();
-}
-
-// Fungsi untuk menampilkan konten utama
-function showMainContent() {
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    
-    // Update informasi user di sidebar
-    updateUserInfo();
-    
-    // Muat data berdasarkan view yang aktif
-    loadView(currentView);
-}
-
-// Fungsi untuk memperbarui informasi user di sidebar
-function updateUserInfo() {
-    if (!currentUser) return;
-    
-    const usernameElement = document.getElementById('sidebar-username');
-    const roleElement = document.getElementById('sidebar-role');
-    
-    if (usernameElement) usernameElement.textContent = currentUser.nama || currentUser.username;
-    if (roleElement) roleElement.textContent = currentUser.role;
-}
-
-// Fungsi untuk memuat view yang sesuai
-async function loadView(viewName) {
-    // Update active menu
-    document.querySelectorAll('.sidebar-menu li').forEach(menuItem => {
-        menuItem.classList.remove('active');
-        if (menuItem.id === `${viewName}-link`) {
-            menuItem.classList.add('active');
-        }
-    });
-    
-    // Sembunyikan semua view
-    document.querySelectorAll('.view').forEach(view => {
-        view.style.display = 'none';
-    });
-    
-    // Tampilkan view yang dipilih
-    const activeView = document.getElementById(`${viewName}-view`);
-    if (activeView) {
-        activeView.style.display = 'block';
-        
-        // Update judul halaman
-        const pageTitle = document.getElementById('page-title');
-        if (pageTitle) {
-            const titleMap = {
-                'dashboard': 'Daftar Tugas',
-                'tugas-zi': 'Tugas ZI',
-                'link-pendukung': 'Link Pendukung'
-            };
-            pageTitle.textContent = titleMap[viewName] || 'Dashboard';
-        }
-        
-        // Muat data untuk view yang dipilih
-        try {
-            showLoading(true);
-            switch(viewName) {
-                case 'dashboard':
-                    await loadDashboardData();
-                    break;
-                case 'tugas-zi':
-                    await loadTugasZiData();
-                    break;
-                case 'link-pendukung':
-                    await loadLinkPendukungData();
-                    break;
-            }
-        } catch (error) {
-            console.error(`Error loading ${viewName}:`, error);
-            M.toast({html: `Gagal memuat data: ${error.message}`});
-        } finally {
-            showLoading(false);
-        }
+// Inisialisasi event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi form login
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
     }
     
-    currentView = viewName;
-}
+    // Inisialisasi tombol logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    // Inisialisasi navigasi
+    const navLinks = {
+        'dashboard-link': 'dashboard-view',
+        'tugas-saya-link': 'tugas-saya-view',
+        'link-pendukung-link': 'link-pendukung-view'
+    };
+    
+    Object.entries(navLinks).forEach(([linkId, viewId]) => {
+        const link = document.getElementById(linkId);
+        const view = document.getElementById(viewId);
+        
+        if (link && view) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Sembunyikan semua view
+                document.querySelectorAll('[id$="-view"]').forEach(v => {
+                    v.classList.add('d-none');
+                });
+                
+                // Tampilkan view yang dipilih
+                view.classList.remove('d-none');
+                
+                // Update active nav item
+                document.querySelectorAll('.sidenav a').forEach(a => {
+                    a.classList.remove('active');
+                });
+                link.classList.add('active');
+                
+                // Load data jika diperlukan
+                if (viewId === 'dashboard-view') {
+                    loadDashboardData();
+                } else if (viewId === 'tugas-saya-view') {
+                    loadTugasSaya();
+                } else if (viewId === 'link-pendukung-view') {
+                    loadLinkPendukung();
+                }
+            });
+        }
+    });
+    
+    // Cek status login
+    const user = sessionStorage.getItem('user');
+    if (user) {
+        document.getElementById('login-page').classList.add('d-none');
+        document.getElementById('main-content').classList.remove('d-none');
+        
+        // Update info user
+        const userData = JSON.parse(user);
+        const userInfo = document.getElementById('user-info');
+        if (userInfo) {
+            userInfo.textContent = `${userData.nama} (${userData.role})`;
+        }
+        
+        // Load data awal
+        loadDashboardData();
+    } else {
+        document.getElementById('login-page').classList.remove('d-none');
+        document.getElementById('main-content').classList.add('d-none');
+    }
+});
 
 // Fungsi untuk memuat data dashboard
 async function loadDashboardData() {
@@ -346,15 +244,14 @@ async function loadDashboardData() {
         showLoading(true);
         const response = await callApi('getDashboardData');
         
-        if (response.success) {
-            allTasks = response.data || [];
-            renderDashboardTable(allTasks);
+        if (response.success && response.data) {
+            renderDashboardTable(response.data);
         } else {
             throw new Error(response.message || 'Gagal memuat data dashboard');
         }
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        showError(error.message || 'Gagal memuat data dashboard');
+        showError('Gagal memuat data dashboard: ' + (error.message || 'Terjadi kesalahan'));
     } finally {
         showLoading(false);
     }
@@ -362,401 +259,309 @@ async function loadDashboardData() {
 
 // Fungsi untuk merender tabel dashboard
 function renderDashboardTable(tasks) {
-    const tbody = document.getElementById('dashboard-table-body');
-    if (!tbody) return;
+    const tableBody = document.getElementById('dashboard-table-body');
+    if (!tableBody) return;
     
-    tbody.innerHTML = '';
+    tableBody.innerHTML = '';
     
     if (!tasks || tasks.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td colspan="9" class="center-align">Tidak ada data tugas</td>
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" class="center-align">Tidak ada data yang tersedia</td>
+            </tr>
         `;
-        tbody.appendChild(row);
         return;
     }
     
-    tasks.forEach((task, index) => {
+    tasks.forEach(task => {
         const row = document.createElement('tr');
+        
+        // Fungsi untuk membuat badge status
+        const getStatusBadge = (status) => {
+            if (!status) return '';
+            
+            let color = 'grey';
+            if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('terverifikasi')) {
+                color = 'green';
+            } else if (status.toLowerCase().includes('ditolak')) {
+                color = 'red';
+            } else if (status.toLowerCase().includes('proses') || status.toLowerCase().includes('dikerjakan')) {
+                color = 'orange';
+            }
+            
+            return `<span class="new badge ${color}" data-badge-caption="${status}"></span>`;
+        };
+        
         row.innerHTML = `
-            <td>${index + 1}</td>
             <td>${task.kode || '-'}</td>
             <td>${task.pilar || '-'}</td>
             <td>${task.namaTugas || '-'}</td>
             <td>${task.pic || '-'}</td>
-            <td><span class="badge ${getStatusClass(task.statusPengerjaan)}">${task.statusPengerjaan || '-'}</span></td>
-            <td><span class="badge ${getStatusClass(task.statusKetuaPilar)}">${task.statusKetuaPilar || '-'}</span></td>
-            <td><span class="badge ${getStatusClass(task.statusAdmin)}">${task.statusAdmin || '-'}</span></td>
+            <td>${getStatusBadge(task.statusPengerjaan)}</td>
+            <td>${getStatusBadge(task.statusKetuaPilar)}</td>
+            <td>${getStatusBadge(task.statusAdmin)}</td>
             <td>
-                <button class="btn btn-small waves-effect waves-light blue" onclick="openTugasModal('${task.id}')">
+                <button class="btn btn-small waves-effect waves-light" 
+                        onclick="openTugasModal('${task.id}')">
                     <i class="material-icons">visibility</i>
                 </button>
             </td>
         `;
-        tbody.appendChild(row);
+        
+        tableBody.appendChild(row);
     });
 }
 
 // Fungsi untuk membuka modal detail tugas
-function openTugasModal(taskId) {
-    const task = allTasks.find(t => t.id === taskId);
-    if (!task) {
-        M.toast({html: 'Data tugas tidak ditemukan'});
-        return;
-    }
-    
-    // Isi data tugas ke dalam modal
-    document.getElementById('modal-kode').textContent = task.kode || '-';
-    document.getElementById('modal-nama-tugas').textContent = task.namaTugas || '-';
-    document.getElementById('modal-pic').textContent = task.pic || '-';
-    
-    // Update link referensi
-    const linkReferensi = document.getElementById('modal-link-referensi');
-    if (task.linkReferensi) {
-        linkReferensi.href = task.linkReferensi;
-        linkReferensi.textContent = 'Buka Referensi';
-    } else {
-        linkReferensi.href = '#';
-        linkReferensi.textContent = 'Tidak tersedia';
-    }
-    
-    // Update link GDrive
-    const linkGDrive = document.getElementById('modal-link-gdrive');
-    if (task.linkGDrive) {
-        linkGDrive.href = task.linkGDrive;
-        linkGDrive.textContent = 'Lihat Bukti';
-    } else {
-        linkGDrive.href = '#';
-        linkGDrive.textContent = 'Belum diunggah';
-    }
-    
-    // Tampilkan/sembunyikan section berdasarkan role
-    document.getElementById('anggota-form-section').style.display = 'none';
-    document.getElementById('ketua-pilar-section').style.display = 'none';
-    document.getElementById('admin-section').style.display = 'none';
-    
-    // Tampilkan section yang sesuai dengan role user
-    if (currentUser.role.toLowerCase() === 'anggota' && currentUser.username === task.pic) {
-        // Tampilkan form bukti dukung untuk anggota
-        document.getElementById('anggota-form-section').style.display = 'block';
-        document.getElementById('bukti-jenis').value = task.jenisBukti || '';
-        document.getElementById('bukti-nilai').value = task.nilaiBukti || '';
-        M.FormSelect.init(document.getElementById('bukti-jenis'));
-    } else if (currentUser.role.toLowerCase() === 'ketua pilar' && currentUser.pilar === task.pilar) {
-        // Tampilkan form penilaian untuk ketua pilar
-        document.getElementById('ketua-pilar-section').style.display = 'block';
-        document.getElementById('modal-status-anggota').textContent = task.statusPengerjaan || '-';
-        document.getElementById('modal-bukti-detail').textContent = task.buktiDetail || '-';
-        document.getElementById('ketua-status').value = task.statusKetuaPilar || '';
-        document.getElementById('ketua-catatan').value = task.catatanKetua || '';
-        M.FormSelect.init(document.getElementById('ketua-status'));
-    } else if (currentUser.role.toLowerCase() === 'admin') {
-        // Tampilkan form verifikasi untuk admin
-        document.getElementById('admin-section').style.display = 'block';
-        document.getElementById('modal-status-ketua').textContent = task.statusKetuaPilar || '-';
-        document.getElementById('modal-catatan-ketua').textContent = task.catatanKetua || '-';
-        document.getElementById('admin-status').value = task.statusAdmin || '';
-        document.getElementById('admin-catatan').value = task.catatanAdmin || '';
-        M.FormSelect.init(document.getElementById('admin-status'));
-    }
-    
-    // Inisialisasi ulang komponen Materialize
-    M.updateTextFields();
-    
-    // Tampilkan modal
-    const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-    modalInstance.open();
-}
-
-// Fungsi untuk mendapatkan class status
-function getStatusClass(status) {
-    if (!status) return '';
-    
-    const statusLower = status.toLowerCase();
-    
-    if (statusLower.includes('selesai') || statusLower.includes('disetujui') || statusLower.includes('terverifikasi')) {
-        return 'success';
-    } else if (statusLower.includes('proses') || statusLower.includes('menunggu')) {
-        return 'warning';
-    } else if (statusLower.includes('ditolak') || statusLower.includes('gagal')) {
-        return 'danger';
-    }
-    
-    return 'info';
-}
-
-// Fungsi untuk menangani pencarian
-function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    
-    if (!searchTerm) {
-        renderDashboardTable(allTasks);
-        return;
-    }
-    
-    const filteredTasks = allTasks.filter(task => {
-        return (
-            (task.kode && task.kode.toLowerCase().includes(searchTerm)) ||
-            (task.namaTugas && task.namaTugas.toLowerCase().includes(searchTerm)) ||
-            (task.pic && task.pic.toLowerCase().includes(searchTerm)) ||
-            (task.pilar && task.pilar.toLowerCase().includes(searchTerm))
-        );
-    });
-    
-    renderDashboardTable(filteredTasks);
-}
-
-// Fungsi untuk menyimpan bukti dukung (anggota)
-async function saveBuktiDukung() {
-    const jenis = document.getElementById('bukti-jenis').value;
-    const nilai = document.getElementById('bukti-nilai').value.trim();
-    
-    if (!jenis || !nilai) {
-        M.toast({html: 'Jenis dan nilai bukti harus diisi'});
-        return;
-    }
-    
+async function openTugasModal(taskId) {
     try {
-        // Tampilkan loading
-        const button = document.getElementById('save-bukti-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
+        showLoading(true);
+        const response = await callApi('getTugasDetail', 'GET', { id: taskId });
         
-        // Kirim data ke server
-        const response = await callApi('saveBuktiDukung', 'POST', { 
-            jenis, 
-            nilai 
-        });
-
-        if (response.success) {
-            M.toast({html: 'Bukti berhasil disimpan'});
+        if (response.success && response.data) {
+            const task = response.data;
             
-            // Perbarui data
-            await loadDashboardData();
+            // Update modal content
+            document.getElementById('modal-kode').textContent = task.kode || '-';
+            document.getElementById('modal-nama-tugas').textContent = task.namaTugas || '-';
+            document.getElementById('modal-pic').textContent = task.pic || '-';
             
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan bukti');
-        }
-    } catch (error) {
-        console.error('Error saving bukti:', error);
-        M.toast({html: `Gagal menyimpan bukti: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-bukti-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">save</i> Simpan Bukti';
-        }
-    }
-}
-
-// Fungsi untuk menyimpan penilaian ketua pilar
-async function savePenilaianKetua() {
-    const status = document.getElementById('ketua-status').value;
-    const catatan = document.getElementById('ketua-catatan').value.trim();
-    
-    if (!status) {
-        M.toast({html: 'Status penilaian harus dipilih'});
-        return;
-    }
-    
-    try {
-        // Tampilkan loading
-        const button = document.getElementById('save-ketua-status-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
-        
-        // Kirim data ke server
-        const response = await callApi('savePenilaianKetua', 'POST', { 
-            status, 
-            catatan 
-        });
-
-        if (response.success) {
-            M.toast({html: 'Penilaian berhasil disimpan'});
+            // Update links
+            const linkReferensi = document.getElementById('modal-link-referensi');
+            const linkGDrive = document.getElementById('modal-link-gdrive');
             
-            // Perbarui data
-            await loadDashboardData();
-            
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan penilaian');
-        }
-    } catch (error) {
-        console.error('Error saving penilaian:', error);
-        M.toast({html: `Gagal menyimpan penilaian: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-ketua-status-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">check</i> Simpan Penilaian';
-        }
-    }
-}
-
-// Fungsi untuk menyimpan verifikasi admin
-async function saveVerifikasiAdmin() {
-    const status = document.getElementById('admin-status').value;
-    const catatan = document.getElementById('admin-catatan').value.trim();
-    
-    if (!status) {
-        M.toast({html: 'Status verifikasi harus dipilih'});
-        return;
-    }
-    
-    try {
-        // Tampilkan loading
-        const button = document.getElementById('save-admin-status-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
-        
-        // Kirim data ke server
-        const response = await callApi('saveVerifikasiAdmin', 'POST', { 
-            status, 
-            catatan 
-        });
-
-        if (response.success) {
-            M.toast({html: 'Verifikasi berhasil disimpan'});
-            
-            // Perbarui data
-            await loadDashboardData();
-            
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan verifikasi');
-        }
-    } catch (error) {
-        console.error('Error saving verifikasi:', error);
-        M.toast({html: `Gagal menyimpan verifikasi: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-admin-status-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">verified</i> Simpan Verifikasi';
-        }
-    }
-}
-
-// Fungsi untuk memuat data tugas ZI
-async function loadTugasZiData() {
-    // Implementasi untuk memuat data tugas ZI
-    const container = document.getElementById('tugas-zi-container');
-    if (container) {
-        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
-    }
-}
-
-// Fungsi untuk memuat data link pendukung
-async function loadLinkPendukungData() {
-    // Implementasi untuk memuat data link pendukung
-    const container = document.getElementById('link-pendukung-container');
-    if (container) {
-        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
-    }
-}
-
-// Fungsi untuk menampilkan/menyembunyikan loading
-function showLoading(show) {
-    const loadingElement = document.getElementById('loading');
-    if (!loadingElement) return;
-    
-    if (show) {
-        loadingElement.style.display = 'flex';
-    } else {
-        loadingElement.style.display = 'none';
-    }
-}
-
-// Fungsi untuk mengatur event listeners
-function setupEventListeners() {
-    // Event listener untuk form login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-    
-    // Event listener untuk menu sidebar
-    document.querySelectorAll('.sidebar-menu a').forEach(menuItem => {
-        menuItem.addEventListener('click', function(e) {
-            e.preventDefault();
-            const viewName = this.parentElement.id.replace('-link', '');
-            if (viewName === 'logout') {
-                handleLogout();
+            if (task.linkReferensi) {
+                linkReferensi.href = task.linkReferensi;
+                linkReferensi.textContent = 'Buka Referensi';
             } else {
-                loadView(viewName);
+                linkReferensi.href = '#';
+                linkReferensi.textContent = 'Tidak ada';
+                linkReferensi.onclick = (e) => e.preventDefault();
             }
-        });
-    });
-    
-    // Event listener untuk tombol simpan bukti (anggota)
+            
+            if (task.linkGDrive) {
+                linkGDrive.href = task.linkGDrive;
+                linkGDrive.textContent = 'Buka GDrive';
+            } else {
+                linkGDrive.href = '#';
+                linkGDrive.textContent = 'Tidak ada';
+                linkGDrive.onclick = (e) => e.preventDefault();
+            }
+            
+            // Tampilkan/sembunyikan section berdasarkan role
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const isPIC = user && user.username === task.pic;
+            const isKetuaPilar = user && user.role === 'Ketua Pilar' && user.pilar === task.pilar;
+            const isAdmin = user && user.role === 'Admin';
+            
+            document.getElementById('anggota-form-section').style.display = isPIC ? 'block' : 'none';
+            document.getElementById('ketua-pilar-section').style.display = isKetuaPilar ? 'block' : 'none';
+            document.getElementById('admin-section').style.display = isAdmin ? 'block' : 'none';
+            
+            // Update status dan catatan
+            document.getElementById('modal-status-anggota').textContent = task.statusPengerjaan || '-';
+            document.getElementById('modal-bukti-detail').textContent = task.buktiDukung || '-';
+            document.getElementById('modal-status-ketua').textContent = task.statusKetuaPilar || '-';
+            document.getElementById('modal-catatan-ketua').textContent = task.catatanKetua || '-';
+            
+            // Inisialisasi select
+            const selects = document.querySelectorAll('select');
+            M.FormSelect.init(selects);
+            
+            // Tampilkan modal
+            const modal = M.Modal.getInstance(document.getElementById('detailModal')) || 
+                         M.Modal.init(document.getElementById('detailModal'));
+            modal.open();
+        } else {
+            throw new Error(response.message || 'Gagal memuat detail tugas');
+        }
+    } catch (error) {
+        console.error('Error loading task details:', error);
+        showError('Gagal memuat detail tugas: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Fungsi untuk memuat data tugas saya
+async function loadTugasSaya() {
+    try {
+        showLoading(true);
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            showLogin();
+            return;
+        }
+        
+        const response = await callApi('getTugasSaya', 'GET', { username: user.username });
+        
+        if (response.success && response.data) {
+            // Implementasi render tugas saya
+            console.log('Tugas saya:', response.data);
+        } else {
+            throw new Error(response.message || 'Gagal memuat data tugas');
+        }
+    } catch (error) {
+        console.error('Error loading my tasks:', error);
+        showError('Gagal memuat data tugas: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Fungsi untuk memuat link pendukung
+async function loadLinkPendukung() {
+    try {
+        showLoading(true);
+        const response = await callApi('getLinkPendukung');
+        
+        if (response.success && response.data) {
+            const container = document.getElementById('link-pendukung-body');
+            if (container) {
+                container.innerHTML = response.data.map(link => `
+                    <tr>
+                        <td>${link.deskripsi || '-'}</td>
+                        <td>
+                            <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+                                ${link.nama || 'Buka Link'}
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } else {
+            throw new Error(response.message || 'Gagal memuat link pendukung');
+        }
+    } catch (error) {
+        console.error('Error loading support links:', error);
+        showError('Gagal memuat link pendukung: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Inisialisasi event listener untuk form bukti dukung
+document.addEventListener('DOMContentLoaded', function() {
     const saveBuktiBtn = document.getElementById('save-bukti-btn');
     if (saveBuktiBtn) {
-        saveBuktiBtn.addEventListener('click', saveBuktiDukung);
+        saveBuktiBtn.addEventListener('click', async function() {
+            const jenis = document.getElementById('bukti-jenis').value;
+            const nilai = document.getElementById('bukti-nilai').value.trim();
+            
+            if (!nilai) {
+                showError('Nilai bukti harus diisi');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                const response = await callApi('saveBuktiDukung', 'POST', {
+                    jenis,
+                    nilai
+                });
+                
+                if (response.success) {
+                    showError('Bukti berhasil disimpan', 'success');
+                    
+                    // Tutup modal
+                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
+                    if (modal) modal.close();
+                    
+                    // Refresh data
+                    loadDashboardData();
+                } else {
+                    throw new Error(response.message || 'Gagal menyimpan bukti');
+                }
+            } catch (error) {
+                console.error('Error saving evidence:', error);
+                showError('Gagal menyimpan bukti: ' + (error.message || 'Terjadi kesalahan'));
+            } finally {
+                showLoading(false);
+            }
+        });
     }
-    
-    // Event listener untuk tombol simpan penilaian (ketua pilar)
-    const saveKetuaStatusBtn = document.getElementById('save-ketua-status-btn');
-    if (saveKetuaStatusBtn) {
-        saveKetuaStatusBtn.addEventListener('click', savePenilaianKetua);
-    }
-    
-    // Event listener untuk tombol simpan verifikasi (admin)
-    const saveAdminStatusBtn = document.getElementById('save-admin-status-btn');
-    if (saveAdminStatusBtn) {
-        saveAdminStatusBtn.addEventListener('click', saveVerifikasiAdmin);
-    }
-    
-    // Event listener untuk pencarian
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', handleSearch);
-    }
-}
+});
 
-// Inisialisasi
-function init() {
-    // Inisialisasi komponen Materialize
-    M.AutoInit();
-    
-    // Inisialisasi sidenav untuk mobile
-    const sidenav = document.querySelectorAll('.sidenav');
-    M.Sidenav.init(sidenav);
-    
-    // Inisialisasi modal
-    const modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
-    
-    // Inisialisasi select
-    const selects = document.querySelectorAll('select');
-    M.FormSelect.init(selects);
-    
-    // Setup event listeners
-    setupEventListeners();
-    
-    // Periksa status login
-    checkAuth();
-}
+// Inisialisasi event listener untuk form penilaian ketua pilar
+document.addEventListener('DOMContentLoaded', function() {
+    const saveKetuaBtn = document.getElementById('save-ketua-status-btn');
+    if (saveKetuaBtn) {
+        saveKetuaBtn.addEventListener('click', async function() {
+            const status = document.getElementById('ketua-status').value;
+            const catatan = document.getElementById('ketua-catatan').value.trim();
+            
+            if (!status) {
+                showError('Status penilaian harus dipilih');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                const response = await callApi('savePenilaianKetua', 'POST', {
+                    status,
+                    catatan
+                });
+                
+                if (response.success) {
+                    showError('Penilaian berhasil disimpan', 'success');
+                    
+                    // Tutup modal
+                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
+                    if (modal) modal.close();
+                    
+                    // Refresh data
+                    loadDashboardData();
+                } else {
+                    throw new Error(response.message || 'Gagal menyimpan penilaian');
+                }
+            } catch (error) {
+                console.error('Error saving assessment:', error);
+                showError('Gagal menyimpan penilaian: ' + (error.message || 'Terjadi kesalahan'));
+            } finally {
+                showLoading(false);
+            }
+        });
+    }
+});
 
-// Panggil init saat DOM siap
-document.addEventListener('DOMContentLoaded', init);
-
-// Log konfigurasi untuk debugging
-console.log('[Script] Konfigurasi:', {
-    ...window.APP_CONFIG,
-    API_KEY: window.APP_CONFIG?.API_KEY 
-        ? `***${window.APP_CONFIG.API_KEY.slice(-4)}` 
-        : 'tidak di-set'
+// Inisialisasi event listener untuk form verifikasi admin
+document.addEventListener('DOMContentLoaded', function() {
+    const saveAdminBtn = document.getElementById('save-admin-status-btn');
+    if (saveAdminBtn) {
+        saveAdminBtn.addEventListener('click', async function() {
+            const status = document.getElementById('admin-status').value;
+            const catatan = document.getElementById('admin-catatan').value.trim();
+            
+            if (!status) {
+                showError('Status verifikasi harus dipilih');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                const response = await callApi('saveVerifikasiAdmin', 'POST', {
+                    status,
+                    catatan
+                });
+                
+                if (response.success) {
+                    showError('Verifikasi berhasil disimpan', 'success');
+                    
+                    // Tutup modal
+                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
+                    if (modal) modal.close();
+                    
+                    // Refresh data
+                    loadDashboardData();
+                } else {
+                    throw new Error(response.message || 'Gagal menyimpan verifikasi');
+                }
+            } catch (error) {
+                console.error('Error saving verification:', error);
+                showError('Gagal menyimpan verifikasi: ' + (error.message || 'Terjadi kesalahan'));
+            } finally {
+                showLoading(false);
+            }
+        });
+    }
 });
