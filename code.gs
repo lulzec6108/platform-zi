@@ -2,21 +2,16 @@
 
 const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-// Fungsi untuk memvalidasi request menggunakan API Key
+// --- Fungsi Validasi ---
 function isValidRequest(e) {
   const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
-  
-  // Pemeriksaan defensif untuk memastikan 'e' dan 'e.parameter' ada
+  if (!SCRIPT_API_KEY) return false;
+
   if (!e || !e.parameter) {
-    Logger.log('Error: Event object or parameters are missing.');
     return false;
   }
 
-  // Baca API key dari parameter URL
   const receivedKey = e.parameter.apiKey;
-
-  Logger.log(`Received Key from URL: ${receivedKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
-
   return receivedKey === SCRIPT_API_KEY;
 }
 
@@ -25,51 +20,32 @@ function sendJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
 
-// Fungsi doGet untuk menangani permintaan GET dari Netlify
+// --- Handlers Utama ---
 function doGet(e) {
   if (!isValidRequest(e)) {
-    return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid.' });
+    return sendJSON({ success: false, message: 'Akses Ditolak' });
   }
-  
-  var action = e.parameter.action;
-  var result = {};
 
-  try {
-    // Router untuk menentukan fungsi mana yang dipanggil berdasarkan parameter 'action'
-    switch (action) {
-      case "getDashboardTugasStatus":
-        result = getDashboardTugasStatus(e.parameter.username);
-        break;
-      case "getMappingTugasForUser":
-        result = getMappingTugasForUser(e.parameter.username);
-        break;
-      case "getBuktiDukung":
-        result = getBuktiDukung(e.parameter.username, e.parameter.kodeHirarki);
-        break;
-      case "getLinkPendukung":
-        result = getLinkPendukung();
-        break;
-      default:
-        result = { success: false, message: "Aksi GET tidak valid" };
-    }
-  } catch (err) {
-    result = { success: false, message: "Error di server: " + err.message };
+  const action = e.parameter.action;
+  const payload = e.parameter;
+
+  switch (action) {
+    case 'getDashboardTugasStatus':
+      return handleGetDashboardTugasStatus(payload);
+    case 'getMappingTugasForUser':
+      return handleGetMappingTugasForUser(payload);
+    case 'getBuktiDukung':
+      return handleGetBuktiDukung(payload);
+    case 'getLinkPendukung':
+      return handleGetLinkPendukung();
+    default:
+      return sendJSON({ success: false, message: 'Aksi GET tidak valid.' });
   }
-  
-  return sendJSON(result);
 }
 
-// Fungsi doPost untuk menangani permintaan POST
 function doPost(e) {
-  // Selalu validasi request terlebih dahulu
   if (!isValidRequest(e)) {
-    // Untuk debugging, kita kirim kembali kunci yang diterima
-    const receivedKey = (e && e.parameter) ? e.parameter.apiKey : "Parameter not found";
-    return sendJSON({ 
-      success: false, 
-      message: 'Akses Ditolak: API Key tidak valid.',
-      debug_received_key: receivedKey 
-    });
+    return sendJSON({ success: false, message: 'Akses Ditolak' });
   }
 
   let payload;
@@ -81,101 +57,22 @@ function doPost(e) {
   
   const action = payload.action;
 
-  // Router untuk menentukan fungsi mana yang dipanggil berdasarkan 'action' di body JSON
   switch (action) {
-    case "login":
-      result = login(payload.payload.username, payload.payload.password);
-      break;
-    case "saveBuktiDukung":
-      result = saveBuktiDukung(payload.payload.username, payload.payload.kodeHirarki, payload.payload.nilai, payload.payload.jenis);
-      break;
-    case "setStatusPenilaian":
-      result = setStatusPenilaian(payload.payload.username, payload.payload.kodeHirarki, payload.payload.role, payload.payload.status, payload.payload.catatan);
-      break;
+    case 'login':
+      return handleLogin(payload.payload);
+    case 'saveBuktiDukung':
+      return handleSaveBuktiDukung(payload.payload);
+    case 'setStatusPenilaian':
+      return handleSetStatusPenilaian(payload.payload);
     default:
-      result = { success: false, message: "Aksi POST tidak valid" };
+      return sendJSON({ success: false, message: 'Aksi POST tidak valid.' });
   }
-
-  return sendJSON(result);
 }
 
-// --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA (TIDAK ADA PERUBAHAN DI SINI) ---
-function login(username, password) {
-  var sheet = ss.getSheetByName("Users");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == username && data[i][1] == password) {
-      return { success: true, nama: data[i][2], pilar: data[i][3], role: data[i][4], username: username };
-    }
-  }
-  return { success: false, message: "Username atau password salah!" };
-}
-
-function getUserInfo(username) {
-  if (!username) return {};
-  var sheet = ss.getSheetByName("Users");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == username) {
-      return { username: username, nama: data[i][2], pilar: data[i][3], role: data[i][4] };
-    }
-  }
-  return {};
-}
-
-function getMappingTugasForUser(username) {
-  var mappingSheet = ss.getSheetByName("MappingTugas");
-  var mapping = mappingSheet.getDataRange().getValues();
-  var headers = mapping[0];
-  var res = [];
-  for (var i = 1; i < mapping.length; i++) {
-    if (mapping[i][0] == username) {
-      var row = {};
-      for (var j = 0; j < headers.length; j++) {
-        row[headers[j]] = mapping[i][j];
-      }
-      res.push(row);
-    }
-  }
-  return res;
-}
-
-function getBuktiDukung(username, kodeHirarki) {
-  var sheet = ss.getSheetByName("BuktiDukung");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == username && data[i][1] == kodeHirarki) {
-      return { 
-        nilai: data[i][2], 
-        jenis: data[i][3],
-        statusKetua: data[i][5] || "",
-        catatanKetua: data[i][6] || "",
-        statusAdmin: data[i][7] || "",
-        catatanAdmin: data[i][8] || ""
-      };
-    }
-  }
-  return { nilai: "", jenis: "", statusKetua: "", catatanKetua: "", statusAdmin: "", catatanAdmin: "" };
-}
-
-function saveBuktiDukung(username, kodeHirarki, nilai, jenis) {
-  var sheet = ss.getSheetByName("BuktiDukung");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == username && data[i][1] == kodeHirarki) {
-      sheet.getRange(i+1, 3).setValue(nilai);
-      sheet.getRange(i+1, 4).setValue(jenis);
-      sheet.getRange(i+1, 5).setValue(new Date());
-      return { success: true, message: "Bukti dukung diperbarui." };
-    }
-  }
-  sheet.appendRow([username, kodeHirarki, nilai, jenis, new Date(), "", "", "", ""]);
-  return { success: true, message: "Bukti dukung disimpan." };
-}
-
-function getDashboardTugasStatus(username) {
-  var user = getUserInfo(username);
-  if (!user || !user.username) return [];
+// --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA ---
+function handleGetDashboardTugasStatus(payload) {
+  var user = getUserInfo(payload.username);
+  if (!user || !user.username) return sendJSON({ success: false, message: 'User tidak ditemukan' });
   var tugasSheet = ss.getSheetByName("MappingTugas");
   var tugasData = tugasSheet.getDataRange().getValues();
   var buktiSheet = ss.getSheetByName("BuktiDukung");
@@ -228,41 +125,47 @@ function getDashboardTugasStatus(username) {
       linkGDriveBukti: row[10] || ""
     });
   }
-  return hasil;
+  return sendJSON(hasil);
 }
 
-function getAllPilars() {
-  var tugasSheet = ss.getSheetByName("MappingTugas");
-  var data = tugasSheet.getDataRange().getValues();
-  var pilars = {};
-  for (var i = 1; i < data.length; i++) {
-    pilars[data[i][1]] = true;
-  }
-  return Object.keys(pilars);
-}
-
-function setStatusPenilaian(username, kodeHirarki, role, status, catatan) {
-  var sheet = ss.getSheetByName("BuktiDukung");
-  var data = sheet.getDataRange().getValues();
-  var colStatus = role === "admin" ? 7 : 5;
-  var colCatatan = role === "admin" ? 8 : 6;
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][1] && data[i][0] == username && data[i][1] == kodeHirarki) {
-      sheet.getRange(i+1, colStatus+1).setValue(status);
-      sheet.getRange(i+1, colCatatan+1).setValue(catatan);
-      return { success: true, message: "Status berhasil diperbarui." };
+function handleGetMappingTugasForUser(payload) {
+  var mappingSheet = ss.getSheetByName("MappingTugas");
+  var mapping = mappingSheet.getDataRange().getValues();
+  var headers = mapping[0];
+  var res = [];
+  for (var i = 1; i < mapping.length; i++) {
+    if (mapping[i][0] == payload.username) {
+      var row = {};
+      for (var j = 0; j < headers.length; j++) {
+        row[headers[j]] = mapping[i][j];
+      }
+      res.push(row);
     }
   }
-  var row = [username, kodeHirarki, "", "", new Date(), "", "", "", ""];
-  row[colStatus] = status;
-  row[colCatatan] = catatan;
-  sheet.appendRow(row);
-  return { success: true, message: "Status berhasil ditambahkan." };
+  return sendJSON(res);
 }
 
-function getLinkPendukung() {
+function handleGetBuktiDukung(payload) {
+  var sheet = ss.getSheetByName("BuktiDukung");
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
+      return sendJSON({ 
+        nilai: data[i][2], 
+        jenis: data[i][3],
+        statusKetua: data[i][5] || "",
+        catatanKetua: data[i][6] || "",
+        statusAdmin: data[i][7] || "",
+        catatanAdmin: data[i][8] || ""
+      });
+    }
+  }
+  return sendJSON({ nilai: "", jenis: "", statusKetua: "", catatanKetua: "", statusAdmin: "", catatanAdmin: "" });
+}
+
+function handleGetLinkPendukung() {
   var sheet = ss.getSheetByName("LinkPendukung");
-  if (!sheet) return [];
+  if (!sheet) return sendJSON([]);
   var data = sheet.getDataRange().getValues();
   var result = [];
   for (var i = 1; i < data.length; i++) {
@@ -273,5 +176,62 @@ function getLinkPendukung() {
       });
     }
   }
-  return result;
+  return sendJSON(result);
+}
+
+function handleLogin(payload) {
+  var sheet = ss.getSheetByName("Users");
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == payload.username && data[i][1] == payload.password) {
+      return sendJSON({ success: true, nama: data[i][2], pilar: data[i][3], role: data[i][4], username: payload.username });
+    }
+  }
+  return sendJSON({ success: false, message: "Username atau password salah!" });
+}
+
+function handleSaveBuktiDukung(payload) {
+  var sheet = ss.getSheetByName("BuktiDukung");
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
+      sheet.getRange(i+1, 3).setValue(payload.nilai);
+      sheet.getRange(i+1, 4).setValue(payload.jenis);
+      sheet.getRange(i+1, 5).setValue(new Date());
+      return sendJSON({ success: true, message: "Bukti dukung diperbarui." });
+    }
+  }
+  sheet.appendRow([payload.username, payload.kodeHirarki, payload.nilai, payload.jenis, new Date(), "", "", "", ""]);
+  return sendJSON({ success: true, message: "Bukti dukung disimpan." });
+}
+
+function handleSetStatusPenilaian(payload) {
+  var sheet = ss.getSheetByName("BuktiDukung");
+  var data = sheet.getDataRange().getValues();
+  var colStatus = payload.role === "admin" ? 7 : 5;
+  var colCatatan = payload.role === "admin" ? 8 : 6;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] && data[i][1] && data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
+      sheet.getRange(i+1, colStatus+1).setValue(payload.status);
+      sheet.getRange(i+1, colCatatan+1).setValue(payload.catatan);
+      return sendJSON({ success: true, message: "Status berhasil diperbarui." });
+    }
+  }
+  var row = [payload.username, payload.kodeHirarki, "", "", new Date(), "", "", "", ""];
+  row[colStatus] = payload.status;
+  row[colCatatan] = payload.catatan;
+  sheet.appendRow(row);
+  return sendJSON({ success: true, message: "Status berhasil ditambahkan." });
+}
+
+function getUserInfo(username) {
+  if (!username) return {};
+  var sheet = ss.getSheetByName("Users");
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == username) {
+      return { username: username, nama: data[i][2], pilar: data[i][3], role: data[i][4] };
+    }
+  }
+  return {};
 }

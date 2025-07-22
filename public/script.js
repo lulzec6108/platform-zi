@@ -1,8 +1,7 @@
-// script.js
+// script.js (FINAL)
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded: Script is running.');
-
+    // --- Variabel Global & State ---
     const loginSection = document.getElementById('login-section');
     const mainContent = document.getElementById('main-content');
     const loginForm = document.getElementById('login-form');
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tugasTableBody = document.getElementById('tugas-table-body');
     const linkPendukungTableBody = document.getElementById('link-pendukung-table-body');
     
-    let tugasModal; // Deklarasikan di sini
+    let tugasModal; 
     const modalTugasJudul = document.getElementById('modalTugasJudul');
     const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
     const modalTugasDeadline = document.getElementById('modalTugasDeadline');
@@ -37,36 +36,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalUpdateCatatan = document.getElementById('modalUpdateCatatan');
     const modalSubmitButton = document.getElementById('modalSubmitButton');
 
-    let activeTask = null; // Menyimpan data tugas yang sedang aktif di modal
+    let activeTask = null; 
 
-    // --- Fungsi Helper untuk API Call via Proxy ---
+    let loginListenerAttached = false;
+    let mainContentLoaded = false;
+
+    // --- Fungsi API Call ---
     async function callGasApi(action, method = 'GET', payload = {}) {
-        // Pendekatan pragmatis: Panggil fungsi secara langsung di alamat aslinya
-        let url = `/.netlify/functions/proxy`;
+        const url = `/.netlify/functions/proxy`;
         const options = {
             method: method,
-            headers: {}
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
 
+        const body = { action, payload };
+
         if (method === 'POST') {
-            options.headers['Content-Type'] = 'application/json';
-            options.body = JSON.stringify({ action, payload });
+            options.body = JSON.stringify(body);
         } else { // GET
-            const params = new URLSearchParams({ action, ...payload });
-            url += `?${params.toString()}`;
+            // Untuk GET, kita tidak mengirim body, parameter dikirim oleh proxy
         }
 
         try {
             const response = await fetch(url, options);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                return { success: false, message: `Error: ${response.statusText}` };
             }
             return await response.json();
         } catch (error) {
-            console.error('Error calling API:', error);
-            alert('Terjadi kesalahan saat berkomunikasi dengan server.');
-            return null;
+            return { success: false, message: 'Tidak dapat terhubung ke server.' };
         }
+    }
+
+    // --- Fungsi UI & Kontrol State ---
+    function showLogin() {
+        if (loginSection) loginSection.style.display = 'block';
+        if (mainContent) mainContent.style.display = 'none';
+        sessionStorage.removeItem('user');
+        setupLoginListeners();
+    }
+
+    function showMainContent() {
+        if (loginSection) loginSection.style.display = 'none';
+        if (mainContent) mainContent.style.display = 'block';
+        setupMainContentListeners();
+        loadDashboard();
     }
 
     // --- Navigasi & Tampilan ---
@@ -75,16 +91,12 @@ document.addEventListener('DOMContentLoaded', function() {
         view.style.display = 'block';
     }
 
-    // --- Otentikasi ---
-    let loginListenerAttached = false;
+    // --- Setup Event Listeners ---
     function setupLoginListeners() {
-        console.log('Attempting to set up login listeners...');
         if (loginForm && !loginListenerAttached) {
-            console.log('Login form found. Attaching submit listener.');
             loginForm.addEventListener('submit', async function(e) {
-                console.log('SUBMIT EVENT CAPTURED!');
                 e.preventDefault();
-                loginError.textContent = '';
+                if (loginError) loginError.textContent = '';
                 const username = loginForm.username.value;
                 const password = loginForm.password.value;
 
@@ -94,24 +106,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     sessionStorage.setItem('user', JSON.stringify(result));
                     showMainContent();
                 } else {
-                    let errorMessage = result ? result.message : 'Login gagal!';
-                    if (result && result.debug_received_key) {
-                        errorMessage += ` (Debug Info: Kunci yang diterima server adalah '${result.debug_received_key}')`;
+                    if (loginError) {
+                        loginError.textContent = result ? result.message : 'Login gagal!';
                     }
-                    loginError.textContent = errorMessage;
                 }
             });
             loginListenerAttached = true;
         }
     }
 
-    let mainContentLoaded = false;
     function setupMainContentListeners() {
-        if (mainContentLoaded) return; // Hanya pasang listener sekali
+        if (mainContentLoaded) return;
 
         if (logoutButton) {
-            logoutButton.addEventListener('click', () => {
-                sessionStorage.removeItem('user');
+            logoutButton.addEventListener('click', function() {
                 showLogin();
             });
         }
@@ -140,42 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await callGasApi('updateTugas', 'POST', payload);
                 if (result && result.success) {
                     tugasModal.hide();
-                    loadTugas(); // Refresh tabel tugas
-                    loadDashboard(); // Refresh dashboard
+                    loadTugas(); 
+                    loadDashboard(); 
                 } else {
                     alert('Gagal memperbarui tugas.');
                 }
             });
         }
         mainContentLoaded = true;
-    }
-
-    function showMainContent() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
-        if (user) {
-            // Inisialisasi modal di sini, setelah elemennya pasti ada
-            if (!tugasModal) { // Hanya inisialisasi sekali
-                tugasModal = new bootstrap.Modal(document.getElementById('tugasModal'));
-            }
-
-            namaUser.textContent = user.nama;
-            pilarUser.textContent = user.pilar;
-            if (loginSection) loginSection.style.display = 'none';
-            if (mainContent) mainContent.style.display = 'block';
-
-            setupMainContentListeners(); // Pasang listener untuk konten utama
-
-            showView(dashboardView);
-            loadDashboard();
-        } else {
-            showLogin();
-        }
-    }
-
-    function showLogin() {
-        if (loginSection) loginSection.style.display = 'block';
-        if (mainContent) mainContent.style.display = 'none';
-        setupLoginListeners(); // Pasang listener untuk form login
     }
 
     // --- Memuat Data ---
@@ -260,6 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
             modalUpdateForm.style.display = 'none';
         }
 
+        if (!tugasModal) { 
+            tugasModal = new bootstrap.Modal(document.getElementById('tugasModal'));
+        }
         tugasModal.show();
     }
 
@@ -272,7 +255,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Inisialisasi Awal ---
-    console.log('Initializing page view...');
-    showMainContent(); // Cek sesi dan tampilkan halaman yang sesuai
+    // --- Inisialisasi Aplikasi ---
+    function init() {
+        const user = sessionStorage.getItem('user');
+        if (user) {
+            const userData = JSON.parse(user);
+            namaUser.textContent = userData.nama;
+            pilarUser.textContent = userData.pilar;
+            showMainContent();
+        } else {
+            showLogin();
+        }
+    }
+
+    init();
 });
