@@ -7,81 +7,48 @@
 (function() {
     console.log('[Config] Initializing application configuration');
     
-    // Inisialisasi APP_CONFIG jika belum ada
+    // Inisialisasi APP_CONFIG
     window.APP_CONFIG = window.APP_CONFIG || {
         API_BASE: '/.netlify/functions/proxy',
-        API_KEY: 'YOUR_API_KEY' // Akan diganti saat runtime
+        API_KEY: ''  // Akan diisi dari URL atau dari window._env_
     };
 
-    // Fungsi untuk memeriksa validitas konfigurasi
-    function validateConfig() {
-        const required = ['API_KEY'];
-        const missing = [];
-
-        required.forEach(key => {
-            if (!window.APP_CONFIG[key] || window.APP_CONFIG[key] === 'YOUR_API_KEY') {
-                missing.push(key);
-            }
-        });
-
-        if (missing.length > 0) {
-            console.warn('Konfigurasi tidak lengkap atau tidak valid:', missing.join(', '));
-            return false;
-        }
-        
-        console.log('[Config] Konfigurasi valid');
-        return true;
-    }
-
-    // Coba dapatkan API key dari URL parameters (untuk development)
-    function getApiKeyFromUrl() {
-        try {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('apiKey');
-        } catch (e) {
-            console.warn('Gagal mendapatkan API key dari URL:', e);
-            return null;
-        }
-    }
-
-    // Inisialisasi API key
-    function initApiKey() {
-        // 1. Coba dapatkan dari URL (untuk development)
-        const urlApiKey = getApiKeyFromUrl();
+    // 1. Coba dapatkan API key dari URL (untuk development)
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const urlApiKey = params.get('apiKey');
         if (urlApiKey) {
             console.log('[Config] Menggunakan API key dari URL');
             window.APP_CONFIG.API_KEY = urlApiKey;
-            return true;
         }
-
-        // 2. Cek apakah sudah ada di window.APP_CONFIG
-        if (window.APP_CONFIG.API_KEY && window.APP_CONFIG.API_KEY !== 'YOUR_API_KEY') {
-            console.log('[Config] Menggunakan API key dari konfigurasi');
-            return true;
-        }
-
-        // 3. Tampilkan pesan error
-        console.error('[Config] API key tidak ditemukan');
-        return false;
+    } catch (e) {
+        console.warn('Gagal mendapatkan API key dari URL:', e);
     }
 
-    // Inisialisasi
-    initApiKey();
-    validateConfig();
+    // 2. Cek apakah API key sudah ada di window._env_ (untuk production)
+    if (!window.APP_CONFIG.API_KEY && window._env_?.API_KEY) {
+        console.log('[Config] Menggunakan API key dari window._env_');
+        window.APP_CONFIG.API_KEY = window._env_.API_KEY;
+    }
+
+    // Validasi konfigurasi
+    if (!window.APP_CONFIG.API_KEY) {
+        console.warn('[Config] Peringatan: API_KEY tidak ditemukan');
+    } else {
+        console.log('[Config] API_KEY berhasil diinisialisasi');
+    }
 
     // Log konfigurasi (tanpa menampilkan API key lengkap)
-    const logConfig = {
+    console.log('[Config] Konfigurasi:', {
         ...window.APP_CONFIG,
         API_KEY: window.APP_CONFIG.API_KEY 
             ? `***${window.APP_CONFIG.API_KEY.slice(-4)}` 
-            : 'not-set'
-    };
-    
-    console.log('[Config] Konfigurasi aplikasi:', logConfig);
+            : 'tidak di-set'
+    });
 })();
 
 // Handle global errors
-window.addEventListener('error', function(e) {
+window.addEventListener('error', (e) => {
     console.error('[Global Error]', e.error || e.message || e);
     
     // Tampilkan pesan error ke user jika diperlukan
@@ -92,7 +59,7 @@ window.addEventListener('error', function(e) {
 });
 
 // Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', function(e) {
+window.addEventListener('unhandledrejection', (e) => {
     console.error('[Unhandled Promise Rejection]', e.reason || e);
     
     // Tampilkan pesan error ke user jika diperlukan

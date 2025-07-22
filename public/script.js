@@ -1,7 +1,7 @@
 // script.js (OPTIMIZED)
 
 // Konfigurasi
-const API_BASE = '/.netlify/functions/proxy';
+const API_BASE = window.APP_CONFIG?.API_BASE || '/.netlify/functions/proxy';
 const API_TIMEOUT = 15000; // 15 detik timeout
 
 // Fungsi untuk memanggil API dengan error handling yang lebih baik
@@ -11,21 +11,22 @@ async function callApi(action, method = 'GET', data = {}) {
         throw new Error('Action harus berupa string yang valid');
     }
 
+    // Validasi API key
+    if (!window.APP_CONFIG?.API_KEY) {
+        const error = new Error('API key tidak ditemukan. Silakan refresh halaman.');
+        error.name = 'ConfigError';
+        throw error;
+    }
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
         // Siapkan headers
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'x-api-key': window.APP_CONFIG.API_KEY
         };
-
-        // Tambahkan API key ke headers jika tersedia
-        if (window.APP_CONFIG?.API_KEY) {
-            headers['x-api-key'] = window.APP_CONFIG.API_KEY;
-        } else {
-            console.warn('API key tidak ditemukan di window.APP_CONFIG');
-        }
 
         const options = {
             method: 'POST', // Selalu gunakan POST untuk Netlify Functions
@@ -43,21 +44,23 @@ async function callApi(action, method = 'GET', data = {}) {
         const response = await fetch(API_BASE, options);
         clearTimeout(timeoutId);
 
-        const responseData = await response.json();
-        console.log(`[API] Response: ${action}`, { status: response.status, data: responseData });
-
-        // Handle error responses
+        const result = await response.json();
+        
         if (!response.ok) {
-            const error = new Error(responseData.message || `HTTP error! status: ${response.status}`);
+            const error = new Error(result.message || 'Terjadi kesalahan pada server');
             error.status = response.status;
-            error.response = responseData;
+            error.response = result;
             throw error;
         }
-        
-        return responseData;
 
+        return result;
     } catch (error) {
-        console.error(`[API] Error: ${action}`, error);
+        console.error(`[API Error] ${action}:`, error);
+        
+        // Handle error spesifik
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+        }
         
         if (error.name === 'AbortError') {
             throw new Error('Waktu tunggu permintaan habis. Silakan coba lagi.');
@@ -74,7 +77,7 @@ async function callApi(action, method = 'GET', data = {}) {
             }
         }
         
-        throw new Error(error.response?.message || 'Terjadi kesalahan pada server. Silakan coba lagi.');
+        throw error;
     }
 }
 
@@ -156,32 +159,36 @@ function checkAuth() {
 
 // Fungsi untuk menangani login
 async function handleLogin(event) {
-    if (event) event.preventDefault();
+    event.preventDefault();
     
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const username = document.getElementById('username')?.value.trim();
+    const password = document.getElementById('password')?.value;
+    const loginButton = event.target.querySelector('button[type="submit"]');
     const errorElement = document.getElementById('login-error');
-    const loginButton = document.querySelector('#login-form button[type="submit"]');
+    
+    if (!loginButton) return;
     
     try {
+        // Validasi input
+        if (!username || !password) {
+            throw new Error('Username dan password harus diisi');
+        }
+        
         // Tampilkan loading
-        const originalButtonText = loginButton.innerHTML;
+        const originalText = loginButton.innerHTML;
         loginButton.disabled = true;
         loginButton.innerHTML = '<i class="material-icons left">loop</i> Memproses...';
         
-        // Reset error
-        if (errorElement) errorElement.style.display = 'none';
+        // Sembunyikan pesan error sebelumnya
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
         
         // Panggil API login
-        const response = await callApi('login', 'POST', { 
-            username, 
-            password 
-        });
-
-        console.log('Login response:', response);
-
-        if (response && response.success && response.user) {
-            // Simpan data user ke sessionStorage
+        const response = await callApi('login', 'POST', { username, password });
+        
+        if (response.success && response.user) {
+            // Simpan data user
             sessionStorage.setItem('zi_user', JSON.stringify(response.user));
             currentUser = response.user;
             
@@ -199,11 +206,19 @@ async function handleLogin(event) {
             showMainContent();
             loadDashboardData();
         } else {
-            throw new Error(response?.message || 'Login gagal');
+            throw new Error(response.message || 'Login gagal');
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError(error.message || 'Terjadi kesalahan saat login');
+        
+        // Tampilkan pesan error
+        if (errorElement) {
+            errorElement.textContent = error.message || 'Terjadi kesalahan saat login';
+            errorElement.style.display = 'block';
+            
+            // Scroll ke error message
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     } finally {
         // Reset tombol login
         if (loginButton) {
@@ -737,3 +752,11 @@ function init() {
 
 // Panggil init saat DOM siap
 document.addEventListener('DOMContentLoaded', init);
+
+// Log konfigurasi untuk debugging
+console.log('[Script] Konfigurasi:', {
+    ...window.APP_CONFIG,
+    API_KEY: window.APP_CONFIG?.API_KEY 
+        ? `***${window.APP_CONFIG.API_KEY.slice(-4)}` 
+        : 'tidak di-set'
+});

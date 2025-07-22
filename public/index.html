@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SI-PALING-ZI | Login</title>
     
+    <!-- Inisialisasi Konfigurasi Aplikasi -->
+    <script>
+        // Inisialisasi konfigurasi default
+        window.APP_CONFIG = window.APP_CONFIG || {
+            API_BASE: '/.netlify/functions/proxy',
+            API_KEY: ''  // Akan diisi oleh config.js
+        };
+        
+        // Fungsi untuk mendapatkan parameter URL
+        function getUrlParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+        
+        // Coba dapatkan API key dari URL (hanya untuk development)
+        const urlApiKey = getUrlParam('apiKey');
+        if (urlApiKey) {
+            console.log('[Config] Menggunakan API key dari URL');
+            window.APP_CONFIG.API_KEY = urlApiKey;
+        }
+    </script>
+    
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <!-- Material Icons -->
@@ -437,22 +459,33 @@
 
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    
+    <!-- Load config.js terlebih dahulu -->
     <script src="/config.js"></script>
+    
+    <!-- Kemudian load script.js -->
     <script src="/script.js"></script>
+    
+    <!-- Inisialisasi komponen Materialize -->
     <script>
-        // Inisialisasi komponen Materialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Inisialisasi dropdown
-            var dropdowns = document.querySelectorAll('.dropdown-trigger');
-            M.Dropdown.init(dropdowns, { coverTrigger: false });
-            
-            // Inisialisasi select
-            var selects = document.querySelectorAll('select');
-            M.FormSelect.init(selects);
-            
             // Inisialisasi modal
-            var modals = document.querySelectorAll('.modal');
+            const modals = document.querySelectorAll('.modal');
             M.Modal.init(modals);
+            
+            // Inisialisasi dropdown
+            const dropdowns = document.querySelectorAll('.dropdown-trigger');
+            M.Dropdown.init(dropdowns, {
+                coverTrigger: false
+            });
+            
+            // Log konfigurasi untuk debugging
+            console.log('[Index] Konfigurasi:', {
+                ...window.APP_CONFIG,
+                API_KEY: window.APP_CONFIG?.API_KEY 
+                    ? `***${window.APP_CONFIG.API_KEY.slice(-4)}` 
+                    : 'tidak di-set'
+            });
         });
     </script>
 </body>
