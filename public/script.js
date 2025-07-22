@@ -1,52 +1,131 @@
-// script.js (FINAL)
+// script.js (OPTIMIZED)
 
 // Konfigurasi
 const API_BASE = '/.netlify/functions/proxy';
+const API_TIMEOUT = 15000; // 15 detik timeout
 
-// Fungsi untuk memanggil API
+// Fungsi untuk memanggil API dengan error handling yang lebih baik
 async function callApi(action, method = 'GET', data = {}) {
+    // Validasi input
+    if (!action || typeof action !== 'string') {
+        throw new Error('Action harus berupa string yang valid');
+    }
+
     try {
-        const url = new URL(API_BASE, window.location.origin);
-        
-        // Tambahkan action sebagai query parameter
-        url.searchParams.append('action', action);
-        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
         const options = {
-            method: 'POST', // Selalu gunakan POST untuk Netlify Functions
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': window.API_KEY // Akan diganti saat runtime
+                'x-api-key': window.APP_CONFIG?.API_KEY || ''
             },
             body: JSON.stringify({
                 ...data,
-                action: action, // Sertakan juga di body untuk kompatibilitas
-                apiKey: window.API_KEY // Sertakan juga di body sebagai fallback
-            })
+                action,
+                timestamp: new Date().toISOString() // Untuk debugging
+            }),
+            signal: controller.signal
         };
 
-        console.log(`Calling API: ${action}`, { data });
+        console.log(`[API] Request: ${action}`, { data });
         
-        const response = await fetch(url.toString(), options);
-        
+        const response = await fetch(API_BASE, options);
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            const error = new Error(`HTTP error! status: ${response.status}`);
+            error.status = response.status;
+            error.response = errorText;
+            throw error;
+        }
+
+        const responseData = await response.json();
+        console.log(`[API] Response: ${action}`, { status: response.status });
+        
+        return responseData;
+
+    } catch (error) {
+        console.error(`[API] Error: ${action}`, error);
+        
+        if (error.name === 'AbortError') {
+            throw new Error('Waktu tunggu permintaan habis. Silakan coba lagi.');
         }
         
-        return await response.json();
-    } catch (error) {
-        console.error('API call failed:', error);
-        throw new Error(`Gagal terhubung ke server: ${error.message}`);
+        if (error.status === 401) {
+            // Handle unauthorized
+            handleLogout();
+            throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+        }
+        
+        throw new Error(error.response || 'Terjadi kesalahan pada server. Silakan coba lagi.');
     }
 }
 
-// Inisialisasi API key dari environment atau config
-window.API_KEY = 'YOUR_API_KEY'; // Akan diganti saat runtime
+// Inisialisasi API key dari config
+if (!window.APP_CONFIG?.API_KEY) {
+    console.warn('API_KEY tidak ditemukan di window.APP_CONFIG');
+}
 
 // Variabel global
 let currentUser = null;
 let allTasks = [];
 let currentView = 'dashboard';
+
+// Fungsi utilitas untuk validasi input
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+}
+
+// Fungsi untuk menampilkan notifikasi
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-hide setelah 5 detik
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// Tambahkan style untuk notifikasi
+const style = document.createElement('style');
+style.textContent = `
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 4px;
+        color: white;
+        z-index: 1000;
+        opacity: 0.95;
+        transform: translateY(100px);
+        transition: transform 0.3s ease-out;
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+    
+    .notification.fade-out {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+    
+    .notification.success { background-color: #4CAF50; }
+    .notification.error { background-color: #f44336; }
+    .notification.warning { background-color: #ff9800; }
+    .notification.info { background-color: #2196F3; }
+`;
+document.head.appendChild(style);
 
 // Fungsi untuk mengecek status autentikasi
 function checkAuth() {

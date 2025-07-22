@@ -1,28 +1,69 @@
-// config.js
-// Konfigurasi frontend
-window.APP_CONFIG = {
+// config.js - Production Ready
+
+// Pastikan APP_CONFIG ada
+window.APP_CONFIG = window.APP_CONFIG || {
     API_BASE: '/.netlify/functions/proxy',
-    // API_KEY akan diisi saat runtime melalui Netlify Environment Variables
-    API_KEY: 'YOUR_API_KEY' // Akan diganti saat build/deploy
+    API_KEY: 'YOUR_API_KEY' // Akan diganti saat build
 };
 
-// Fungsi untuk update config dari environment
-function updateConfigFromEnvironment() {
-    // Update config dari environment jika tersedia
-    if (typeof process !== 'undefined' && process.env) {
-        if (process.env.API_KEY) {
-            window.APP_CONFIG.API_KEY = process.env.API_KEY;
+// Validasi konfigurasi saat runtime
+function validateConfig() {
+    const requiredConfigs = ['API_BASE', 'API_KEY'];
+    const missingConfigs = [];
+
+    requiredConfigs.forEach(key => {
+        if (!window.APP_CONFIG[key] || window.APP_CONFIG[key] === 'YOUR_API_KEY') {
+            missingConfigs.push(key);
         }
+    });
+
+    if (missingConfigs.length > 0) {
+        console.error('Konfigurasi tidak lengkap atau tidak valid:', missingConfigs.join(', '));
+        
+        // Tampilkan pesan error di UI jika di production
+        if (process.env.NODE_ENV === 'production') {
+            const errorMsg = document.createElement('div');
+            errorMsg.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: #f44336;
+                color: white;
+                padding: 15px;
+                text-align: center;
+                z-index: 9999;
+                font-family: Arial, sans-serif;
+            `;
+            errorMsg.textContent = 'Kesalahan Konfigurasi: Aplikasi tidak dapat berjalan. Harap hubungi administrator.';
+            document.body.prepend(errorMsg);
+        }
+        
+        return false;
     }
     
-    // Update dari URL parameters (untuk development)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('api_key')) {
-        window.APP_CONFIG.API_KEY = urlParams.get('api_key');
-    }
+    // Log konfigurasi yang aman (tanpa menampilkan API_KEY lengkap)
+    const safeConfig = {
+        ...window.APP_CONFIG,
+        API_KEY: window.APP_CONFIG.API_KEY ? 
+            `***${window.APP_CONFIG.API_KEY.slice(-4)}` : 
+            'not-set'
+    };
     
-    console.log('App config loaded:', window.APP_CONFIG);
+    console.log('Konfigurasi Aplikasi:', safeConfig);
+    return true;
 }
 
-// Panggil fungsi update config
-document.addEventListener('DOMContentLoaded', updateConfigFromEnvironment);
+// Validasi saat load
+document.addEventListener('DOMContentLoaded', () => {
+    validateConfig();
+    
+    // Jika di development, beri peringatan jika menggunakan API key default
+    if (process.env.NODE_ENV !== 'production' && 
+        window.APP_CONFIG.API_KEY === 'YOUR_API_KEY') {
+        console.warn('PERINGATAN: Menggunakan API key default. Pastikan untuk mengatur API_KEY yang valid.');
+    }
+});
+
+// Ekspos fungsi validasi untuk digunakan di tempat lain
+window.validateAppConfig = validateConfig;

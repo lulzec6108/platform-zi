@@ -4,22 +4,37 @@
   functions = "netlify/functions"
 
 [dev]
-  # Port yang digunakan untuk development server
   port = 8888
-  # Auto launch browser
   autoLaunch = true
-  # Environment variables untuk development
-  [dev.environment]
-    GAS_APP_URL = "https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec"
+  target = "development"
 
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
+  NPM_VERBOSE = "true"
+
+# Environment variables untuk development
+[dev.environment]
+  NODE_ENV = "development"
+  # Hapus GAS_APP_URL dari sini untuk keamanan
+  # Gunakan .env file untuk development
+
+# Environment variables untuk production
+[context.production]
+  command = "npm install --production && npm run build"
+  [context.production.environment]
+    NODE_ENV = "production"
+    # Pastikan GAS_APP_URL dan API_KEY di-set di Netlify UI
+
+# Redirects
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
 
+# Security Headers
 [[headers]]
-  # Apply these security headers to all paths
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
@@ -28,9 +43,16 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.jquery.com https://cdnjs.cloudflare.com/ajax/libs/materialize/ https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com;"
 
-[context.production]
-  command = "npm install --production && npm run build"
-  environment = { NODE_ENV = "production" }
+# Cache control untuk static assets
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, must-revalidate"
 
-[context.deploy-preview]
-  environment = { NODE_ENV = "staging" }
+# Jangan cache HTML
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
