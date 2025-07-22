@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tugasTableBody = document.getElementById('tugas-table-body');
     const linkPendukungTableBody = document.getElementById('link-pendukung-table-body');
     
-    const tugasModal = new bootstrap.Modal(document.getElementById('tugasModal'));
+    let tugasModal; // Deklarasikan di sini
     const modalTugasJudul = document.getElementById('modalTugasJudul');
     const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
     const modalTugasDeadline = document.getElementById('modalTugasDeadline');
@@ -102,6 +102,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMainContent() {
         const user = JSON.parse(sessionStorage.getItem('user'));
         if (user) {
+            // Inisialisasi modal di sini, setelah elemennya pasti ada
+            if (!tugasModal) { // Hanya inisialisasi sekali
+                tugasModal = new bootstrap.Modal(document.getElementById('tugasModal'));
+            }
+
             namaUser.textContent = user.nama;
             pilarUser.textContent = user.pilar;
             loginSection.style.display = 'none';
