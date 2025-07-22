@@ -1,0 +1,15 @@
+{
+  "name": "si-paling-zi-netlify",
+  "version": "1.0.0",
+  "description": "Frontend for Si Paling ZI with Netlify proxy to GAS",
+  "main": "index.js",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "echo 'No build step required'"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

@@ -1,0 +1,11 @@
+[build]
+  # Direktori yang berisi file-file statis (HTML, CSS, JS)
+  publish = "public"
+  # Direktori tempat Netlify akan menemukan serverless functions
+  functions = "netlify/functions"
+
+[[redirects]]
+  # Arahkan semua request dari /api/* ke fungsi proxy
+  from = "/api/*"
+  to = "/.netlify/functions/proxy"
+  status = 200
