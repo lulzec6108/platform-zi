@@ -19,14 +19,14 @@ exports.handler = async function(event, context) {
 
   try {
     const method = event.httpMethod;
-    let url = gasAppUrl;
+    // Tambahkan API key sebagai query parameter ke URL
+    let url = `${gasAppUrl}?apiKey=${apiKey}`;
 
     const options = {
       method: method,
       headers: {
         // UBAH: Menggunakan application/json agar GAS mengurai header dengan benar
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
+        'Content-Type': 'application/json'
       },
       redirect: 'follow'
     };
@@ -40,7 +40,7 @@ exports.handler = async function(event, context) {
       // Gabungkan query string dari request asli ke URL GAS
       const queryString = new URLSearchParams(event.queryStringParameters).toString();
       if (queryString) {
-        url += `?${queryString}`;
+        url += `&${queryString}`;
       }
     }
 

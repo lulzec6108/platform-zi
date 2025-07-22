@@ -5,29 +5,32 @@ const ss = SpreadsheetApp.getActiveSpreadsheet();
 // Fungsi untuk memvalidasi request menggunakan API Key
 function isValidRequest(e) {
   const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
-  if (!SCRIPT_API_KEY) return false; // Jika API Key belum diatur di server, tolak semua
-
-  // Pemeriksaan defensif untuk memastikan 'e' dan 'e.headers' ada
-  if (!e || !e.headers) {
-    Logger.log('Error: Event object or headers are missing.');
+  
+  // Pemeriksaan defensif untuk memastikan 'e' dan 'e.parameter' ada
+  if (!e || !e.parameter) {
+    Logger.log('Error: Event object or parameters are missing.');
     return false;
   }
 
-  // Cek header dalam format lowercase dan camel-case untuk keandalan
-  const receivedKey = e.headers['x-api-key'] || e.headers['X-Api-Key'];
+  // Baca API key dari parameter URL
+  const receivedKey = e.parameter.apiKey;
 
-  Logger.log(`Received Key: ${receivedKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
+  Logger.log(`Received Key from URL: ${receivedKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
 
   return receivedKey === SCRIPT_API_KEY;
+}
+
+// --- Fungsi Utility ---
+function sendJSON(data) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
 
 // Fungsi doGet untuk menangani permintaan GET dari Netlify
 function doGet(e) {
   if (!isValidRequest(e)) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Akses Ditolak" }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid.' });
   }
-
+  
   var action = e.parameter.action;
   var result = {};
 
@@ -53,8 +56,7 @@ function doGet(e) {
     result = { success: false, message: "Error di server: " + err.message };
   }
   
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
+  return sendJSON(result);
 }
 
 // Fungsi doPost untuk menangani permintaan POST
@@ -62,20 +64,19 @@ function doPost(e) {
   // Selalu validasi request terlebih dahulu
   if (!isValidRequest(e)) {
     // Untuk debugging, kita kirim kembali kunci yang diterima
-    const receivedKey = (e && e.headers) ? (e.headers['x-api-key'] || e.headers['X-Api-Key']) : "Headers not found";
-    return ContentService.createTextOutput(JSON.stringify({ 
+    const receivedKey = (e && e.parameter) ? e.parameter.apiKey : "Parameter not found";
+    return sendJSON({ 
       success: false, 
       message: 'Akses Ditolak: API Key tidak valid.',
       debug_received_key: receivedKey 
-    })).setMimeType(ContentService.MimeType.JSON);
+    });
   }
 
   let payload;
   try {
     payload = JSON.parse(e.postData.contents);
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Gagal mem-parsing data request.' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return sendJSON({ success: false, message: 'Gagal mem-parsing data request.' });
   }
   
   const action = payload.action;
@@ -95,8 +96,7 @@ function doPost(e) {
       result = { success: false, message: "Aksi POST tidak valid" };
   }
 
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
+  return sendJSON(result);
 }
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA (TIDAK ADA PERUBAHAN DI SINI) ---
