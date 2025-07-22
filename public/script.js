@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             namaUser.textContent = user.nama;
             pilarUser.textContent = user.pilar;
-            loginSection.style.display = 'none';
-            mainContent.style.display = 'block';
+            if (loginSection) loginSection.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
 
             setupMainContentListeners(); // Pasang listener untuk konten utama
 
@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showLogin() {
-        loginSection.style.display = 'block';
-        mainContent.style.display = 'none';
+        if (loginSection) loginSection.style.display = 'block';
+        if (mainContent) mainContent.style.display = 'none';
         setupLoginListeners(); // Pasang listener untuk form login
     }
 
