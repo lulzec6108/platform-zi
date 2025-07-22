@@ -26,7 +26,9 @@ exports.handler = async function(event, context) {
     };
 
     if (method === 'POST') {
-      options.body = event.body;
+      // Netlify Functions otomatis mem-parse body jika Content-Type adalah application/json.
+      // Kita perlu mengubahnya kembali menjadi string agar GAS bisa membacanya dari e.postData.contents.
+      options.body = typeof event.body === 'string' ? event.body : JSON.stringify(event.body);
     } else if (method === 'GET') {
       // Gabungkan query string dari request asli ke URL GAS
       const queryString = new URLSearchParams(event.queryStringParameters).toString();
