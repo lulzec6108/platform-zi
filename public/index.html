@@ -22,10 +22,16 @@
                 console.log('[Config] Menggunakan API key dari URL parameter');
             }
         })();
+        
+        // Log konfigurasi awal
+        console.log('[Config] Konfigurasi awal:', {
+            ...window.APP_CONFIG,
+            API_KEY: '***' + (window.APP_CONFIG.API_KEY || '').slice(-4)
+        });
     </script>
     
     <!-- Load konfigurasi -->
-    <script src="/config.js"></script>
+    <script src="/config.js" data-config='{"API_KEY": "<%= process.env.API_KEY %>"}'></script>
     
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -108,6 +114,8 @@
             z-index: 9999;
         }
     </style>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -198,7 +206,7 @@
             <nav class="top-nav">
                 <div class="nav-wrapper">
                     <a href="#!" class="brand-logo">
-                        <img src="/assets/images/logo-bps.png" alt="Logo BPS" class="logo">
+                        <img src="https://i.imgur.com/HDWo0xv.png" alt="Logo BPS" class="logo" style="height: 50px; vertical-align: middle; margin-right: 10px;">
                         <span>SI-PALING-ZI</span>
                     </a>
                     <ul id="nav-mobile" class="right">
