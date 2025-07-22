@@ -24,7 +24,7 @@ async function callApi(action, method = 'GET', data = {}) {
             body: JSON.stringify({
                 ...data,
                 action,
-                timestamp: new Date().toISOString() // Untuk debugging
+                timestamp: new Date().toISOString()
             }),
             signal: controller.signal
         };
@@ -34,16 +34,16 @@ async function callApi(action, method = 'GET', data = {}) {
         const response = await fetch(API_BASE, options);
         clearTimeout(timeoutId);
 
+        const responseData = await response.json();
+        console.log(`[API] Response: ${action}`, { status: response.status, data: responseData });
+
+        // Handle error responses
         if (!response.ok) {
-            const errorText = await response.text();
-            const error = new Error(`HTTP error! status: ${response.status}`);
+            const error = new Error(responseData.message || `HTTP error! status: ${response.status}`);
             error.status = response.status;
-            error.response = errorText;
+            error.response = responseData;
             throw error;
         }
-
-        const responseData = await response.json();
-        console.log(`[API] Response: ${action}`, { status: response.status });
         
         return responseData;
 
@@ -54,13 +54,18 @@ async function callApi(action, method = 'GET', data = {}) {
             throw new Error('Waktu tunggu permintaan habis. Silakan coba lagi.');
         }
         
+        // Handle unauthorized (401) errors
         if (error.status === 401) {
-            // Handle unauthorized
-            handleLogout();
-            throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+            // Jangan logout jika ini adalah request login
+            if (action.toLowerCase() === 'login') {
+                throw new Error(error.response?.message || 'Username atau password salah');
+            } else {
+                handleLogout();
+                throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
+            }
         }
         
-        throw new Error(error.response || 'Terjadi kesalahan pada server. Silakan coba lagi.');
+        throw new Error(error.response?.message || 'Terjadi kesalahan pada server. Silakan coba lagi.');
     }
 }
 
@@ -155,19 +160,37 @@ async function handleLogin(event) {
         loginButton.disabled = true;
         loginButton.innerHTML = '<i class="material-icons left">loop</i> Memproses...';
         
+        // Reset error
+        if (errorElement) errorElement.style.display = 'none';
+        
         // Panggil API login
         const response = await callApi('login', 'POST', { 
             username, 
             password 
         });
 
-        if (response.success && response.user) {
+        console.log('Login response:', response);
+
+        if (response && response.success && response.user) {
             // Simpan data user ke sessionStorage
             sessionStorage.setItem('zi_user', JSON.stringify(response.user));
             currentUser = response.user;
+            
+            // Update API key jika dikembalikan oleh server
+            if (response.apiKey) {
+                window.APP_CONFIG = window.APP_CONFIG || {};
+                window.APP_CONFIG.API_KEY = response.apiKey;
+                console.log('API key updated from server');
+            }
+            
+            // Tampilkan notifikasi sukses
+            showNotification('Login berhasil', 'success');
+            
+            // Redirect ke dashboard
             showMainContent();
+            loadDashboardData();
         } else {
-            throw new Error(response.message || 'Login gagal');
+            throw new Error(response?.message || 'Login gagal');
         }
     } catch (error) {
         console.error('Login error:', error);
