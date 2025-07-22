@@ -2,8 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // --- Variabel Global & State ---
-    const loginSection = document.getElementById('login-section');
-    const mainContent = document.getElementById('main-content');
+    const loginView = document.getElementById('login-section');
+    const mainContentView = document.getElementById('main-content');
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
     const namaUser = document.getElementById('nama-user');
@@ -72,8 +72,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fungsi UI & Kontrol State ---
     function showLogin() {
-        if (loginSection) loginSection.style.display = 'block';
-        if (mainContent) mainContent.style.display = 'none';
+        if (loginView) loginView.style.display = 'block';
+        if (mainContentView) mainContentView.style.display = 'none';
         sessionStorage.removeItem('user');
         setupLoginListeners();
     }
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (namaUser) namaUser.textContent = user.nama;
         if (pilarUser) pilarUser.textContent = user.pilar;
 
-        if (loginSection) loginSection.style.display = 'none';
-        if (mainContent) mainContent.style.display = 'block';
+        if (loginView) loginView.style.display = 'none';
+        if (mainContentView) mainContentView.style.display = 'block';
         
         setupMainContentListeners();
         loadDashboard();
