@@ -5,27 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SI-PALING-ZI | Login</title>
     
-    <!-- Inisialisasi Konfigurasi Aplikasi -->
-    <script>
-        // Inisialisasi konfigurasi default
-        window.APP_CONFIG = window.APP_CONFIG || {
-            API_BASE: '/.netlify/functions/proxy',
-            API_KEY: ''  // Akan diisi oleh config.js
-        };
-        
-        // Fungsi untuk mendapatkan parameter URL
-        function getUrlParam(name) {
-            const params = new URLSearchParams(window.location.search);
-            return params.get(name);
-        }
-        
-        // Coba dapatkan API key dari URL (hanya untuk development)
-        const urlApiKey = getUrlParam('apiKey');
-        if (urlApiKey) {
-            console.log('[Config] Menggunakan API key dari URL');
-            window.APP_CONFIG.API_KEY = urlApiKey;
-        }
-    </script>
+    <!-- Konfigurasi Aplikasi -->
+    <script src="/config.js" data-api-key="<%= process.env.API_KEY %>"></script>
     
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -49,80 +30,80 @@
         .login-container {
             width: 100%;
             max-width: 400px;
-            padding: 0 20px;
+            padding: 20px;
         }
         
         .card {
-            border-radius: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: none;
         }
         
         .card-content {
-            padding: 40px;
+            padding: 30px;
         }
         
         .card-title {
             font-weight: 600;
+            color: #2c3e50;
             margin-bottom: 30px;
-            color: #333;
             text-align: center;
-            font-size: 24px;
+        }
+        
+        .input-field label {
+            color: #7f8c8d;
         }
         
         .input-field input[type=text]:focus + label,
         .input-field input[type=password]:focus + label {
-            color: #2196f3;
+            color: #3498db;
         }
         
         .input-field input[type=text]:focus,
         .input-field input[type=password]:focus {
-            border-bottom: 2px solid #2196f3;
-            box-shadow: none;
+            border-bottom: 1px solid #3498db;
+            box-shadow: 0 1px 0 0 #3498db;
         }
         
         .btn {
             width: 100%;
-            padding: 0 20px;
-            margin-top: 20px;
-            background-color: #2196f3;
-            font-weight: 500;
+            background-color: #3498db;
+            border-radius: 4px;
             text-transform: none;
+            font-weight: 500;
             height: 48px;
             line-height: 48px;
             font-size: 16px;
+            margin-top: 20px;
         }
         
         .btn:hover {
-            background-color: #1976d2;
+            background-color: #2980b9;
         }
         
         .error-message {
-            color: #f44336;
+            color: #e74c3c;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 10px;
             display: none;
         }
         
         .loading {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            color: white;
+            z-index: 9999;
         }
         
-        .spinner-layer {
-            border-color: #2196f3;
+        .loading .preloader-wrapper {
+            width: 64px;
+            height: 64px;
         }
     </style>
 </head>
@@ -142,87 +123,59 @@
                 </div>
             </div>
         </div>
-        <p style="margin-top: 20px; color: white;">Memuat data...</p>
     </div>
 
-    <!-- Login View -->
-    <div id="login-view">
-        <div class="login-container">
-            <div class="card">
-                <div class="card-content">
-                    <h5 class="card-title">SI-PALING-ZI</h5>
-                    <div class="row">
-                        <form id="login-form" class="col s12">
-                            <div class="row">
-                                <div class="input-field col s12">
-                                    <i class="material-icons prefix">person</i>
-                                    <input id="username" type="text" class="validate" required>
-                                    <label for="username">Username</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-field col s12">
-                                    <i class="material-icons prefix">lock</i>
-                                    <input id="password" type="password" class="validate" required>
-                                    <label for="password">Password</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col s12">
-                                    <div id="login-error" class="error-message"></div>
-                                    <button class="btn waves-effect waves-light" type="submit" name="action">
-                                        Masuk
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+    <!-- Login Form -->
+    <div id="login-view" class="login-container">
+        <div class="card">
+            <div class="card-content">
+                <h4 class="card-title center-align">SI-PALING-ZI</h4>
+                <form id="login-form">
+                    <div class="input-field">
+                        <i class="material-icons prefix">person</i>
+                        <input id="username" name="username" type="text" class="validate" required>
+                        <label for="username">Username</label>
                     </div>
-                </div>
-            </div>
-            <div class="center" style="margin-top: 20px; color: #666; font-size: 14px;">
-                &copy; 2025 BPS Kabupaten Kapuas Hulu
+                    <div class="input-field">
+                        <i class="material-icons prefix">lock</i>
+                        <input id="password" name="password" type="password" class="validate" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <div id="login-error" class="error-message"></div>
+                    <button class="btn waves-effect waves-light" type="submit" name="action">
+                        <i class="material-icons left">login</i> Masuk
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Main Content (initially hidden) -->
+    <!-- Main Content (Akan ditampilkan setelah login) -->
     <div id="main-content" style="display: none;">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="user-info">
-                    <img src="https://via.placeholder.com/40" alt="User" class="circle">
+                    <i class="material-icons medium">account_circle</i>
                     <div class="user-details">
                         <span id="user-name">Nama Pengguna</span>
-                        <span id="user-role" class="user-role">Role</span>
+                        <span id="user-role" class="role">Role</span>
                     </div>
                 </div>
             </div>
             <ul class="sidebar-menu">
-                <li class="active">
-                    <a href="#!" data-target="dashboard">
-                        <i class="material-icons">dashboard</i>
-                        <span>Dashboard</span>
-                    </a>
+                <li id="dashboard-link" class="active">
+                    <a href="#!"><i class="material-icons">dashboard</i> Dashboard</a>
                 </li>
-                <li>
-                    <a href="#!" data-target="tugas-saya">
-                        <i class="material-icons">assignment</i>
-                        <span>Tugas Saya</span>
-                    </a>
+                <li id="tugas-saya-link">
+                    <a href="#!"><i class="material-icons">assignment</i> Tugas Saya</a>
                 </li>
-                <li>
-                    <a href="#!" data-target="link-pendukung">
-                        <i class="material-icons">link</i>
-                        <span>Link Pendukung</span>
-                    </a>
+                <li id="link-pendukung-link">
+                    <a href="#!"><i class="material-icons">link</i> Link Pendukung</a>
                 </li>
                 <li class="divider"></li>
                 <li>
-                    <a href="#!" id="logout-btn">
-                        <i class="material-icons">exit_to_app</i>
-                        <span>Keluar</span>
-                    </a>
+                    <a href="#!" id="logout-btn"><i class="material-icons">logout</i> Keluar</a>
                 </li>
             </ul>
         </div>
@@ -233,20 +186,12 @@
             <nav class="top-nav">
                 <div class="nav-wrapper">
                     <a href="#!" class="brand-logo">
-                        <i class="material-icons left">menu</i>
+                        <i class="material-icons">menu</i>
                         <span id="page-title">Dashboard</span>
                     </a>
-                    <ul class="right">
-                        <li>
-                            <a href="#!" class="dropdown-trigger" data-target='user-dropdown'>
-                                <i class="material-icons">account_circle</i>
-                            </a>
-                            <ul id='user-dropdown' class='dropdown-content'>
-                                <li><a href="#!" id="profile-link">Profil</a></li>
-                                <li class="divider" tabindex="-1"></li>
-                                <li><a href="#!" id="logout-link">Keluar</a></li>
-                            </ul>
-                        </li>
+                    <ul id="nav-mobile" class="right hide-on-med-and-down">
+                        <li><a href="#!"><i class="material-icons">notifications</i></a></li>
+                        <li><a href="#!" id="user-profile"><i class="material-icons left">person</i> <span id="user-info"></span></a></li>
                     </ul>
                 </div>
             </nav>
@@ -259,40 +204,30 @@
                         <div class="col s12">
                             <div class="card">
                                 <div class="card-content">
+                                    <span class="card-title">Daftar Tugas</span>
                                     <div class="row">
                                         <div class="input-field col s12 m6">
                                             <i class="material-icons prefix">search</i>
                                             <input type="text" id="search-input" placeholder="Cari tugas...">
                                         </div>
-                                        <div class="input-field col s12 m6">
-                                            <select id="filter-status">
-                                                <option value="" selected>Semua Status</option>
-                                                <option value="Belum Dikerjakan">Belum Dikerjakan</option>
-                                                <option value="Sedang Dikerjakan">Sedang Dikerjakan</option>
-                                                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                                                <option value="Selesai">Selesai</option>
-                                            </select>
-                                            <label>Filter Status</label>
-                                        </div>
                                     </div>
-                                    
                                     <div class="table-responsive">
                                         <table class="highlight">
                                             <thead>
                                                 <tr>
                                                     <th>No</th>
+                                                    <th>Kode</th>
+                                                    <th>Pilar</th>
                                                     <th>Nama Tugas</th>
-                                                    <th>Pilar ZI</th>
-                                                    <th>Deadline</th>
+                                                    <th>PIC</th>
                                                     <th>Status</th>
+                                                    <th>Ketua Pilar</th>
+                                                    <th>Admin</th>
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="tugas-table-body">
-                                                <!-- Data akan diisi oleh JavaScript -->
-                                                <tr>
-                                                    <td colspan="6" class="center">Memuat data...</td>
-                                                </tr>
+                                            <tbody id="dashboard-table-body">
+                                                <!-- Data akan dimuat via JavaScript -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -308,14 +243,8 @@
                         <div class="col s12">
                             <div class="card">
                                 <div class="card-content">
-                                    <h5>Daftar Tugas Saya</h5>
-                                    <div class="divider"></div>
-                                    <div id="tugas-saya-container">
-                                        <!-- Data akan diisi oleh JavaScript -->
-                                        <div class="center" style="padding: 20px 0;">
-                                            <p>Memuat daftar tugas...</p>
-                                        </div>
-                                    </div>
+                                    <span class="card-title">Tugas Saya</span>
+                                    <p>Daftar tugas yang menjadi tanggung jawab Anda akan muncul di sini.</p>
                                 </div>
                             </div>
                         </div>
@@ -328,13 +257,19 @@
                         <div class="col s12">
                             <div class="card">
                                 <div class="card-content">
-                                    <h5>Daftar Link Pendukung</h5>
-                                    <div class="divider"></div>
-                                    <div id="link-pendukung-container">
-                                        <!-- Data akan diisi oleh JavaScript -->
-                                        <div class="center" style="padding: 20px 0;">
-                                            <p>Memuat daftar link pendukung...</p>
-                                        </div>
+                                    <span class="card-title">Link Pendukung</span>
+                                    <div class="table-responsive">
+                                        <table class="highlight">
+                                            <thead>
+                                                <tr>
+                                                    <th>Deskripsi</th>
+                                                    <th>Link</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="link-pendukung-body">
+                                                <!-- Data akan dimuat via JavaScript -->
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -352,102 +287,107 @@
             <div class="divider"></div>
             
             <div class="row">
-                <div class="col s12 m6">
-                    <p><strong>Nama Tugas:</strong> <span id="detail-nama">-</span></p>
-                    <p><strong>Pilar ZI:</strong> <span id="detail-pilar">-</span></p>
-                    <p><strong>Kegiatan:</strong> <span id="detail-kegiatan">-</span></p>
-                    <p><strong>Output:</strong> <span id="detail-output">-</span></p>
-                </div>
-                <div class="col s12 m6">
-                    <p><strong>Deadline:</strong> <span id="detail-deadline">-</span></p>
-                    <p><strong>Status:</strong> <span id="detail-status">-</span></p>
-                    <p><strong>PIC:</strong> <span id="detail-pic">-</span></p>
-                    <p><strong>Ketua Pilar:</strong> <span id="detail-ketua">-</span></p>
-                </div>
-            </div>
-            
-            <div class="row">
                 <div class="col s12">
-                    <p><strong>Keterangan:</strong></p>
-                    <p id="detail-keterangan">-</p>
+                    <p><strong>Kode:</strong> <span id="modal-kode">-</span></p>
+                    <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas">-</span></p>
+                    <p><strong>PIC:</strong> <span id="modal-pic">-</span></p>
+                    
+                    <div class="divider"></div>
+                    
+                    <h5>Link Referensi</h5>
+                    <p>
+                        <a href="#" id="modal-link-referensi" target="_blank">Tidak tersedia</a>
+                    </p>
+                    
+                    <h5>Bukti Dukung</h5>
+                    <p>
+                        <a href="#" id="modal-link-gdrive" target="_blank">Belum diunggah</a>
+                    </p>
                 </div>
             </div>
             
-            <!-- Form Bukti Dukung (Anggota) -->
+            <!-- Form Bukti Dukung (Hanya untuk PIC) -->
             <div id="form-bukti" style="display: none;">
                 <div class="divider"></div>
-                <h5>Upload Bukti Dukung</h5>
+                <h5>Unggah Bukti Dukung</h5>
                 <div class="row">
+                    <div class="input-field col s12">
+                        <select id="bukti-jenis">
+                            <option value="" disabled selected>Pilih Jenis Bukti</option>
+                            <option value="link">Link</option>
+                            <option value="dokumen">Dokumen</option>
+                            <option value="gambar">Gambar</option>
+                        </select>
+                        <label>Jenis Bukti</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="bukti-nilai" type="text" class="validate">
+                        <label for="bukti-nilai">Nilai Bukti (URL atau deskripsi)</label>
+                    </div>
                     <div class="col s12">
-                        <form id="form-upload-bukti">
-                            <input type="hidden" id="bukti-tugas-id">
-                            <div class="file-field input-field">
-                                <div class="btn">
-                                    <span>File</span>
-                                    <input type="file" id="bukti-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
-                                </div>
-                                <div class="file-path-wrapper">
-                                    <input class="file-path validate" type="text" placeholder="Unggah file bukti">
-                                </div>
-                                <small class="grey-text">Format yang didukung: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Maks. 5MB)</small>
-                            </div>
-                            <div class="input-field">
-                                <textarea id="bukti-keterangan" class="materialize-textarea"></textarea>
-                                <label for="bukti-keterangan">Keterangan</label>
-                            </div>
-                            <button type="submit" class="btn waves-effect waves-light">Kirim Bukti</button>
-                        </form>
+                        <button id="save-bukti-btn" class="btn waves-effect waves-light" type="button">
+                            <i class="material-icons left">save</i> Simpan Bukti
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Form Penilaian (Ketua Pilar) -->
+            <!-- Form Penilaian (Hanya untuk Ketua Pilar) -->
             <div id="form-penilaian" style="display: none;">
                 <div class="divider"></div>
                 <h5>Penilaian Ketua Pilar</h5>
                 <div class="row">
                     <div class="col s12">
-                        <form id="form-penilaian-ketua">
-                            <input type="hidden" id="penilaian-tugas-id">
-                            <div class="input-field">
-                                <select id="penilaian-nilai" class="browser-default">
-                                    <option value="" disabled selected>Pilih Penilaian</option>
-                                    <option value="Sesuai">Sesuai</option>
-                                    <option value="Tidak Sesuai">Tidak Sesuai</option>
-                                    <option value="Perlu Revisi">Perlu Revisi</option>
-                                </select>
-                            </div>
-                            <div class="input-field">
-                                <textarea id="penilaian-komentar" class="materialize-textarea"></textarea>
-                                <label for="penilaian-komentar">Komentar</label>
-                            </div>
-                            <button type="submit" class="btn waves-effect waves-light">Simpan Penilaian</button>
-                        </form>
+                        <p><strong>Status Anggota:</strong> <span id="modal-status-anggota">-</span></p>
+                        <p><strong>Bukti Dukung:</strong> <span id="modal-bukti-detail">-</span></p>
+                    </div>
+                    <div class="input-field col s12">
+                        <select id="ketua-status">
+                            <option value="" disabled selected>Pilih Status</option>
+                            <option value="diterima">Diterima</option>
+                            <option value="ditolak">Ditolak</option>
+                            <option value="perlu_revisi">Perlu Revisi</option>
+                        </select>
+                        <label>Status Penilaian</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <textarea id="ketua-catatan" class="materialize-textarea"></textarea>
+                        <label for="ketua-catatan">Catatan</label>
+                    </div>
+                    <div class="col s12">
+                        <button id="save-ketua-status-btn" class="btn waves-effect waves-light" type="button">
+                            <i class="material-icons left">check</i> Simpan Penilaian
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Form Verifikasi (Admin) -->
+            <!-- Form Verifikasi (Hanya untuk Admin) -->
             <div id="form-verifikasi" style="display: none;">
                 <div class="divider"></div>
                 <h5>Verifikasi Admin</h5>
                 <div class="row">
                     <div class="col s12">
-                        <form id="form-verifikasi-admin">
-                            <input type="hidden" id="verifikasi-tugas-id">
-                            <div class="input-field">
-                                <select id="verifikasi-status" class="browser-default">
-                                    <option value="" disabled selected>Pilih Status Verifikasi</option>
-                                    <option value="Terverifikasi">Verifikasi</option>
-                                    <option value="Ditolak">Tolak</option>
-                                </select>
-                            </div>
-                            <div class="input-field">
-                                <textarea id="verifikasi-keterangan" class="materialize-textarea"></textarea>
-                                <label for="verifikasi-keterangan">Keterangan</label>
-                            </div>
-                            <button type="submit" class="btn waves-effect waves-light">Simpan Verifikasi</button>
-                        </form>
+                        <p><strong>Status Ketua Pilar:</strong> <span id="modal-status-ketua">-</span></p>
+                        <p><strong>Catatan Ketua Pilar:</strong> <span id="modal-catatan-ketua">-</span></p>
+                    </div>
+                    <div class="input-field col s12">
+                        <select id="admin-status">
+                            <option value="" disabled selected>Pilih Status</option>
+                            <option value="terverifikasi">Terverifikasi</option>
+                            <option value="ditolak">Ditolak</option>
+                            <option value="perlu_revisi">Perlu Revisi</option>
+                        </select>
+                        <label>Status Verifikasi</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <textarea id="admin-catatan" class="materialize-textarea"></textarea>
+                        <label for="admin-catatan">Catatan</label>
+                    </div>
+                    <div class="col s12">
+                        <button id="save-admin-status-btn" class="btn waves-effect waves-light" type="button">
+                            <i class="material-icons left">verified</i> Simpan Verifikasi
+                        </button>
                     </div>
                 </div>
             </div>
@@ -460,33 +400,24 @@
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     
-    <!-- Load config.js terlebih dahulu -->
-    <script src="/config.js"></script>
-    
-    <!-- Kemudian load script.js -->
-    <script src="/script.js"></script>
-    
     <!-- Inisialisasi komponen Materialize -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Inisialisasi sidenav
+            var elems = document.querySelectorAll('.sidenav');
+            M.Sidenav.init(elems);
+            
             // Inisialisasi modal
-            const modals = document.querySelectorAll('.modal');
+            var modals = document.querySelectorAll('.modal');
             M.Modal.init(modals);
             
-            // Inisialisasi dropdown
-            const dropdowns = document.querySelectorAll('.dropdown-trigger');
-            M.Dropdown.init(dropdowns, {
-                coverTrigger: false
-            });
-            
-            // Log konfigurasi untuk debugging
-            console.log('[Index] Konfigurasi:', {
-                ...window.APP_CONFIG,
-                API_KEY: window.APP_CONFIG?.API_KEY 
-                    ? `***${window.APP_CONFIG.API_KEY.slice(-4)}` 
-                    : 'tidak di-set'
-            });
+            // Inisialisasi select
+            var selects = document.querySelectorAll('select');
+            M.FormSelect.init(selects);
         });
     </script>
+    
+    <!-- Aplikasi JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
