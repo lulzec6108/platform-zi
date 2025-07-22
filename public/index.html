@@ -3,53 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Penilaian Mandiri ZI</title>
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>SI-PALING-ZI | Login</title>
+    
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <!-- Google Fonts (Poppins) -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 0 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        
+        .card-content {
+            padding: 40px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
+            font-size: 24px;
+        }
+        
+        .btn {
+            width: 100%;
+            height: 48px;
+            border-radius: 5px;
+            font-weight: 500;
+            text-transform: none;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            background-color: #1976d2;
+        }
+        
+        .btn:hover {
+            background-color: #1565c0;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-container img {
+            max-width: 120px;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-
-    <!-- Preloader -->
-    <div id="loader-overlay" class="d-none">
-        <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-blue-only">
-                <div class="circle-clipper left"><div class="circle"></div></div>
-                <div class="gap-patch"><div class="circle"></div></div>
-                <div class="circle-clipper right"><div class="circle"></div></div>
+    <!-- Login View -->
+    <div id="login-view">
+        <div class="login-container">
+            <div class="card">
+                <div class="card-content">
+                    <div class="logo-container">
+                        <img src="https://via.placeholder.com/120x60?text=BPS+Logo" alt="BPS Logo">
+                    </div>
+                    <h5 class="card-title">SI-PALING-ZI</h5>
+                    
+                    <div class="row">
+                        <form id="login-form" class="col s12">
+                            <div class="row">
+                                <div class="input-field col s12">
+                                    <i class="material-icons prefix">person</i>
+                                    <input id="username" type="text" class="validate" required>
+                                    <label for="username">Username</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="input-field col s12">
+                                    <i class="material-icons prefix">lock</i>
+                                    <input id="password" type="password" class="validate" required>
+                                    <label for="password">Password</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <button class="btn waves-effect waves-light" type="submit" name="action">
+                                        MASUK
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="login-error" class="red-text" style="display: none;">
+                                Username atau password salah
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Login Page -->
-    <div id="login-page">
-        <div class="container">
-            <div class="row">
-                <div class="col s12 m8 l6 offset-m2 offset-l3" style="margin-top: 15vh;">
-                    <div class="card z-depth-4">
+    <!-- Main Content (initially hidden) -->
+    <div id="main-content" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="material-icons">account_circle</i>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name" id="sidebar-username">Nama User</div>
+                        <div class="user-role" id="sidebar-role">Role</div>
+                    </div>
+                </div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="active" id="dashboard-link">
+                    <a href="#">
+                        <i class="material-icons">dashboard</i>
+                        <span>Daftar Tugas</span>
+                    </a>
+                </li>
+                <li id="tugas-zi-link">
+                    <a href="#">
+                        <i class="material-icons">assignment</i>
+                        <span>Tugas ZI</span>
+                    </a>
+                </li>
+                <li id="link-pendukung-link">
+                    <a href="#">
+                        <i class="material-icons">link</i>
+                        <span>Link Pendukung</span>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li id="logout-btn">
+                    <a href="#">
+                        <i class="material-icons">exit_to_app</i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-wrapper">
+                    <div class="header-title" id="page-title">Daftar Tugas</div>
+                    <div class="header-actions">
+                        <div class="search-wrapper">
+                            <i class="material-icons">search</i>
+                            <input type="text" id="search-input" placeholder="Cari...">
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Dashboard Content -->
+            <div class="content-wrapper">
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view">
+                    <div class="card">
                         <div class="card-content">
-                            <span class="card-title center-align grey-text text-darken-2">Login Dashboard ZI</span>
-                            <form id="login-form">
-                                <div class="input-field">
-                                    <i class="material-icons prefix">account_circle</i>
-                                    <input type="text" id="username" required>
-                                    <label for="username">Username</label>
-                                </div>
-                                <div class="input-field">
-                                    <i class="material-icons prefix">lock</i>
-                                    <input type="password" id="password" required>
-                                    <label for="password">Password</label>
-                                </div>
-                                <div class="center-align" style="margin-top: 2rem;">
-                                    <button type="submit" class="btn waves-effect waves-light indigo darken-1">Login</button>
-                                </div>
-                                <div id="login-error" class="red-text center-align" style="margin-top: 1rem;"></div>
-                            </form>
+                            <div class="table-responsive">
+                                <table class="highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Kode</th>
+                                            <th>Pilar</th>
+                                            <th>Nama Tugas</th>
+                                            <th>PIC</th>
+                                            <th>Status Pengerjaan</th>
+                                            <th>Status Ketua Pilar</th>
+                                            <th>Status Admin</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-table-body">
+                                        <!-- Data akan diisi oleh JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tugas ZI View -->
+                <div id="tugas-zi-view" class="view" style="display: none;">
+                    <div class="card">
+                        <div class="card-content">
+                            <h5>Daftar Tugas ZI</h5>
+                            <div id="tugas-zi-container">
+                                <!-- Daftar tugas akan diisi oleh JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Link Pendukung View -->
+                <div id="link-pendukung-view" class="view" style="display: none;">
+                    <div class="card">
+                        <div class="card-content">
+                            <h5>Daftar Link Pendukung</h5>
+                            <div id="link-pendukung-container">
+                                <!-- Daftar link akan diisi oleh JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -57,95 +237,27 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div id="main-content" class="d-none">
-        <header>
-            <nav class="indigo">
-                <div class="nav-wrapper container">
-                    <a href="#" class="brand-logo">Dashboard ZI</a>
-                    <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-                    <ul class="right hide-on-med-and-down">
-                        <li><a id="user-info">Nama Pengguna (Role)</a></li>
-                        <li><a id="logout-btn" class="waves-effect waves-light btn-flat white-text">Logout</a></li>
-                    </ul>
-                </div>
-            </nav>
-            <ul class="sidenav" id="mobile-nav">
-                <li><a id="dashboard-link" class="waves-effect"><i class="material-icons">dashboard</i>Dashboard Utama</a></li>
-                <li><a id="tugas-saya-link" class="waves-effect"><i class="material-icons">assignment_ind</i>Tugas Saya</a></li>
-                <li><a id="link-pendukung-link" class="waves-effect"><i class="material-icons">link</i>Link Pendukung</a></li>
-                <li class="divider"></li>
-                <li><a id="logout-btn-mobile" class="waves-effect"><i class="material-icons">exit_to_app</i>Logout</a></li>
-            </ul>
-        </header>
-
-        <main class="container" style="margin-top: 20px;">
-            <!-- Dashboard View -->
-            <div id="dashboard-view">
-                <h4>Dashboard Utama</h4>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <i class="material-icons prefix">search</i>
-                        <input type="text" id="search-dashboard" placeholder="Cari berdasarkan Nama Tugas atau PIC...">
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table class="responsive-table highlight striped">
-                        <thead>
-                            <tr>
-                                <th>Kode</th>
-                                <th>Pilar</th>
-                                <th>Nama Tugas</th>
-                                <th>PIC</th>
-                                <th>Status Pengerjaan</th>
-                                <th>Status Ketua Pilar</th>
-                                <th>Status Admin</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboard-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tugas Saya View -->
-            <div id="tugas-saya-view" class="d-none">
-                <h4>Tugas Saya</h4>
-                <div id="tugas-saya-container"></div>
-            </div>
-
-            <!-- Link Pendukung View -->
-            <div id="link-pendukung-view" class="d-none">
-                <h4>Link Pendukung</h4>
-                <table class="responsive-table highlight striped">
-                    <thead>
-                        <tr>
-                            <th>Deskripsi</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody id="link-pendukung-body"></tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal Structure -->
-    <div id="detailModal" class="modal modal-fixed-footer">
+    <!-- Modal Detail Tugas -->
+    <div id="detailModal" class="modal">
         <div class="modal-content">
-            <h4 id="detailModalLabel">Detail Tugas</h4>
-            <p><strong>Kode:</strong> <span id="modal-kode"></span></p>
-            <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas"></span></p>
-            <p><strong>PIC:</strong> <span id="modal-pic"></span></p>
-            <p><strong>Link Referensi:</strong> <a id="modal-link-referensi" href="#" target="_blank">-</a></p>
-            <p><strong>Link GDrive Bukti:</strong> <a id="modal-link-gdrive" href="#" target="_blank">-</a></p>
+            <h4>Detail Tugas</h4>
             <div class="divider"></div>
+            
+            <div class="row">
+                <div class="col s12 m6">
+                    <p><strong>Kode:</strong> <span id="modal-kode">-</span></p>
+                    <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas">-</span></p>
+                    <p><strong>PIC:</strong> <span id="modal-pic">-</span></p>
+                    <p><strong>Link Referensi:</strong> <a id="modal-link-referensi" href="#" target="_blank">-</a></p>
+                    <p><strong>Link GDrive Bukti:</strong> <a id="modal-link-gdrive" href="#" target="_blank">-</a></p>
+                </div>
+            </div>
 
             <!-- Form Bukti Dukung (Hanya untuk Anggota) -->
             <div id="anggota-form-section" class="section">
                 <h5>Input Bukti Dukung</h5>
                 <div class="row">
-                    <div class="input-field col s12">
+                    <div class="input-field col s12 m6">
                         <select id="bukti-jenis">
                             <option value="" disabled selected>Pilih Jenis Bukti</option>
                             <option value="Link">Link</option>
@@ -153,55 +265,72 @@
                         </select>
                         <label>Jenis Bukti</label>
                     </div>
-                    <div class="input-field col s12">
-                        <input type="text" id="bukti-nilai">
+                    <div class="input-field col s12 m6">
+                        <input type="text" id="bukti-nilai" class="validate">
                         <label for="bukti-nilai">Nilai (Link/Nama File)</label>
                     </div>
+                    <div class="col s12">
+                        <button id="save-bukti-btn" class="btn waves-effect waves-light">
+                            <i class="material-icons left">save</i>Simpan Bukti
+                        </button>
+                    </div>
                 </div>
-                <button id="save-bukti-btn" class="btn waves-effect waves-light indigo">Simpan Bukti</button>
             </div>
 
-            <!-- Penilaian Ketua Pilar -->
-            <div id="ketua-pilar-section" class="section">
+            <!-- Untuk Ketua Pilar -->
+            <div id="ketua-pilar-section" class="section" style="display: none;">
                 <h5>Penilaian Ketua Pilar</h5>
-                <p><strong>Status Anggota:</strong> <span id="modal-status-anggota"></span></p>
-                <p><strong>Bukti:</strong> <span id="modal-bukti-detail"></span></p>
                 <div class="row">
-                    <div class="input-field col s12">
+                    <div class="col s12">
+                        <p><strong>Status Anggota:</strong> <span id="modal-status-anggota">-</span></p>
+                        <p><strong>Bukti:</strong> <span id="modal-bukti-detail">-</span></p>
+                    </div>
+                    <div class="input-field col s12 m6">
                         <select id="ketua-status">
                             <option value="" disabled selected>Pilih Status</option>
                             <option value="Disetujui">Disetujui</option>
                             <option value="Ditolak">Ditolak</option>
                         </select>
-                        <label>Setujui/Tolak</label>
+                        <label>Status Penilaian</label>
                     </div>
                     <div class="input-field col s12">
                         <textarea id="ketua-catatan" class="materialize-textarea"></textarea>
                         <label for="ketua-catatan">Catatan</label>
                     </div>
+                    <div class="col s12">
+                        <button id="save-ketua-status-btn" class="btn waves-effect waves-light">
+                            <i class="material-icons left">check</i>Simpan Penilaian
+                        </button>
+                    </div>
                 </div>
-                <button id="save-ketua-status-btn" class="btn waves-effect waves-light green">Simpan Penilaian</button>
             </div>
 
-            <!-- Penilaian Admin -->
-            <div id="admin-section" class="section">
-                <h5>Penilaian Admin</h5>
-                <p><strong>Status Ketua Pilar:</strong> <span id="modal-status-ketua"></span> (<span id="modal-catatan-ketua"></span>)</p>
+            <!-- Untuk Admin -->
+            <div id="admin-section" class="section" style="display: none;">
+                <h5>Verifikasi Admin</h5>
                 <div class="row">
-                     <div class="input-field col s12">
+                    <div class="col s12">
+                        <p><strong>Status Ketua Pilar:</strong> <span id="modal-status-ketua">-</span></p>
+                        <p><strong>Catatan Ketua:</strong> <span id="modal-catatan-ketua">-</span></p>
+                    </div>
+                    <div class="input-field col s12 m6">
                         <select id="admin-status">
                             <option value="" disabled selected>Pilih Status</option>
                             <option value="Terverifikasi">Terverifikasi</option>
                             <option value="Ditolak">Ditolak</option>
                         </select>
-                        <label>Verifikasi/Tolak</label>
+                        <label>Status Verifikasi</label>
                     </div>
                     <div class="input-field col s12">
                         <textarea id="admin-catatan" class="materialize-textarea"></textarea>
                         <label for="admin-catatan">Catatan</label>
                     </div>
+                    <div class="col s12">
+                        <button id="save-admin-status-btn" class="btn waves-effect waves-light">
+                            <i class="material-icons left">verified</i>Simpan Verifikasi
+                        </button>
+                    </div>
                 </div>
-                <button id="save-admin-status-btn" class="btn waves-effect waves-light blue">Simpan Verifikasi</button>
             </div>
         </div>
         <div class="modal-footer">
@@ -209,15 +338,7 @@
         </div>
     </div>
 
-    <footer class="page-footer indigo lighten-1">
-        <div class="footer-copyright">
-            <div class="container center-align">
-                &copy; 2025 BPS Kabupaten Kapuas Hulu
-            </div>
-        </div>
-    </footer>
-
-    <!-- Materialize JS -->
+    <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="script.js"></script>
 </body>
