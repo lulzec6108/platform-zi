@@ -1,61 +1,70 @@
-// proxy.js (FINAL)
+// proxy.js (UPDATED)
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
-  const gasAppUrl = process.env.GAS_APP_URL;
-  const apiKey = process.env.API_KEY;
-
-  if (!gasAppUrl || !apiKey) {
+  const GAS_URL = process.env.GAS_URL;
+  
+  if (!GAS_URL) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Konfigurasi server tidak lengkap.' })
+      body: JSON.stringify({ 
+        success: false,
+        message: 'GAS_URL environment variable is not set' 
+      })
     };
   }
 
   try {
-    const method = event.httpMethod;
-    let url = `${gasAppUrl}?apiKey=${apiKey}`;
+    const { httpMethod, body, queryStringParameters } = event;
+    const action = queryStringParameters?.action || JSON.parse(body || '{}')?.action;
+    
+    if (!action) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Action parameter is required' 
+        })
+      };
+    }
 
-    const options = {
-      method: method,
+    console.log(`Proxying ${httpMethod} ${action} to GAS`);
+    
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      redirect: 'follow'
-    };
+      body: JSON.stringify({
+        ...JSON.parse(body || '{}'),
+        action: action
+      })
+    });
 
-    if (method === 'POST' && event.body) {
-      options.body = event.body;
-    } else if (method === 'GET') {
-      const queryString = new URLSearchParams(event.queryStringParameters).toString();
-      if (queryString) {
-        url += `&${queryString}`;
-      }
-    }
-
-    const response = await fetch(url, options);
-    const data = await response.text();
-
-    // Coba parse sebagai JSON, jika gagal, kirim sebagai teks biasa (untuk error HTML dari GAS)
+    const responseData = await response.text();
+    
+    // Coba parse JSON, jika gagal kembalikan sebagai teks biasa
     try {
-      JSON.parse(data);
+      const jsonData = JSON.parse(responseData);
       return {
         statusCode: response.status,
-        headers: { 'Content-Type': 'application/json' },
-        body: data
+        body: JSON.stringify(jsonData)
       };
-    } catch (error) {
+    } catch (e) {
       return {
         statusCode: response.status,
-        headers: { 'Content-Type': 'text/html' },
-        body: data
+        body: responseData
       };
     }
-
   } catch (error) {
+    console.error('Proxy error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Error pada fungsi proxy.', details: error.message })
+      body: JSON.stringify({ 
+        success: false, 
+        message: 'Internal server error',
+        error: error.message 
+      })
     };
   }
 };

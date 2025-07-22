@@ -1,27 +1,42 @@
 // script.js (FINAL)
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi komponen Materialize
-    M.AutoInit();
-    
-    // Inisialisasi sidenav untuk mobile
-    const sidenav = document.querySelectorAll('.sidenav');
-    M.Sidenav.init(sidenav);
-    
-    // Inisialisasi modal
-    const modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
-    
-    // Inisialisasi select
-    const selects = document.querySelectorAll('select');
-    M.FormSelect.init(selects);
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Periksa status login
-    checkAuth();
-});
+// Konfigurasi
+const API_BASE = '/.netlify/functions/proxy';
+
+// Fungsi untuk memanggil API
+async function callApi(action, method = 'GET', data = {}) {
+    try {
+        const url = new URL(API_BASE, window.location.origin);
+        
+        // Tambahkan action sebagai query parameter
+        url.searchParams.append('action', action);
+        
+        const options = {
+            method: 'POST', // Selalu gunakan POST untuk Netlify Functions
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...data,
+                action: action // Sertakan juga di body untuk kompatibilitas
+            })
+        };
+
+        console.log(`Calling API: ${action}`, { data });
+        
+        const response = await fetch(url.toString(), options);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API call failed:', error);
+        throw new Error(`Gagal terhubung ke server: ${error.message}`);
+    }
+}
 
 // Variabel global
 let currentUser = null;
@@ -48,54 +63,64 @@ async function handleLogin(event) {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const errorElement = document.getElementById('login-error');
-    
-    if (!username || !password) {
-        errorElement.textContent = 'Username dan password harus diisi';
-        errorElement.style.display = 'block';
-        return;
-    }
+    const loginButton = document.querySelector('#login-form button[type="submit"]');
     
     try {
         // Tampilkan loading
-        const loginButton = document.querySelector('#login-form button[type="submit"]');
         const originalButtonText = loginButton.innerHTML;
         loginButton.disabled = true;
         loginButton.innerHTML = '<i class="material-icons left">loop</i> Memproses...';
         
-        // Kirim permintaan login
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ5w6gV5J7QXdJ9ZQJQ9Q5ZQZQZQZQZQZQZQZQZQZQZQZQZQZQZ/exec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'login',
-                username: username,
-                password: password
-            })
+        // Panggil API login
+        const response = await callApi('login', 'POST', { 
+            username, 
+            password 
         });
-        
-        const data = await response.json();
-        
-        if (data.success) {
+
+        if (response.success && response.user) {
             // Simpan data user ke sessionStorage
-            sessionStorage.setItem('zi_user', JSON.stringify(data.user));
-            currentUser = data.user;
+            sessionStorage.setItem('zi_user', JSON.stringify(response.user));
+            currentUser = response.user;
             showMainContent();
         } else {
-            throw new Error(data.message || 'Login gagal');
+            throw new Error(response.message || 'Login gagal');
         }
     } catch (error) {
         console.error('Login error:', error);
-        errorElement.textContent = error.message || 'Terjadi kesalahan saat login';
-        errorElement.style.display = 'block';
+        showError(error.message || 'Terjadi kesalahan saat login');
     } finally {
         // Reset tombol login
         if (loginButton) {
             loginButton.disabled = false;
-            loginButton.innerHTML = originalButtonText;
+            loginButton.innerHTML = '<i class="material-icons left">login</i> Masuk';
         }
     }
+}
+
+// Fungsi untuk menampilkan error
+function showError(message) {
+    const errorElement = document.getElementById('login-error');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+    M.toast({html: message, classes: 'red'});
+}
+
+// Fungsi untuk menangani logout
+function handleLogout() {
+    // Hapus data user dari sessionStorage
+    sessionStorage.removeItem('zi_user');
+    currentUser = null;
+    
+    // Tampilkan halaman login
+    showLogin();
+    
+    // Reset form login
+    document.getElementById('login-form').reset();
+    document.getElementById('login-error').style.display = 'none';
+    
+    M.toast({html: 'Anda telah logout'});
 }
 
 // Fungsi untuk menampilkan halaman login
@@ -186,32 +211,21 @@ async function loadView(viewName) {
 
 // Fungsi untuk memuat data dashboard
 async function loadDashboardData() {
-    if (!currentUser) return;
-    
     try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ5w6gV5J7QXdJ9ZQJQ9Q5ZQZQZQZQZQZQZQZQZQZQZQZQZQZQZ/exec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'getDashboardData',
-                userId: currentUser.id,
-                userRole: currentUser.role
-            })
-        });
+        showLoading(true);
+        const response = await callApi('getDashboardData');
         
-        const data = await response.json();
-        
-        if (data.success) {
-            allTasks = data.tasks || [];
+        if (response.success) {
+            allTasks = response.data || [];
             renderDashboardTable(allTasks);
         } else {
-            throw new Error(data.message || 'Gagal memuat data dashboard');
+            throw new Error(response.message || 'Gagal memuat data dashboard');
         }
     } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        throw error;
+        console.error('Error loading dashboard:', error);
+        showError(error.message || 'Gagal memuat data dashboard');
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -340,20 +354,187 @@ function getStatusClass(status) {
     return 'info';
 }
 
-// Fungsi untuk menangani logout
-function handleLogout() {
-    // Hapus data user dari sessionStorage
-    sessionStorage.removeItem('zi_user');
-    currentUser = null;
+// Fungsi untuk menangani pencarian
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase();
     
-    // Tampilkan halaman login
-    showLogin();
+    if (!searchTerm) {
+        renderDashboardTable(allTasks);
+        return;
+    }
     
-    // Reset form login
-    document.getElementById('login-form').reset();
-    document.getElementById('login-error').style.display = 'none';
+    const filteredTasks = allTasks.filter(task => {
+        return (
+            (task.kode && task.kode.toLowerCase().includes(searchTerm)) ||
+            (task.namaTugas && task.namaTugas.toLowerCase().includes(searchTerm)) ||
+            (task.pic && task.pic.toLowerCase().includes(searchTerm)) ||
+            (task.pilar && task.pilar.toLowerCase().includes(searchTerm))
+        );
+    });
     
-    M.toast({html: 'Anda telah logout'});
+    renderDashboardTable(filteredTasks);
+}
+
+// Fungsi untuk menyimpan bukti dukung (anggota)
+async function saveBuktiDukung() {
+    const jenis = document.getElementById('bukti-jenis').value;
+    const nilai = document.getElementById('bukti-nilai').value.trim();
+    
+    if (!jenis || !nilai) {
+        M.toast({html: 'Jenis dan nilai bukti harus diisi'});
+        return;
+    }
+    
+    try {
+        // Tampilkan loading
+        const button = document.getElementById('save-bukti-btn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
+        
+        // Kirim data ke server
+        const response = await callApi('saveBuktiDukung', 'POST', { 
+            jenis, 
+            nilai 
+        });
+
+        if (response.success) {
+            M.toast({html: 'Bukti berhasil disimpan'});
+            
+            // Perbarui data
+            await loadDashboardData();
+            
+            // Tutup modal
+            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
+            modalInstance.close();
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan bukti');
+        }
+    } catch (error) {
+        console.error('Error saving bukti:', error);
+        M.toast({html: `Gagal menyimpan bukti: ${error.message}`});
+    } finally {
+        // Reset tombol
+        const button = document.getElementById('save-bukti-btn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="material-icons left">save</i> Simpan Bukti';
+        }
+    }
+}
+
+// Fungsi untuk menyimpan penilaian ketua pilar
+async function savePenilaianKetua() {
+    const status = document.getElementById('ketua-status').value;
+    const catatan = document.getElementById('ketua-catatan').value.trim();
+    
+    if (!status) {
+        M.toast({html: 'Status penilaian harus dipilih'});
+        return;
+    }
+    
+    try {
+        // Tampilkan loading
+        const button = document.getElementById('save-ketua-status-btn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
+        
+        // Kirim data ke server
+        const response = await callApi('savePenilaianKetua', 'POST', { 
+            status, 
+            catatan 
+        });
+
+        if (response.success) {
+            M.toast({html: 'Penilaian berhasil disimpan'});
+            
+            // Perbarui data
+            await loadDashboardData();
+            
+            // Tutup modal
+            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
+            modalInstance.close();
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan penilaian');
+        }
+    } catch (error) {
+        console.error('Error saving penilaian:', error);
+        M.toast({html: `Gagal menyimpan penilaian: ${error.message}`});
+    } finally {
+        // Reset tombol
+        const button = document.getElementById('save-ketua-status-btn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="material-icons left">check</i> Simpan Penilaian';
+        }
+    }
+}
+
+// Fungsi untuk menyimpan verifikasi admin
+async function saveVerifikasiAdmin() {
+    const status = document.getElementById('admin-status').value;
+    const catatan = document.getElementById('admin-catatan').value.trim();
+    
+    if (!status) {
+        M.toast({html: 'Status verifikasi harus dipilih'});
+        return;
+    }
+    
+    try {
+        // Tampilkan loading
+        const button = document.getElementById('save-admin-status-btn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
+        
+        // Kirim data ke server
+        const response = await callApi('saveVerifikasiAdmin', 'POST', { 
+            status, 
+            catatan 
+        });
+
+        if (response.success) {
+            M.toast({html: 'Verifikasi berhasil disimpan'});
+            
+            // Perbarui data
+            await loadDashboardData();
+            
+            // Tutup modal
+            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
+            modalInstance.close();
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan verifikasi');
+        }
+    } catch (error) {
+        console.error('Error saving verifikasi:', error);
+        M.toast({html: `Gagal menyimpan verifikasi: ${error.message}`});
+    } finally {
+        // Reset tombol
+        const button = document.getElementById('save-admin-status-btn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="material-icons left">verified</i> Simpan Verifikasi';
+        }
+    }
+}
+
+// Fungsi untuk memuat data tugas ZI
+async function loadTugasZiData() {
+    // Implementasi untuk memuat data tugas ZI
+    const container = document.getElementById('tugas-zi-container');
+    if (container) {
+        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
+    }
+}
+
+// Fungsi untuk memuat data link pendukung
+async function loadLinkPendukungData() {
+    // Implementasi untuk memuat data link pendukung
+    const container = document.getElementById('link-pendukung-container');
+    if (container) {
+        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
+    }
 }
 
 // Fungsi untuk menampilkan/menyembunyikan loading
@@ -414,221 +595,29 @@ function setupEventListeners() {
     }
 }
 
-// Fungsi untuk menangani pencarian
-function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase();
+// Inisialisasi
+function init() {
+    // Inisialisasi komponen Materialize
+    M.AutoInit();
     
-    if (!searchTerm) {
-        renderDashboardTable(allTasks);
-        return;
-    }
+    // Inisialisasi sidenav untuk mobile
+    const sidenav = document.querySelectorAll('.sidenav');
+    M.Sidenav.init(sidenav);
     
-    const filteredTasks = allTasks.filter(task => {
-        return (
-            (task.kode && task.kode.toLowerCase().includes(searchTerm)) ||
-            (task.namaTugas && task.namaTugas.toLowerCase().includes(searchTerm)) ||
-            (task.pic && task.pic.toLowerCase().includes(searchTerm)) ||
-            (task.pilar && task.pilar.toLowerCase().includes(searchTerm))
-        );
-    });
+    // Inisialisasi modal
+    const modals = document.querySelectorAll('.modal');
+    M.Modal.init(modals);
     
-    renderDashboardTable(filteredTasks);
+    // Inisialisasi select
+    const selects = document.querySelectorAll('select');
+    M.FormSelect.init(selects);
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Periksa status login
+    checkAuth();
 }
 
-// Fungsi untuk menyimpan bukti dukung (anggota)
-async function saveBuktiDukung() {
-    const jenis = document.getElementById('bukti-jenis').value;
-    const nilai = document.getElementById('bukti-nilai').value.trim();
-    
-    if (!jenis || !nilai) {
-        M.toast({html: 'Jenis dan nilai bukti harus diisi'});
-        return;
-    }
-    
-    try {
-        // Tampilkan loading
-        const button = document.getElementById('save-bukti-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
-        
-        // Kirim data ke server
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ5w6gV5J7QXdJ9ZQJQ9Q5ZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZ/exec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'saveBuktiDukung',
-                userId: currentUser.id,
-                taskId: currentTaskId,
-                jenis: jenis,
-                nilai: nilai
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            M.toast({html: 'Bukti berhasil disimpan'});
-            
-            // Perbarui data
-            await loadDashboardData();
-            
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(data.message || 'Gagal menyimpan bukti');
-        }
-    } catch (error) {
-        console.error('Error saving bukti:', error);
-        M.toast({html: `Gagal menyimpan bukti: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-bukti-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">save</i> Simpan Bukti';
-        }
-    }
-}
-
-// Fungsi untuk menyimpan penilaian ketua pilar
-async function savePenilaianKetua() {
-    const status = document.getElementById('ketua-status').value;
-    const catatan = document.getElementById('ketua-catatan').value.trim();
-    
-    if (!status) {
-        M.toast({html: 'Status penilaian harus dipilih'});
-        return;
-    }
-    
-    try {
-        // Tampilkan loading
-        const button = document.getElementById('save-ketua-status-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
-        
-        // Kirim data ke server
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ5w6gV5J7QXdJ9ZQJQ9Q5ZQZQZQZQZQZQZQZQZQZQZQZQZQZQZ/exec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'savePenilaianKetua',
-                userId: currentUser.id,
-                taskId: currentTaskId,
-                status: status,
-                catatan: catatan
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            M.toast({html: 'Penilaian berhasil disimpan'});
-            
-            // Perbarui data
-            await loadDashboardData();
-            
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(data.message || 'Gagal menyimpan penilaian');
-        }
-    } catch (error) {
-        console.error('Error saving penilaian:', error);
-        M.toast({html: `Gagal menyimpan penilaian: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-ketua-status-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">check</i> Simpan Penilaian';
-        }
-    }
-}
-
-// Fungsi untuk menyimpan verifikasi admin
-async function saveVerifikasiAdmin() {
-    const status = document.getElementById('admin-status').value;
-    const catatan = document.getElementById('admin-catatan').value.trim();
-    
-    if (!status) {
-        M.toast({html: 'Status verifikasi harus dipilih'});
-        return;
-    }
-    
-    try {
-        // Tampilkan loading
-        const button = document.getElementById('save-admin-status-btn');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="material-icons left">loop</i> Menyimpan...';
-        
-        // Kirim data ke server
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ5w6gV5J7QXdJ9ZQJQ9Q5ZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZ/exec', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'saveVerifikasiAdmin',
-                userId: currentUser.id,
-                taskId: currentTaskId,
-                status: status,
-                catatan: catatan
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            M.toast({html: 'Verifikasi berhasil disimpan'});
-            
-            // Perbarui data
-            await loadDashboardData();
-            
-            // Tutup modal
-            const modalInstance = M.Modal.getInstance(document.getElementById('detailModal'));
-            modalInstance.close();
-        } else {
-            throw new Error(data.message || 'Gagal menyimpan verifikasi');
-        }
-    } catch (error) {
-        console.error('Error saving verifikasi:', error);
-        M.toast({html: `Gagal menyimpan verifikasi: ${error.message}`});
-    } finally {
-        // Reset tombol
-        const button = document.getElementById('save-admin-status-btn');
-        if (button) {
-            button.disabled = false;
-            button.innerHTML = '<i class="material-icons left">verified</i> Simpan Verifikasi';
-        }
-    }
-}
-
-// Fungsi untuk memuat data tugas ZI
-async function loadTugasZiData() {
-    // Implementasi untuk memuat data tugas ZI
-    const container = document.getElementById('tugas-zi-container');
-    if (container) {
-        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
-    }
-}
-
-// Fungsi untuk memuat data link pendukung
-async function loadLinkPendukungData() {
-    // Implementasi untuk memuat data link pendukung
-    const container = document.getElementById('link-pendukung-container');
-    if (container) {
-        container.innerHTML = '<p class="center-align">Fitur ini akan segera hadir</p>';
-    }
-}
-
-// Variabel untuk menyimpan ID tugas yang sedang aktif
-let currentTaskId = null;
+// Panggil init saat DOM siap
+document.addEventListener('DOMContentLoaded', init);

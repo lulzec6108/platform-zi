@@ -1,15 +1,48 @@
 {
-  "name": "si-paling-zi-netlify",
+  "name": "si-paling-zi",
   "version": "1.0.0",
-  "description": "Frontend for Si Paling ZI with Netlify proxy to GAS",
+  "description": "Aplikasi Monitoring Tugas Zona Integritas BPS Kabupaten Kapuas Hulu",
   "main": "index.js",
   "scripts": {
     "start": "netlify dev",
-    "build": "echo 'No build step required'"
+    "dev": "netlify dev",
+    "build": "echo 'Build step completed'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"**/*.{js,jsx,json,md,html,css}\"",
+    "lint": "eslint . --ext .js"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "zona-integritas",
+    "bps",
+    "kapuas-hulu",
+    "monitoring"
+  ],
+  "author": "BPS Kabupaten Kapuas Hulu",
+  "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.33.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "netlify-cli": "^12.8.0",
+    "prettier": "^2.8.3"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

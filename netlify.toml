@@ -1,5 +1,35 @@
 [build]
-  # Perintah ini memastikan dependensi (node-fetch) terinstal
-  command = "npm install"
+  command = "npm install && npm run build"
   publish = "public"
   functions = "netlify/functions"
+
+[dev]
+  # Port yang digunakan untuk development server
+  port = 8888
+  # Auto launch browser
+  autoLaunch = true
+  # Environment variables untuk development
+  environment = { GAS_URL = "https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec" }
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  # Apply these security headers to all paths
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.jquery.com https://cdnjs.cloudflare.com/ajax/libs/materialize/ https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com;"
+
+[context.production]
+  command = "npm install --production && npm run build"
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "staging" }
