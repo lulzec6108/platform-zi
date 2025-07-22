@@ -99,6 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const modals = document.querySelectorAll('.modal');
         M.Modal.init(modals);
+
+        const selects = document.querySelectorAll('select');
+        M.FormSelect.init(selects);
     }
 
     // --- Setup Event Listeners ---
@@ -126,6 +129,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             loginListenerAttached = true;
         }
+
+        const logoutBtn = document.getElementById('logout-btn'); 
+        if (logoutBtn) logoutBtn.addEventListener('click', showLogin);
+
+        // Tambahkan listener untuk tombol logout di mobile
+        const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+        if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', showLogin);
     }
 
     function setupMainContentListeners() {
@@ -310,42 +320,72 @@ document.addEventListener('DOMContentLoaded', function() {
         const userString = sessionStorage.getItem('zi_user');
         const user = JSON.parse(userString);
 
-        const modalTugasJudul = document.getElementById('modalTugasJudul');
-        const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
-        const modalTugasDeadline = document.getElementById('modalTugasDeadline');
-        const modalTugasStatus = document.getElementById('modalTugasStatus');
-        const modalTugasLink = document.getElementById('modalTugasLink');
-        const modalTugasPilar = document.getElementById('modalTugasPilar');
-        const modalTugasPIC = document.getElementById('modalTugasPIC');
-        const modalCatatanPIC = document.getElementById('modalCatatanPIC');
-        const modalUpdateForm = document.getElementById('modal-update-form');
-        const modalUpdateStatus = document.getElementById('modalUpdateStatus');
-        const modalUpdateLink = document.getElementById('modalUpdateLink');
-        const modalUpdateCatatan = document.getElementById('modalUpdateCatatan');
+        // Dapatkan instance modal Materialize
+        const modalElement = document.getElementById('detailModal');
+        const modalInstance = M.Modal.getInstance(modalElement);
 
-        modalTugasJudul.textContent = tugas.tugas;
-        modalTugasDeskripsi.textContent = tugas.deskripsi;
-        modalTugasDeadline.textContent = new Date(tugas.deadline).toLocaleDateString('id-ID');
-        modalTugasStatus.innerHTML = `<span class="badge bg-${getStatusColor(tugas.status)}">${tugas.status}</span>`;
-        modalTugasLink.innerHTML = tugas.link ? `<a href="${tugas.link}" target="_blank">Buka Link</a>` : 'Tidak ada';
-        modalTugasPilar.textContent = tugas.pilar;
-        modalTugasPIC.textContent = tugas.pic;
-        modalCatatanPIC.textContent = tugas.catatan || 'Tidak ada catatan.';
+        // Mengisi data umum
+        document.getElementById('modal-kode').textContent = tugas.Kode || '-';
+        document.getElementById('modal-nama-tugas').textContent = tugas['Nama Tugas'] || '-';
+        document.getElementById('modal-pic').textContent = tugas.PIC || '-';
 
-        // Tampilkan form update hanya jika user adalah PIC dari tugas tersebut
-        if (user.username === tugas.pic) {
-            modalUpdateForm.style.display = 'block';
-            modalUpdateStatus.value = tugas.status;
-            modalUpdateLink.value = tugas.link || '';
-            modalUpdateCatatan.value = tugas.catatan || '';
+        const linkReferensi = document.getElementById('modal-link-referensi');
+        if (tugas.linkReferensi) {
+            linkReferensi.href = tugas.linkReferensi;
+            linkReferensi.textContent = 'Lihat Referensi';
         } else {
-            modalUpdateForm.style.display = 'none';
+            linkReferensi.href = '#';
+            linkReferensi.textContent = 'Tidak tersedia';
         }
 
-        if (!tugasModal) { 
-            tugasModal = new bootstrap.Modal(document.getElementById('tugasModal'));
+        const linkGDrive = document.getElementById('modal-link-gdrive');
+        if (tugas.linkGDrive) {
+            linkGDrive.href = tugas.linkGDrive;
+            linkGDrive.textContent = 'Lihat Bukti';
+        } else {
+            linkGDrive.href = '#';
+            linkGDrive.textContent = 'Belum diunggah';
         }
-        tugasModal.show();
+
+        // Reset dan tampilkan/sembunyikan section berdasarkan peran
+        const anggotaSection = document.getElementById('anggota-form-section');
+        const ketuaSection = document.getElementById('ketua-pilar-section');
+        const adminSection = document.getElementById('admin-section');
+
+        anggotaSection.style.display = 'none';
+        ketuaSection.style.display = 'none';
+        adminSection.style.display = 'none';
+
+        const userRole = (user.role || '').toLowerCase();
+
+        if (userRole === 'anggota' && user.username === tugas.tugasUsername) {
+            anggotaSection.style.display = 'block';
+            // Reset form
+            document.getElementById('bukti-jenis').value = "";
+            document.getElementById('bukti-nilai').value = "";
+            M.FormSelect.init(document.getElementById('bukti-jenis')); // Re-init select
+        }
+
+        if (userRole === 'ketua pilar' && user.pilar === tugas.Pilar) {
+            ketuaSection.style.display = 'block';
+            document.getElementById('modal-status-anggota').textContent = tugas['Status Pengerjaan'] || '-';
+            document.getElementById('modal-bukti-detail').textContent = '...'; // Anda mungkin perlu menambahkan data ini
+            document.getElementById('ketua-status').value = tugas['Status Ketua Pilar'] || "";
+            document.getElementById('ketua-catatan').value = tugas.catatanKetua || '';
+            M.FormSelect.init(document.getElementById('ketua-status')); // Re-init select
+        }
+
+        if (userRole === 'admin') {
+            adminSection.style.display = 'block';
+            document.getElementById('modal-status-ketua').textContent = tugas['Status Ketua Pilar'] || '-';
+            document.getElementById('modal-catatan-ketua').textContent = tugas.catatanKetua || '-';
+            document.getElementById('admin-status').value = tugas['Status Admin'] || "";
+            document.getElementById('admin-catatan').value = tugas.catatanAdmin || '';
+            M.FormSelect.init(document.getElementById('admin-status')); // Re-init select
+        }
+
+        // Buka modal
+        modalInstance.open();
     }
 
     function getStatusColor(status) {
