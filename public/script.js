@@ -24,7 +24,58 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!window.APP_CONFIG.API_KEY) {
         console.error('API key tidak ditemukan. Pastikan config.js dimuat dengan benar.');
     }
+    
+    // Inisialisasi komponen Materialize
+    const elems = document.querySelectorAll('.modal');
+    M.Modal.init(elems);
+    
+    // Inisialisasi form login
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Inisialisasi tombol logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    // Cek status login
+    checkAuthStatus();
 });
+
+// Fungsi untuk memeriksa status autentikasi
+function checkAuthStatus() {
+    const loginPage = document.getElementById('login-page');
+    const mainContent = document.getElementById('main-content');
+    const user = sessionStorage.getItem('user');
+    
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            const userInfo = document.getElementById('user-info');
+            const userName = document.getElementById('user-name');
+            const userRole = document.getElementById('user-role');
+            
+            if (userInfo) userInfo.textContent = userData.nama || 'User';
+            if (userName) userName.textContent = userData.nama || 'User';
+            if (userRole) userRole.textContent = userData.role || 'User';
+            
+            if (loginPage) loginPage.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
+            
+            // Load data awal
+            loadDashboardData();
+        } catch (e) {
+            console.error('Error parsing user data:', e);
+            handleLogout();
+        }
+    } else {
+        if (loginPage) loginPage.style.display = 'block';
+        if (mainContent) mainContent.style.display = 'none';
+    }
+}
 
 // Fungsi untuk memanggil API dengan error handling yang lebih baik
 async function callApi(action, method = 'GET', data = {}) {
@@ -45,8 +96,8 @@ async function callApi(action, method = 'GET', data = {}) {
             },
             body: JSON.stringify({
                 action,
-                method, // Sertakan method dalam body untuk Netlify Functions
-                ...(method !== 'GET' && { data }), // Hanya sertakan data jika bukan GET
+                method,
+                ...(method !== 'GET' && { data }),
                 timestamp: new Date().toISOString()
             }),
             signal: controller.signal
@@ -63,7 +114,9 @@ async function callApi(action, method = 'GET', data = {}) {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            error.status = response.status;
+            throw error;
         }
 
         const responseData = await response.json();
@@ -71,25 +124,18 @@ async function callApi(action, method = 'GET', data = {}) {
         return responseData;
     } catch (error) {
         console.error(`[API] Error: ${action}`, error);
+        
+        // Handle error spesifik
+        if (error.name === 'AbortError') {
+            error.message = 'Permintaan timeout. Silakan coba lagi.';
+        } else if (error.status === 401) {
+            handleLogout();
+            error.message = 'Sesi Anda telah berakhir. Silakan login kembali.';
+        } else if (!navigator.onLine) {
+            error.message = 'Tidak ada koneksi internet. Periksa koneksi Anda.';
+        }
+        
         throw error;
-    }
-}
-
-// Fungsi untuk menampilkan error
-function showError(message) {
-    console.error('[Error]', message);
-    M.toast({
-        html: `<span>${message}</span>`,
-        classes: 'red',
-        displayLength: 4000
-    });
-}
-
-// Fungsi untuk menampilkan loading
-function showLoading(show = true) {
-    const loader = document.getElementById('loader-overlay');
-    if (loader) {
-        loader.style.display = show ? 'flex' : 'none';
     }
 }
 
@@ -97,139 +143,79 @@ function showLoading(show = true) {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('username')?.value.trim();
+    const username = document.getElementById('username')?.value;
     const password = document.getElementById('password')?.value;
-    const loginButton = event.target.querySelector('button[type="submit"]');
     const errorElement = document.getElementById('login-error');
     
-    if (!loginButton) return;
+    if (!username || !password) {
+        if (errorElement) {
+            errorElement.textContent = 'Username dan password harus diisi';
+            errorElement.style.display = 'block';
+        }
+        return;
+    }
     
     try {
-        // Validasi input
-        if (!username || !password) {
-            throw new Error('Username dan password harus diisi');
-        }
+        showLoading(true);
         
-        // Tampilkan loading
-        loginButton.disabled = true;
-        loginButton.innerHTML = '<i class="material-icons left">loop</i> Memproses...';
-        
-        // Sembunyikan pesan error sebelumnya
-        if (errorElement) {
-            errorElement.style.display = 'none';
-        }
-        
-        // Panggil API login
         const response = await callApi('login', 'POST', { username, password });
         
-        if (response.success && response.user) {
-            // Simpan data user
+        if (response && response.success && response.user) {
+            // Simpan data user ke session storage
             sessionStorage.setItem('user', JSON.stringify(response.user));
-            window.location.href = '/dashboard.html';
+            
+            // Perbarui UI
+            checkAuthStatus();
+            
+            // Tampilkan notifikasi sukses
+            M.toast({html: 'Login berhasil!', classes: 'green'});
         } else {
-            throw new Error(response.message || 'Login gagal');
+            throw new Error(response?.message || 'Login gagal. Periksa kembali username dan password Anda.');
         }
     } catch (error) {
         console.error('Login error:', error);
         
-        // Tampilkan pesan error
         if (errorElement) {
-            errorElement.textContent = error.message || 'Terjadi kesalahan saat login';
+            errorElement.textContent = error.message || 'Terjadi kesalahan saat login. Silakan coba lagi.';
             errorElement.style.display = 'block';
-            
-            // Scroll ke error message
-            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     } finally {
-        // Reset tombol login
-        if (loginButton) {
-            loginButton.disabled = false;
-            loginButton.innerHTML = '<i class="material-icons left">login</i> Masuk';
-        }
+        showLoading(false);
     }
 }
 
 // Fungsi untuk menangani logout
 function handleLogout() {
+    // Hapus data user dari session storage
     sessionStorage.removeItem('user');
-    window.location.href = '/';
+    
+    // Reset form login
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.reset();
+    
+    // Reset pesan error
+    const errorElement = document.getElementById('login-error');
+    if (errorElement) errorElement.style.display = 'none';
+    
+    // Perbarui UI
+    checkAuthStatus();
+    
+    // Redirect ke halaman login
+    window.location.hash = '';
 }
 
-// Inisialisasi event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi form login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
+// Fungsi untuk menampilkan/menyembunyikan loading
+function showLoading(show = true) {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        loadingElement.style.display = show ? 'flex' : 'none';
     }
-    
-    // Inisialisasi tombol logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-    
-    // Inisialisasi navigasi
-    const navLinks = {
-        'dashboard-link': 'dashboard-view',
-        'tugas-saya-link': 'tugas-saya-view',
-        'link-pendukung-link': 'link-pendukung-view'
-    };
-    
-    Object.entries(navLinks).forEach(([linkId, viewId]) => {
-        const link = document.getElementById(linkId);
-        const view = document.getElementById(viewId);
-        
-        if (link && view) {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // Sembunyikan semua view
-                document.querySelectorAll('[id$="-view"]').forEach(v => {
-                    v.classList.add('d-none');
-                });
-                
-                // Tampilkan view yang dipilih
-                view.classList.remove('d-none');
-                
-                // Update active nav item
-                document.querySelectorAll('.sidenav a').forEach(a => {
-                    a.classList.remove('active');
-                });
-                link.classList.add('active');
-                
-                // Load data jika diperlukan
-                if (viewId === 'dashboard-view') {
-                    loadDashboardData();
-                } else if (viewId === 'tugas-saya-view') {
-                    loadTugasSaya();
-                } else if (viewId === 'link-pendukung-view') {
-                    loadLinkPendukung();
-                }
-            });
-        }
-    });
-    
-    // Cek status login
-    const user = sessionStorage.getItem('user');
-    if (user) {
-        document.getElementById('login-page').classList.add('d-none');
-        document.getElementById('main-content').classList.remove('d-none');
-        
-        // Update info user
-        const userData = JSON.parse(user);
-        const userInfo = document.getElementById('user-info');
-        if (userInfo) {
-            userInfo.textContent = `${userData.nama} (${userData.role})`;
-        }
-        
-        // Load data awal
-        loadDashboardData();
-    } else {
-        document.getElementById('login-page').classList.remove('d-none');
-        document.getElementById('main-content').classList.add('d-none');
-    }
-});
+}
+
+// Fungsi untuk menampilkan pesan error
+function showError(message, duration = 5000) {
+    M.toast({html: message, classes: 'red', displayLength: duration});
+}
 
 // Fungsi untuk memuat data dashboard
 async function loadDashboardData() {
@@ -240,11 +226,11 @@ async function loadDashboardData() {
         if (response.success && response.data) {
             renderDashboardTable(response.data);
         } else {
-            throw new Error(response.message || 'Gagal memuat data dashboard');
+            throw new Error(response?.message || 'Gagal memuat data dashboard');
         }
     } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showError('Gagal memuat data dashboard: ' + (error.message || 'Terjadi kesalahan'));
+        console.error('Error loading dashboard data:', error);
+        showError(error.message || 'Terjadi kesalahan saat memuat data dashboard');
     } finally {
         showLoading(false);
     }
