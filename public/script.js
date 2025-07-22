@@ -73,31 +73,73 @@ document.addEventListener('DOMContentLoaded', function() {
         view.style.display = 'block';
     }
 
-    navDashboard.addEventListener('click', (e) => { e.preventDefault(); showView(dashboardView); loadDashboard(); });
-    navTugas.addEventListener('click', (e) => { e.preventDefault(); showView(tugasView); loadTugas(); });
-    navLinkPendukung.addEventListener('click', (e) => { e.preventDefault(); showView(linkPendukungView); loadLinkPendukung(); });
-
     // --- Otentikasi ---
-    loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        loginError.textContent = '';
-        const username = loginForm.username.value;
-        const password = loginForm.password.value;
+    let loginListenerAttached = false;
+    function setupLoginListeners() {
+        if (loginForm && !loginListenerAttached) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                loginError.textContent = '';
+                const username = loginForm.username.value;
+                const password = loginForm.password.value;
 
-        const result = await callGasApi('login', 'POST', { username, password });
+                const result = await callGasApi('login', 'POST', { username, password });
 
-        if (result && result.success) {
-            sessionStorage.setItem('user', JSON.stringify(result));
-            showMainContent();
-        } else {
-            loginError.textContent = result ? result.message : 'Login gagal!';
+                if (result && result.success) {
+                    sessionStorage.setItem('user', JSON.stringify(result));
+                    showMainContent();
+                } else {
+                    loginError.textContent = result ? result.message : 'Login gagal!';
+                }
+            });
+            loginListenerAttached = true;
         }
-    });
+    }
 
-    logoutButton.addEventListener('click', () => {
-        sessionStorage.removeItem('user');
-        showLogin();
-    });
+    let mainContentLoaded = false;
+    function setupMainContentListeners() {
+        if (mainContentLoaded) return; // Hanya pasang listener sekali
+
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                sessionStorage.removeItem('user');
+                showLogin();
+            });
+        }
+
+        if (navDashboard) {
+            navDashboard.addEventListener('click', (e) => { e.preventDefault(); showView(dashboardView); loadDashboard(); });
+        }
+        if (navTugas) {
+            navTugas.addEventListener('click', (e) => { e.preventDefault(); showView(tugasView); loadTugas(); });
+        }
+        if (navLinkPendukung) {
+            navLinkPendukung.addEventListener('click', (e) => { e.preventDefault(); showView(linkPendukungView); loadLinkPendukung(); });
+        }
+
+        if (modalSubmitButton) {
+            modalSubmitButton.addEventListener('click', async () => {
+                if (!activeTask) return;
+        
+                const payload = {
+                    id: activeTask.id,
+                    status: modalUpdateStatus.value,
+                    link: modalUpdateLink.value,
+                    catatan: modalUpdateCatatan.value
+                };
+
+                const result = await callGasApi('updateTugas', 'POST', payload);
+                if (result && result.success) {
+                    tugasModal.hide();
+                    loadTugas(); // Refresh tabel tugas
+                    loadDashboard(); // Refresh dashboard
+                } else {
+                    alert('Gagal memperbarui tugas.');
+                }
+            });
+        }
+        mainContentLoaded = true;
+    }
 
     function showMainContent() {
         const user = JSON.parse(sessionStorage.getItem('user'));
@@ -111,6 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
             pilarUser.textContent = user.pilar;
             loginSection.style.display = 'none';
             mainContent.style.display = 'block';
+
+            setupMainContentListeners(); // Pasang listener untuk konten utama
+
             showView(dashboardView);
             loadDashboard();
         } else {
@@ -121,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showLogin() {
         loginSection.style.display = 'block';
         mainContent.style.display = 'none';
+        setupLoginListeners(); // Pasang listener untuk form login
     }
 
     // --- Memuat Data ---
@@ -208,26 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tugasModal.show();
     }
 
-    modalSubmitButton.addEventListener('click', async () => {
-        if (!activeTask) return;
-
-        const payload = {
-            id: activeTask.id,
-            status: modalUpdateStatus.value,
-            link: modalUpdateLink.value,
-            catatan: modalUpdateCatatan.value
-        };
-
-        const result = await callGasApi('updateTugas', 'POST', payload);
-        if (result && result.success) {
-            tugasModal.hide();
-            loadTugas(); // Refresh tabel tugas
-            loadDashboard(); // Refresh dashboard
-        } else {
-            alert('Gagal memperbarui tugas.');
-        }
-    });
-
     function getStatusColor(status) {
         switch (status) {
             case 'Selesai': return 'success';
@@ -237,6 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Inisialisasi --- 
-    showMainContent();
+    // --- Inisialisasi Awal ---
+    showMainContent(); // Cek sesi dan tampilkan halaman yang sesuai
 });
