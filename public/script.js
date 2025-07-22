@@ -93,6 +93,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (viewToShow) viewToShow.style.display = 'block';
     }
 
+    // --- Inisialisasi Komponen Materialize ---
+    function initMaterialize() {
+        const sidenavs = document.querySelectorAll('.sidenav');
+        M.Sidenav.init(sidenavs);
+
+        const modals = document.querySelectorAll('.modal');
+        M.Modal.init(modals);
+    }
+
     // --- Setup Event Listeners ---
     function setupLoginListeners() {
         const loginForm = document.getElementById('login-form');
@@ -299,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Inisialisasi Aplikasi ---
     function init() {
+        initMaterialize(); // Panggil inisialisasi di sini
         const user = sessionStorage.getItem('user');
         if (user) {
             showMainContent();

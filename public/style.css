@@ -1,7 +1,40 @@
 /* style.css */
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f4f8;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+    padding-bottom: 20px;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.btn {
+    border-radius: 20px;
+}
+
+.sidenav {
+    padding-top: 20px;
+}
+
+.sidenav li > a {
+    font-weight: 500;
+}
+
+.sidenav li > a > i.material-icons {
+    margin-right: 20px;
 }
 
 #login-page .card {
