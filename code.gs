@@ -11,6 +11,9 @@ function isValidRequest(e) {
   const headers = e.headers || {};
   const requestApiKey = headers['x-api-key'] || headers['X-Api-Key']; // Cek header dalam format lowercase dan camel-case
 
+  // Log untuk debugging
+  Logger.log(`Received Key: ${requestApiKey} | Expected Key starts with: ${SCRIPT_API_KEY ? SCRIPT_API_KEY.substring(0, 4) + '...' : 'NOT SET'}`);
+
   return requestApiKey === SCRIPT_API_KEY;
 }
 

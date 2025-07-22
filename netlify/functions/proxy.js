@@ -2,10 +2,15 @@ const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
   // Ambil URL dan API Key dari environment variables di Netlify
-  const { GAS_APP_URL, API_KEY } = process.env;
+  const gasAppUrl = process.env.GAS_APP_URL;
+  const apiKey = process.env.API_KEY;
+
+  // Log untuk debugging - JANGAN GUNAKAN DI PRODUKSI
+  console.log(`Proxying to: ${gasAppUrl}`);
+  console.log(`API Key loaded: ${apiKey ? apiKey.substring(0, 4) + '...' : 'NOT FOUND'}`);
 
   // Cek apakah variabel lingkungan sudah diatur
-  if (!GAS_APP_URL || !API_KEY) {
+  if (!gasAppUrl || !apiKey) {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: 'Konfigurasi server (environment variables) tidak lengkap.' })
@@ -14,13 +19,13 @@ exports.handler = async function(event, context) {
 
   try {
     const method = event.httpMethod;
-    let url = GAS_APP_URL;
+    let url = gasAppUrl;
 
     const options = {
       method: method,
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
-        'x-api-key': API_KEY
+        'x-api-key': apiKey
       },
       redirect: 'follow'
     };
@@ -37,6 +42,7 @@ exports.handler = async function(event, context) {
       }
     }
 
+    console.log('Sending request to GAS...');
     const response = await fetch(url, options);
     const data = await response.json();
 
