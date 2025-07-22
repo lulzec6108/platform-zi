@@ -79,8 +79,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showMainContent() {
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            showLogin();
+            return;
+        }
+
+        // PENTING: Update UI dengan info user
+        if (namaUser) namaUser.textContent = user.nama;
+        if (pilarUser) pilarUser.textContent = user.pilar;
+
         if (loginSection) loginSection.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
+        
         setupMainContentListeners();
         loadDashboard();
     }
@@ -259,9 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function init() {
         const user = sessionStorage.getItem('user');
         if (user) {
-            const userData = JSON.parse(user);
-            namaUser.textContent = userData.nama;
-            pilarUser.textContent = userData.pilar;
             showMainContent();
         } else {
             showLogin();
