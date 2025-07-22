@@ -1,1 +1,1 @@
-/api/*    /.netlify/functions/proxy    200!
+/api/proxy    /.netlify/functions/proxy    200
