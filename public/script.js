@@ -2,44 +2,11 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // --- Variabel Global & State ---
-    const loginView = document.getElementById('login-section');
-    const mainContentView = document.getElementById('main-content');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const namaUser = document.getElementById('nama-user');
-    const pilarUser = document.getElementById('pilar-user');
-    const logoutButton = document.getElementById('logout-button');
-
-    const dashboardView = document.getElementById('dashboard-view');
-    const tugasView = document.getElementById('tugas-view');
-    const linkPendukungView = document.getElementById('link-pendukung-view');
-
-    const navDashboard = document.getElementById('nav-dashboard');
-    const navTugas = document.getElementById('nav-tugas');
-    const navLinkPendukung = document.getElementById('nav-link-pendukung');
-
-    const tugasTableBody = document.getElementById('tugas-table-body');
-    const linkPendukungTableBody = document.getElementById('link-pendukung-table-body');
-    
-    let tugasModal; 
-    const modalTugasJudul = document.getElementById('modalTugasJudul');
-    const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
-    const modalTugasDeadline = document.getElementById('modalTugasDeadline');
-    const modalTugasStatus = document.getElementById('modalTugasStatus');
-    const modalTugasLink = document.getElementById('modalTugasLink');
-    const modalTugasPilar = document.getElementById('modalTugasPilar');
-    const modalTugasPIC = document.getElementById('modalTugasPIC');
-    const modalCatatanPIC = document.getElementById('modalCatatanPIC');
-    const modalUpdateForm = document.getElementById('modal-update-form');
-    const modalUpdateStatus = document.getElementById('modalUpdateStatus');
-    const modalUpdateLink = document.getElementById('modalUpdateLink');
-    const modalUpdateCatatan = document.getElementById('modalUpdateCatatan');
-    const modalSubmitButton = document.getElementById('modalSubmitButton');
-
-    let activeTask = null; 
-
+    // Variabel akan diinisialisasi di dalam fungsi untuk memastikan referensi yang 'segar'
     let loginListenerAttached = false;
     let mainContentLoaded = false;
+    let activeTask = null;
+    let tugasModal;
 
     // --- Fungsi API Call ---
     async function callGasApi(action, method = 'GET', payload = {}) {
@@ -72,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Fungsi UI & Kontrol State ---
     function showLogin() {
+        const loginView = document.getElementById('login-page'); // FIX: ID yang benar
+        const mainContentView = document.getElementById('main-content');
         if (loginView) loginView.style.display = 'block';
         if (mainContentView) mainContentView.style.display = 'none';
         sessionStorage.removeItem('user');
@@ -80,15 +49,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showMainContent() {
         try {
+            const loginView = document.getElementById('login-page'); // FIX: ID yang benar
+            const mainContentView = document.getElementById('main-content');
+            const userInfo = document.getElementById('user-info'); // FIX: Elemen yang benar
+
             const user = JSON.parse(sessionStorage.getItem('user'));
             if (!user) {
                 showLogin();
                 return;
             }
 
-            // PENTING: Update UI dengan info user
-            if (namaUser) namaUser.textContent = user.nama;
-            if (pilarUser) pilarUser.textContent = user.pilar;
+            // FIX: Tampilkan nama dan pilar di elemen yang ada
+            if (userInfo) userInfo.textContent = `${user.nama} (${user.pilar})`;
 
             if (loginView) loginView.style.display = 'none';
             if (mainContentView) mainContentView.style.display = 'block';
@@ -96,11 +68,10 @@ document.addEventListener('DOMContentLoaded', function() {
             setupMainContentListeners();
             loadDashboard();
         } catch (error) {
-            // Tampilkan error apapun yang terjadi ke layar!
+            const loginError = document.getElementById('login-error');
             if(loginError) {
                 loginError.textContent = `Terjadi error setelah login: ${error.message}`;
             }
-            // Tampilkan kembali form login jika terjadi error fatal
             showLogin();
         }
     }
@@ -113,6 +84,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Setup Event Listeners ---
     function setupLoginListeners() {
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+
         if (loginForm && !loginListenerAttached) {
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -138,11 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupMainContentListeners() {
         if (mainContentLoaded) return;
 
+        const logoutButton = document.getElementById('logout-btn'); // FIX: ID yang benar
         if (logoutButton) {
             logoutButton.addEventListener('click', function() {
                 showLogin();
             });
         }
+
+        const navDashboard = document.getElementById('nav-dashboard');
+        const navTugas = document.getElementById('nav-tugas');
+        const navLinkPendukung = document.getElementById('nav-link-pendukung');
 
         if (navDashboard) {
             navDashboard.addEventListener('click', (e) => { e.preventDefault(); showView(dashboardView); loadDashboard(); });
@@ -153,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (navLinkPendukung) {
             navLinkPendukung.addEventListener('click', (e) => { e.preventDefault(); showView(linkPendukungView); loadLinkPendukung(); });
         }
+
+        const modalSubmitButton = document.getElementById('modalSubmitButton');
 
         if (modalSubmitButton) {
             modalSubmitButton.addEventListener('click', async () => {
@@ -194,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const user = JSON.parse(sessionStorage.getItem('user'));
         const result = await callGasApi('getTugas', 'GET', { username: user.username, role: user.role, pilar: user.pilar });
 
+        const tugasTableBody = document.getElementById('tugas-table-body');
         tugasTableBody.innerHTML = '';
         if (result && result.success) {
             result.data.forEach(tugas => {
@@ -224,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadLinkPendukung() {
         const result = await callGasApi('getLinkPendukung', 'GET');
+        const linkPendukungTableBody = document.getElementById('link-pendukung-table-body');
         linkPendukungTableBody.innerHTML = '';
         if (result && result.success) {
             result.data.forEach(link => {
@@ -240,6 +223,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Modal Tugas ---
     function openTugasModal(tugas) {
         const user = JSON.parse(sessionStorage.getItem('user'));
+
+        const modalTugasJudul = document.getElementById('modalTugasJudul');
+        const modalTugasDeskripsi = document.getElementById('modalTugasDeskripsi');
+        const modalTugasDeadline = document.getElementById('modalTugasDeadline');
+        const modalTugasStatus = document.getElementById('modalTugasStatus');
+        const modalTugasLink = document.getElementById('modalTugasLink');
+        const modalTugasPilar = document.getElementById('modalTugasPilar');
+        const modalTugasPIC = document.getElementById('modalTugasPIC');
+        const modalCatatanPIC = document.getElementById('modalCatatanPIC');
+        const modalUpdateForm = document.getElementById('modal-update-form');
+        const modalUpdateStatus = document.getElementById('modalUpdateStatus');
+        const modalUpdateLink = document.getElementById('modalUpdateLink');
+        const modalUpdateCatatan = document.getElementById('modalUpdateCatatan');
 
         modalTugasJudul.textContent = tugas.tugas;
         modalTugasDeskripsi.textContent = tugas.deskripsi;
