@@ -18,7 +18,7 @@
     <link rel="icon" type="image/png" href="https://i.imgur.com/ivaX19X.png">
 
 </head>
-<body class="valign-wrapper">
+<body>
     <!-- Loading Overlay -->
     <div id="loading" class="loading-overlay" style="display: none;">
         <div class="preloader-wrapper big active">
@@ -70,7 +70,7 @@
                         </div>
                         <div id="error-message" class="red-text center-align" style="margin-bottom: 15px;"></div>
                         
-                        <div class="input-field button-field center-align">
+                        <div class="center-align">
                             <button type="submit" class="btn waves-effect waves-light">Login</button>
                         </div>
                     </form>
@@ -112,7 +112,7 @@
 
         <!-- Page Content -->
         <main>
-            <div class="container page-content">
+            <div class="page-content">
                 <!-- All views will be loaded here -->
                 <h4 class="page-title">Dashboard</h4>
                 <div class="divider"></div>
@@ -127,36 +127,34 @@
             <h4>Detail Tugas</h4>
             <div class="divider"></div>
             
-            <div class="row">
-                <div class="col s12 m6">
-                    <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas">-</span></p>
-                    <p><strong>Deskripsi:</strong> <span id="modal-deskripsi">-</span></p>
-                    <p><strong>Tanggal Mulai:</strong> <span id="modal-tgl-mulai">-</span></p>
-                    <p><strong>Deadline:</strong> <span id="modal-deadline">-</span></p>
-                    <p><strong>Status:</strong> <span id="modal-status">-</span></p>
-                </div>
-                <div class="col s12 m6">
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title">Bukti Dukung</span>
-                            <div id="bukti-dukung-container">
-                                <p>Tidak ada bukti dukung yang diunggah.</p>
-                            </div>
-                            
-                            <div class="file-field input-field" id="upload-container">
-                                <div class="btn blue">
-                                    <span>Pilih File</span>
-                                    <input type="file" id="bukti-file" multiple>
-                                </div>
-                                <div class="file-path-wrapper">
-                                    <input class="file-path validate" type="text" placeholder="Unggah satu atau lebih file">
-                                </div>
-                            </div>
-                            
-                            <button id="btn-upload" class="btn waves-effect waves-light" style="margin-top: 10px;">
-                                <i class="material-icons left">cloud_upload</i> Upload Bukti
-                            </button>
+            <div>
+                <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas">-</span></p>
+                <p><strong>Deskripsi:</strong> <span id="modal-deskripsi">-</span></p>
+                <p><strong>Tanggal Mulai:</strong> <span id="modal-tgl-mulai">-</span></p>
+                <p><strong>Deadline:</strong> <span id="modal-deadline">-</span></p>
+                <p><strong>Status:</strong> <span id="modal-status">-</span></p>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Bukti Dukung</span>
+                        <div id="bukti-dukung-container">
+                            <p>Tidak ada bukti dukung yang diunggah.</p>
                         </div>
+                        
+                        <div class="file-field input-field" id="upload-container">
+                            <div class="btn blue">
+                                <span>Pilih File</span>
+                                <input type="file" id="bukti-file" multiple>
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text" placeholder="Unggah satu atau lebih file">
+                            </div>
+                        </div>
+                        
+                        <button id="btn-upload" class="btn waves-effect waves-light" style="margin-top: 10px;">
+                            <i class="material-icons left">cloud_upload</i> Upload Bukti
+                        </button>
                     </div>
                 </div>
             </div>
@@ -165,22 +163,20 @@
             <div id="form-verifikasi" style="display: none;">
                 <div class="divider"></div>
                 <h5>Verifikasi Admin</h5>
-                <div class="row">
-                    <div class="col s12">
-                        <div class="input-field">
-                            <input id="catatan-verifikasi" type="text" class="validate">
-                            <label for="catatan-verifikasi">Catatan Verifikasi</label>
-                        </div>
+                <div>
+                    <div class="input-field">
+                        <input id="catatan-verifikasi" type="text" class="validate">
+                        <label for="catatan-verifikasi">Catatan Verifikasi</label>
                     </div>
-                    <div class="col s12">
-                        <div class="input-field">
-                            <select id="status-verifikasi">
-                                <option value="" disabled selected>Pilih Status Verifikasi</option>
-                                <option value="diterima">Diterima</option>
-                                <option value="ditolak">Ditolak</option>
-                            </select>
-                            <label>Status Verifikasi</label>
-                        </div>
+                </div>
+                <div>
+                    <div class="input-field">
+                        <select id="status-verifikasi">
+                            <option value="" disabled selected>Pilih Status Verifikasi</option>
+                            <option value="diterima">Diterima</option>
+                            <option value="ditolak">Ditolak</option>
+                        </select>
+                        <label>Status Verifikasi</label>
                     </div>
                 </div>
             </div>
