@@ -60,6 +60,33 @@ function switchView(viewId) {
         console.log(`Menampilkan view: ${viewId}`);
     } else {
         console.error(`View dengan ID '${viewId}' tidak ditemukan.`);
+        return; // Hentikan jika view tidak ditemukan
+    }
+
+    // Perbarui status 'active' pada menu sidebar
+    document.querySelectorAll('.sidenav li').forEach(li => {
+        li.classList.remove('active');
+    });
+    const activeLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
+    if (activeLink && activeLink.parentElement) {
+        activeLink.parentElement.classList.add('active');
+    }
+
+    // Muat data yang relevan berdasarkan view yang aktif
+    switch (viewId) {
+        case 'dashboard-view':
+            loadDashboardData();
+            break;
+        case 'tugas-saya-view':
+            loadTugasSaya();
+            break;
+        case 'link-pendukung-view':
+            loadLinkPendukung();
+            break;
+        case 'kinerja-tim-view':
+            // Di masa depan, panggil fungsi seperti loadKinerjaTimData() di sini
+            console.log('Memuat data Kinerja Tim...');
+            break;
     }
 }
 
@@ -87,8 +114,8 @@ function checkAuthStatus() {
             // Atur avatar pengguna secara acak
             setRandomAvatar();
             
-            // Muat data yang relevan untuk halaman utama
-            loadDashboardData();
+            // Saat pertama kali login, tampilkan dashboard
+            switchView('dashboard-view');
         } catch (e) {
             console.error('Gagal mem-parsing data pengguna, logout paksa:', e);
             handleLogout(); // Jika data user rusak, paksa logout
