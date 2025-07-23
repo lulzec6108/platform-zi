@@ -396,37 +396,6 @@
 
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    
-    <!-- Inisialisasi komponen Materialize -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inisialisasi modal
-            const modals = document.querySelectorAll('.modal');
-            M.Modal.init(modals);
-            
-            // Inisialisasi select
-            const selects = document.querySelectorAll('select');
-            M.FormSelect.init(selects);
-            
-            // Inisialisasi datepicker
-            const datepickers = document.querySelectorAll('.datepicker');
-            M.Datepicker.init(datepickers, {
-                format: 'dd-mm-yyyy',
-                i18n: {
-                    cancel: 'Batal',
-                    clear: 'Hapus',
-                    done: 'OK',
-                    months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
-                    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
-                    weekdays: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
-                    weekdaysShort: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-                    weekdaysAbbrev: ['M', 'S', 'S', 'R', 'K', 'J', 'S']
-                }
-            });
-        });
-    </script>
-    
-    <!-- Aplikasi JavaScript -->
     <script src="/script.js"></script>
 </body>
 </html>

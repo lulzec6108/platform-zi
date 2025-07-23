@@ -106,8 +106,13 @@ async function callApi(action, method = 'GET', data = {}) {
 async function handleLogin(event) {
     event.preventDefault(); // Mencegah aksi default tombol/form
 
+    console.log('--- Memulai handleLogin ---');
     const usernameInput = document.querySelector('#username');
     const pinInput = document.querySelector('#pin');
+
+    // Logging untuk diagnostik
+    console.log('Mencari elemen #username:', usernameInput);
+    console.log('Mencari elemen #pin:', pinInput);
 
     // Tambahkan pengecekan untuk memastikan elemen ada sebelum mengakses .value
     if (!usernameInput || !pinInput) {
