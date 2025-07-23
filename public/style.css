@@ -124,8 +124,151 @@ body {
     3. Dashboard Layout
 -------------------------------------------------------------------*/
 
-/* ... (sisa kode dashboard tidak diubah) ... */
+/*-------------------------------------------------------------------
+    5. Dashboard Layout
+-------------------------------------------------------------------*/
+/* Saat Sidenav aktif di desktop */
+@media only screen and (min-width: 993px) {
+    header,
+    main,
+    footer {
+        padding-left: 300px; /* Lebar default sidenav */
+    }
+}
 
+header {
+    /* Samakan warna header dengan user-view di sidebar */
+    background-color: var(--primary-color);
+    box-shadow: none;
+}
+
+.main-navbar {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.main-navbar .nav-wrapper {
+    /* Hapus padding default agar konten tidak terdorong aneh */
+    padding-left: 20px;
+}
+
+.main-navbar .brand-logo {
+    color: #fff; /* Ubah warna teks jadi putih */
+    font-weight: 600;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    position: relative; /* Pastikan posisi tidak absolut */
+    left: 0;
+    transform: none;
+}
+
+.main-navbar .sidenav-trigger {
+    color: #fff; /* Ubah warna ikon jadi putih */
+}
+
+/*-------------------------------------------------------------------
+    6. Sidenav
+-------------------------------------------------------------------*/
+.sidenav-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding-top: 20px;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidenav-fixed .sidenav-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.sidenav-fixed .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.sidenav-fixed .user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.sidenav-fixed .user-avatar i {
+    font-size: 40px;
+    color: var(--primary-dark);
+}
+
+.sidenav-fixed .user-details {
+    text-align: center;
+}
+
+.sidenav-fixed .user-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.sidenav-fixed .user-role {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.sidenav-fixed .sidenav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.sidenav-fixed .sidenav-menu li {
+    padding: 0;
+    margin: 0;
+}
+
+.sidenav-fixed .sidenav-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 15px;
+}
+
+.sidenav-fixed .sidenav-menu li a i {
+    margin-right: 12px;
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.sidenav-fixed .sidenav-menu li:hover {
+    background-color: #334155;
+}
+
+.sidenav-fixed .sidenav-menu li.active {
+    background-color: #3b82f6;
+    border-left: 4px solid #ffffff;
+}
+
+.sidenav-fixed .sidenav-menu .divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 15px 0;
+}
 
 /*-------------------------------------------------------------------
     9. Responsive Adjustments
