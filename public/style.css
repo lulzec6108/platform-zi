@@ -56,6 +56,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-self: stretch;
 }
 
 .login-art-side {
@@ -133,7 +134,7 @@ body {
 
     .login-form-side {
         width: 100%;
-        height: 100%;
+        height: 100vh;
         background: linear-gradient(45deg, #2962ff, #00b0ff); /* KUNCI: Gradien di kolom form */
         display: flex; /* Gunakan flex untuk centering di mobile */
         flex-direction: column;
