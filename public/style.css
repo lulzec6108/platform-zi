@@ -203,6 +203,11 @@ body {
     4. Responsive Styles (Mobile First)
 -------------------------------------------------------------------*/
 @media only screen and (max-width: 992px) {
+    /* Latar belakang halaman menjadi biru di mobile */
+    #login-page {
+        background: linear-gradient(45deg, #2962ff, #00b0ff);
+    }
+
     .login-container {
         flex-direction: column;
         width: 100%;
@@ -212,54 +217,17 @@ body {
 
     .login-form-side {
         width: 100%;
-        background: linear-gradient(45deg, #2962ff, #00b0ff);
+        background: none; /* Hapus background biru dari form */
     }
 
+    /* Pastikan panel login kembali menjadi kartu putih */
     .login-form-side .login-panel {
-        background-color: transparent;
-        box-shadow: none;
-        border: none;
-        padding: 2rem 1.5rem; /* Sedikit padding tambahan */
+        padding: 2rem 1.5rem;
     }
 
-    /* Sembunyikan judul besar di mobile */
+    /* Sembunyikan judul besar di mobile, ini tetap berlaku */
     .login-title-mobile {
         display: none;
-    }
-
-    /* Ubah warna teks dan elemen form menjadi putih */
-    .login-form-side .login-header p,
-    .login-form-side .input-field label {
-        color: #eee;
-    }
-
-    .login-form-side .input-field .prefix {
-        color: #fff;
-    }
-
-    .login-form-side input[type=text]:not(.browser-default),
-    .login-form-side input[type=password]:not(.browser-default) {
-        border-bottom: 1px solid rgba(255,255,255,0.7);
-        color: #fff;
-    }
-
-    .login-form-side input[type=text]:not(.browser-default):focus:not([readonly]),
-    .login-form-side input[type=password]:not(.browser-default):focus:not([readonly]) {
-        border-bottom: 1px solid #fff;
-        box-shadow: 0 1px 0 0 #fff;
-    }
-    
-    .login-form-side input:-webkit-autofill,
-    .login-form-side input:-webkit-autofill:hover, 
-    .login-form-side input:-webkit-autofill:focus, 
-    .login-form-side input:-webkit-autofill:active {
-        -webkit-box-shadow: 0 0 0 30px #3d82f8 inset !important; /* Warna background autofill */
-        -webkit-text-fill-color: #fff !important; /* Warna teks autofill */
-    }
-
-    .login-form-side #error-message {
-        color: #ffcdd2 !important; /* Warna error merah muda */
-        font-weight: 500;
     }
 }
 
