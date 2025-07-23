@@ -8,12 +8,11 @@ const API_TIMEOUT = 20000; // 20 detik timeout
 document.addEventListener('DOMContentLoaded', function() {
     M.AutoInit();
 
-    // Gunakan Event Delegation untuk menangani klik login
-    document.body.addEventListener('click', function(event) {
-        if (event.target && event.target.id === 'login-button') {
-            handleLogin(event);
-        }
-    });
+    // KEMBALI KE CARA YANG BENAR: Dengarkan event SUBMIT pada FORM
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
 
     // Inisialisasi tombol logout
     const logoutBtn = document.getElementById('logout-btn');
