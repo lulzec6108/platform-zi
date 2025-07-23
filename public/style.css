@@ -32,19 +32,12 @@ body {
     font-family: 'Poppins', sans-serif;
     background-color: #f4f5f7; /* Warna abu-abu muda untuk background */
     color: #424242;
-    display: flex; /* KUNCI: Jadikan body sebagai flex container */
-    flex-direction: column; /* Agar konten mengalir dari atas ke bawah */
 }
 
 /* 2. Login Page Layout
 -------------------------------------------------- */
 #login-page {
-    display: flex;
-    flex-grow: 1;            /* KUNCI: Izinkan #login-page tumbuh mengisi sisa ruang body */
-    align-items: center;     /* Vertically center the .login-container */
-    justify-content: center; /* Horizontally center the .login-container */
-    min-height: 100vh;       /* KUNCI: Make the stage take full screen height */
-    padding: 1rem;           /* Padding for smaller viewports */
+    width: 100%; /* Biarkan Materialize menangani centering, kita hanya atur lebar */
 }
 
 .login-container {
