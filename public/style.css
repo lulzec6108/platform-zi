@@ -259,6 +259,9 @@ body {
     font-size: 1.8rem;
     display: flex;
     align-items: center;
+    position: relative;
+    left: 0;
+    transform: translateX(0);
 }
 
 .main-navbar .sidenav-trigger {

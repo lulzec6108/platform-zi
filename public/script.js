@@ -74,6 +74,7 @@ function checkAuthStatus() {
             // Pengguna sudah login
             if (loginPage) loginPage.style.display = 'none';
             if (mainContent) mainContent.style.display = 'block';
+            document.title = 'Dashboard | Si Paling ZI'; // Ganti judul halaman
             
             const userData = JSON.parse(user);
             
@@ -93,6 +94,7 @@ function checkAuthStatus() {
         // Pengguna belum login
         if (loginPage) loginPage.style.display = 'flex'; // DIUBAH DARI 'block' ke 'flex'
         if (mainContent) mainContent.style.display = 'none';
+        document.title = 'Login | Si Paling ZI'; // Kembalikan judul halaman
     }
 }
 
