@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Periksa status otentikasi saat halaman dimuat
     checkAuthStatus();
 
-    // Tambahkan event listener untuk navigasi Sidenav
-    document.querySelectorAll('.sidenav a[data-view]').forEach(link => {
+    // Tambahkan event listener untuk SEMUA link navigasi (sidebar & topnav)
+    document.querySelectorAll('a[data-view]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const viewId = link.getAttribute('data-view');
@@ -63,14 +63,20 @@ function switchView(viewId) {
         return; // Hentikan jika view tidak ditemukan
     }
 
-    // Perbarui status 'active' pada menu sidebar
-    document.querySelectorAll('.sidenav li').forEach(li => {
+    // --- LOGIKA ACTIVE MENU TERPUSAT ---
+    // 1. Hapus kelas 'active' dari semua item menu (di sidenav dan topnav)
+    document.querySelectorAll('.sidenav li, .topnav-menu li').forEach(li => {
         li.classList.remove('active');
     });
-    const activeLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
-    if (activeLink && activeLink.parentElement) {
-        activeLink.parentElement.classList.add('active');
-    }
+
+    // 2. Tambahkan kelas 'active' ke link yang diklik (baik di sidenav maupun topnav)
+    const activeLinks = document.querySelectorAll(`a[data-view='${viewId}']`);
+    activeLinks.forEach(link => {
+        if (link.parentElement) {
+            link.parentElement.classList.add('active');
+        }
+    });
+    // --- AKHIR LOGIKA TERPUSAT ---
 
     // Muat data yang relevan berdasarkan view yang aktif
     switch (viewId) {
@@ -156,6 +162,11 @@ async function callApi(action, method = 'GET', data = {}) {
         console.log(`[API] Request: ${options.method} ${url}`);
         const response = await fetch(url, options);
         clearTimeout(timeoutId);
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Respons dari server bukan JSON. Kemungkinan ada error di server.');
+        }
 
         const responseData = await response.json();
 
@@ -441,6 +452,15 @@ async function loadLinkPendukung() {
         const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
 
         const response = await fetch(fullUrl);
+
+        // --- PENGECEKAN PENTING ---
+        // Pastikan respons adalah JSON sebelum di-parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Respons dari server bukan JSON. Kemungkinan ada error di Google Apps Script.');
+        }
+        // --- AKHIR PENGECEKAN ---
+
         const result = await response.json();
 
         container.innerHTML = ''; // Selalu bersihkan kontainer sebelum mengisi
