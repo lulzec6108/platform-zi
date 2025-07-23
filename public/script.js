@@ -129,22 +129,29 @@ async function handleLogin(event) {
         return;
     }
 
-    showLoading(true);
     try {
-        // Gunakan callApi dengan metode POST
+        M.toast({ html: 'Mencoba masuk...', classes: 'blue' });
         const result = await callApi('login', 'POST', { username, pin });
 
-        if (result.success) {
-            sessionStorage.setItem('user', JSON.stringify(result.user));
-            checkAuthStatus(); // Refresh UI
-            window.location.hash = '#dashboard'; // Arahkan ke dashboard
+        // --- LOGGING DIAGNOSTIK ---
+        console.log('Respons mentah dari server:', result);
+
+        if (result && result.success) {
+            console.log('Login berhasil. Data pengguna:', result.data);
+            M.toast({ html: 'Login berhasil!', classes: 'green' });
+
+            console.log('Menyimpan data pengguna ke sessionStorage...');
+            sessionStorage.setItem('user', JSON.stringify(result.data));
+
+            console.log('Memanggil checkAuthStatus() untuk memperbarui UI...');
+            checkAuthStatus();
         } else {
-            throw new Error(result.message || 'Login gagal.');
+            console.error('Login gagal menurut server. Pesan:', result ? result.message : 'Respons tidak valid');
+            showError(result ? result.message : 'Terjadi kesalahan tidak diketahui.');
         }
     } catch (error) {
-        showError(error.message);
-    } finally {
-        showLoading(false);
+        console.error('Terjadi error saat memanggil API login:', error);
+        showError('Gagal terhubung ke server. Periksa koneksi Anda.');
     }
 }
 
