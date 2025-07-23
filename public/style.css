@@ -1091,28 +1091,29 @@ table tr:hover {
    Aturan ini sekarang menargetkan struktur HTML yang benar secara langsung. */
 
 /* Aturan dasar untuk semua link dan ikon di dalam sidebar */
-#slide-out > li > a,
-#slide-out > li > a > i.material-icons {
+#slide-out li > a,
+#slide-out li > a > i.material-icons {
     color: var(--text-on-primary) !important;
 }
 
-/* Aturan untuk menu yang sedang AKTIF. Materialize menambahkan warna biru pada
-   .active a, jadi kita harus menimpanya dengan spesifik. */
-#slide-out > li.active > a,
-#slide-out > li.active > a > i.material-icons {
+/* Aturan untuk menu yang sedang AKTIF. */
+/* Ini adalah perbaikan: kita menargetkan 'li.active' dan 'li.active > a' secara eksplisit */
+/* untuk menimpa background transparan dari Materialize dan memastikan warna teks tetap putih. */
+#slide-out li.active,
+#slide-out li.active > a {
+    background-color: var(--primary-color-dark) !important; /* Gunakan !important untuk menimpa Materialize */
     color: var(--text-on-primary) !important;
 }
 
-/* Tambahkan background yang lebih gelap untuk menu aktif agar lebih menonjol */
-#slide-out > li.active {
-    background-color: var(--primary-color-dark);
+#slide-out li.active > a > i.material-icons {
+    color: var(--text-on-primary) !important;
 }
 
 /* Link Pendukung - Card Layout */
 .link-pendukung-cards-container {
     display: grid;
-    /* Membuat kolom yang fleksibel, minimal 300px, dan mengisi ruang yang tersedia */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* Membuat kolom yang fleksibel, minimal 350px, dan mengisi ruang yang tersedia */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 24px; /* Jarak antar kartu */
     padding-top: 16px;
 }
