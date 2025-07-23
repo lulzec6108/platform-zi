@@ -37,8 +37,17 @@ body {
     2. Login Page Layout
 -------------------------------------------------------------------*/
 #login-page {
-    /* Aturan styling untuk sementara dipindahkan ke inline style di index.html */
-    /* Ini untuk memastikan tidak ada konflik selama pengujian. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex; /* Kunci untuk centering */
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-color);
+    z-index: 9000;
+    padding: 1rem;
 }
 
 .login-container {
@@ -187,6 +196,70 @@ body {
     .login-btn {
         background-color: #fff;
         color: #1976d2;
+    }
+}
+
+/*-------------------------------------------------------------------
+    4. Responsive Styles (Mobile First)
+-------------------------------------------------------------------*/
+@media only screen and (max-width: 992px) {
+    .login-container {
+        flex-direction: column;
+        width: 100%;
+        max-width: 450px; /* Lebar maksimum form di mobile */
+        height: auto;
+    }
+
+    .login-form-side {
+        width: 100%;
+        background: linear-gradient(45deg, #2962ff, #00b0ff);
+    }
+
+    .login-form-side .login-panel {
+        background-color: transparent;
+        box-shadow: none;
+        border: none;
+        padding: 2rem 1.5rem; /* Sedikit padding tambahan */
+    }
+
+    /* Sembunyikan judul besar di mobile */
+    .login-title-mobile {
+        display: none;
+    }
+
+    /* Ubah warna teks dan elemen form menjadi putih */
+    .login-form-side .login-header p,
+    .login-form-side .input-field label {
+        color: #eee;
+    }
+
+    .login-form-side .input-field .prefix {
+        color: #fff;
+    }
+
+    .login-form-side input[type=text]:not(.browser-default),
+    .login-form-side input[type=password]:not(.browser-default) {
+        border-bottom: 1px solid rgba(255,255,255,0.7);
+        color: #fff;
+    }
+
+    .login-form-side input[type=text]:not(.browser-default):focus:not([readonly]),
+    .login-form-side input[type=password]:not(.browser-default):focus:not([readonly]) {
+        border-bottom: 1px solid #fff;
+        box-shadow: 0 1px 0 0 #fff;
+    }
+    
+    .login-form-side input:-webkit-autofill,
+    .login-form-side input:-webkit-autofill:hover, 
+    .login-form-side input:-webkit-autofill:focus, 
+    .login-form-side input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #3d82f8 inset !important; /* Warna background autofill */
+        -webkit-text-fill-color: #fff !important; /* Warna teks autofill */
+    }
+
+    .login-form-side #error-message {
+        color: #ffcdd2 !important; /* Warna error merah muda */
+        font-weight: 500;
     }
 }
 
