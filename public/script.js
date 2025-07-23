@@ -200,6 +200,11 @@ async function handleLogin(event) {
         return;
     }
 
+    const loadingOverlay = document.getElementById('loading'); // Ambil elemen loading
+
+    // Tampilkan loading overlay
+    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
     try {
         M.toast({ html: 'Mencoba masuk...', classes: 'blue' });
         const result = await callApi('login', 'POST', { username, password }); // FIX: Mengirim 'password'
@@ -223,6 +228,9 @@ async function handleLogin(event) {
     } catch (error) {
         console.error('Terjadi error saat memanggil API login:', error);
         showError('Gagal terhubung ke server. Periksa koneksi Anda.');
+    } finally {
+        // Sembunyikan loading overlay setelah selesai
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 }
 
@@ -419,16 +427,27 @@ async function loadTugasSaya() {
     }
 }
 
-// Fungsi untuk memuat link pendukung
+// Fungsi untuk memuat data Link Pendukung dari Google Sheet
 async function loadLinkPendukung() {
+    const container = document.getElementById('link-pendukung-container');
+    if (!container) return;
+
+    // GANTI DENGAN INFORMASI DARI GOOGLE APPS SCRIPT ANDA
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
+    const API_KEY = 'semoga_bisa_wbk_aamiin';
+
+    // Membangun URL lengkap dengan parameter yang diperlukan
+    const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
+
     try {
         showLoading(true);
-        const response = await callApi('getLinkPendukung');
-        
-        if (response.success && response.data) {
-            const container = document.getElementById('link-pendukung-body');
-            if (container) {
-                container.innerHTML = response.data.map(link => `
+        const response = await fetch(fullUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            const linkPendukungBody = document.getElementById('link-pendukung-body');
+            if (linkPendukungBody) {
+                linkPendukungBody.innerHTML = data.data.map(link => `
                     <tr>
                         <td>${link.deskripsi || '-'}</td>
                         <td>
@@ -440,7 +459,7 @@ async function loadLinkPendukung() {
                 `).join('');
             }
         } else {
-            throw new Error(response.message || 'Gagal memuat link pendukung');
+            throw new Error(data.message || 'Gagal memuat link pendukung');
         }
     } catch (error) {
         console.error('Error loading support links:', error);
