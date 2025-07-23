@@ -106,9 +106,10 @@
                         <a href="#email"><span class="white-text email" id="sidenav-user-role">Role</span></a>
                     </div>
                 </li>
-                <li class="active"><a href="#!"><i class="material-icons">dashboard</i>Dashboard</a></li>
-                <li><a href="#!"><i class="material-icons">assignment</i>Tugas Saya</a></li>
-                <li><a href="#!"><i class="material-icons">link</i>Link Pendukung</a></li>
+                <li class="active"><a href="#!" data-view="dashboard-view"><i class="material-icons">dashboard</i>Dashboard</a></li>
+                <li><a href="#!" data-view="kinerja-tim-view"><i class="material-icons">groups</i>Kinerja Tim</a></li>
+                <li><a href="#!" data-view="tugas-saya-view"><i class="material-icons">assignment</i>Tugas Saya</a></li>
+                <li><a href="#!" data-view="link-pendukung-view"><i class="material-icons">link</i>Link Pendukung</a></li>
                 <li><div class="divider"></div></li>
                 <li><a id="logout-button"><i class="material-icons">logout</i>Logout</a></li>
             </ul>
@@ -117,10 +118,33 @@
         <!-- Page Content -->
         <main>
             <div class="page-content">
-                <!-- All views will be loaded here -->
-                <h4 class="page-title">Dashboard</h4>
-                <div class="divider"></div>
-                <!-- The rest of the content (cards, tables) goes here -->
+                <!-- Dashboard View -->
+                <div id="dashboard-view">
+                    <h4 class="page-title">Dashboard</h4>
+                    <div class="divider"></div>
+                    <!-- Konten Dashboard akan dimuat di sini -->
+                </div>
+
+                <!-- Kinerja Tim View (BARU) -->
+                <div id="kinerja-tim-view" style="display: none;">
+                    <h4 class="page-title">Kinerja Tim</h4>
+                    <div class="divider"></div>
+                    <!-- Konten untuk Kinerja Tim akan ditambahkan di sini -->
+                </div>
+
+                <!-- Tugas Saya View -->
+                <div id="tugas-saya-view" style="display: none;">
+                    <h4 class="page-title">Tugas Saya</h4>
+                    <div class="divider"></div>
+                    <!-- Konten Tugas Saya akan dimuat di sini -->
+                </div>
+
+                <!-- Link Pendukung View -->
+                <div id="link-pendukung-view" style="display: none;">
+                    <h4 class="page-title">Link Pendukung</h4>
+                    <div class="divider"></div>
+                    <!-- Konten Link Pendukung akan dimuat di sini -->
+                </div>
             </div>
         </main>
     </div>
