@@ -571,22 +571,15 @@ function showError(message, duration = 5000) {
     M.toast({html: message, classes: 'red', displayLength: duration});
 }
 
-// Fungsi untuk mengatur ikon avatar secara acak
+// Fungsi untuk mengatur avatar gambar berwarna secara acak menggunakan DiceBear API
 function setRandomAvatar() {
-    const avatarIcons = [
-        'face',
-        'account_circle',
-        'supervised_user_circle',
-        'tag_faces',
-        'sentiment_very_satisfied',
-        'person_pin',
-        'rocket_launch',
-        'star',
-        'emoji_events'
-    ];
-    const randomIcon = avatarIcons[Math.floor(Math.random() * avatarIcons.length)];
-    const avatarElement = document.getElementById('user-avatar-icon');
+    // Menggunakan gaya 'adventurer' untuk avatar manusia yang lebih menarik
+    // Kita buat string acak untuk memastikan avatar selalu baru setiap kali dimuat ulang
+    const seed = Math.random().toString(36).substring(7);
+    const avatarUrl = `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}`;
+    
+    const avatarElement = document.getElementById('user-avatar-img');
     if (avatarElement) {
-        avatarElement.textContent = randomIcon;
+        avatarElement.src = avatarUrl;
     }
 }

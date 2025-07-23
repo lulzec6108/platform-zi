@@ -277,7 +277,7 @@ header {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: var(--text-on-primary); /* Font & ikon putih */
+    color: var(--text-on-primary) !important; /* PAKSA WARNA PUTIH */
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 15px;
@@ -288,7 +288,7 @@ header {
     font-size: 20px;
     width: 24px;
     text-align: center;
-    color: var(--text-on-primary); /* Ikon putih */
+    color: var(--text-on-primary) !important; /* PAKSA WARNA PUTIH */
 }
 
 .sidenav-fixed .sidenav-menu li:hover {
@@ -304,6 +304,23 @@ header {
     height: 1px;
     background-color: rgba(255, 255, 255, 0.1);
     margin: 15px 0;
+}
+
+.sidenav-fixed .user-view {
+    /* Hapus background spesifik di sini agar warna sidenav utama yang digunakan */
+    margin-bottom: 10px;
+}
+
+.sidenav-fixed .user-view .background {
+    /* Kosongkan agar tidak mengganggu */
+    background-color: transparent !important;
+}
+
+/* Styling untuk avatar gambar yang baru */
+.sidenav-fixed .user-view img.user-avatar {
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
 /*-------------------------------------------------------------------
