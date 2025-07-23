@@ -475,21 +475,33 @@ async function loadLinkPendukung() {
             const cardContainer = document.createElement('div');
             cardContainer.className = 'link-pendukung-cards-container';
 
+            // Palet ikon dan warna yang akan dipilih secara acak
+            const icons = ['link', 'description', 'article', 'assignment', 'folder_open', 'launch', 'open_in_new', 'picture_as_pdf', 'gavel', 'attachment'];
+            const colors = ['teal', 'cyan', 'light-blue', 'indigo', 'blue-grey', 'green'];
+
             console.log('[DIAG] 9. Mulai iterasi data untuk membuat kartu.');
             result.data.forEach(item => {
+                // Pilih ikon dan warna secara acak
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
                 const card = document.createElement('div');
-                card.className = 'card link-pendukung-card'; // Menggunakan kelas 'card' dari Materialize dan custom
+                // Terapkan warna ke kartu. Contoh: 'card link-pendukung-card teal lighten-5'
+                card.className = `card link-pendukung-card ${randomColor} lighten-5`;
                 
                 const cardContent = document.createElement('div');
-                cardContent.className = 'card-content';
+                cardContent.className = 'card-content white-text'; // Teks putih agar kontras dengan background
                 cardContent.innerHTML = `
-                    <p class="card-title">${item.deskripsi}</p>
+                    <div class="card-icon-wrapper">
+                        <i class="material-icons medium">${randomIcon}</i>
+                    </div>
+                    <span class="card-title">${item.deskripsi}</span>
                 `;
 
                 const cardAction = document.createElement('div');
                 cardAction.className = 'card-action';
                 cardAction.innerHTML = `
-                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
+                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light white ${randomColor}-text text-darken-4">Kunjungi Link</a>
                 `;
 
                 card.appendChild(cardContent);

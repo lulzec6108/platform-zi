@@ -1131,3 +1131,19 @@ table tr:hover {
     font-size: 1.1rem; /* Sedikit memperbesar judul agar lebih mudah dibaca */
     font-weight: 500;
 }
+
+.link-pendukung-card .card-content {
+    text-align: center; /* Pusatkan teks di dalam kartu */
+}
+
+.link-pendukung-card .card-icon-wrapper i {
+    font-size: 48px; /* Buat ikon sedikit lebih besar */
+    margin-bottom: 8px;
+    /* Beri warna ikon yang lebih gelap dari background-nya */
+    color: rgba(0,0,0,0.54);
+}
+
+.link-pendukung-card .card-content .card-title {
+    line-height: 1.4;
+    color: rgba(0,0,0,0.87); /* Pastikan teks judul selalu gelap agar terbaca */
+}
