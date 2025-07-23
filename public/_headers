@@ -1,2 +1,0 @@
-/*
-  Content-Security-Policy: connect-src 'self' https://*.googleapis.com https://script.google.com;
