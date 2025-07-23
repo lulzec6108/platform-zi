@@ -486,7 +486,7 @@ async function loadLinkPendukung() {
                 // Ikon Folder Abu-abu
                 `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`,
                 // Ikon PDF Merah
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5-.67 1.5-1.5v-1zm-1.5-2.5H9v1h.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5zm7 6H15v-2h-1.5v4h2c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5zm-2.5-4H12v6h1.5V9zm-4.5 2H12v-2h-1.5V9z" fill="#EF5350"/></svg>`
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 6c0 .55.45 1 1 1h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-2 4h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1zm-1-5h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1V8zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1z" fill="#EF5350"/></svg>`
             ];
 
             // Fungsi hash sederhana untuk memilih ikon secara konsisten
@@ -500,8 +500,14 @@ async function loadLinkPendukung() {
 
             console.log('[DIAG] 9. Mulai iterasi data untuk membuat kartu.');
             result.data.forEach(item => {
+                // Guard clause untuk data yang tidak valid atau baris kosong
+                if (!item || !item.judul_link) {
+                    console.warn('[DIAG] Melewati item data yang tidak valid:', item);
+                    return; // Lewati iterasi ini
+                }
+
                 // Pilih ikon secara konsisten berdasarkan judul
-                const iconIndex = simpleHash(item.judul) % icons.length;
+                const iconIndex = simpleHash(item.judul_link) % icons.length;
                 const selectedIconSvg = icons[iconIndex];
 
                 const card = document.createElement('div');
@@ -513,14 +519,14 @@ async function loadLinkPendukung() {
                     <div class="card-icon-wrapper">
                         ${selectedIconSvg}
                     </div>
-                    <span class="card-title">${item.judul}</span>
-                    <p class="link-description">${item.deskripsi}</p>
+                    <span class="card-title">${item.judul_link}</span>
+                    <p class="link-description">${item.deskripsi_link || ''}</p>  <!-- Fallback jika deskripsi kosong -->
                 `;
 
                 const cardAction = document.createElement('div');
                 cardAction.className = 'card-action';
                 cardAction.innerHTML = `
-                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
+                    <a href="${item.alamat_link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
                 `;
 
                 card.appendChild(cardContent);
