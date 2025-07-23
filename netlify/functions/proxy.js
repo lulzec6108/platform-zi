@@ -1,169 +1,71 @@
-// proxy.js (UPDATED with enhanced API_KEY validation)
 const fetch = require('node-fetch');
 
-// Fungsi untuk meneruskan request ke GAS
-async function forwardRequest(event, targetUrl) {
-    try {
-        const headers = {
-            'Content-Type': 'application/json',
-            'x-api-key': event.headers['x-api-key'] || ''
-        };
+exports.handler = async function (event, context) {
+  // Ambil URL GAS dan API Key dari environment variables Netlify
+  const { GAS_APP_URL, GAS_API_KEY } = process.env;
 
-        const response = await fetch(targetUrl, {
-            method: 'POST', // Selalu gunakan POST untuk GAS
-            headers: headers,
-            body: event.body
-        });
+  if (!GAS_APP_URL || !GAS_API_KEY) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, message: 'Konfigurasi server tidak lengkap.' }),
+    };
+  }
 
-        const data = await response.text();
-        
-        return {
-            statusCode: response.status,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            body: data
-        };
-    } catch (error) {
-        console.error('Forward request error:', error);
-        return {
-            statusCode: 500,
-            headers: { 
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            body: JSON.stringify({ 
-                success: false,
-                message: 'Internal server error',
-                error: error.message
-            })
-        };
-    }
-}
+  // Dapatkan path dari permintaan asli (misal: /login, /getDashboardData)
+  const actionPath = event.path.replace('/proxy/', '');
 
-exports.handler = async (event) => {
-    // Log request untuk debugging (tanpa menampilkan API key)
-    console.log('Received event:', {
-        httpMethod: event.httpMethod,
-        path: event.path,
-        queryStringParameters: event.queryStringParameters,
-        headers: {
-            ...event.headers,
-            'x-api-key': event.headers['x-api-key'] ? '***' + event.headers['x-api-key'].slice(-4) : 'not set'
-        },
-        body: event.body ? JSON.parse(event.body) : null
-    });
+  try {
+    let response;
 
-    // Validasi environment variables
-    const GAS_APP_URL = process.env.GAS_APP_URL;
-    const REQUIRED_API_KEY = process.env.API_KEY || 'semoga_bisa_wbk_aamiin';
-    
-    if (!GAS_APP_URL) {
-        console.error('Missing required environment variable: GAS_APP_URL');
-        return {
-            statusCode: 500,
-            headers: { 
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            body: JSON.stringify({ 
-                success: false,
-                message: 'Server configuration error: Missing GAS_APP_URL' 
-            })
-        };
+    if (event.httpMethod === 'POST') {
+      const body = JSON.parse(event.body);
+      // Gabungkan action, payload, dan API Key untuk dikirim ke GAS
+      const requestBody = {
+        action: actionPath,
+        payload: body,
+        apiKey: GAS_API_KEY, // Tambahkan API Key ke body
+      };
+
+      response = await fetch(GAS_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+        redirect: 'follow',
+      });
+
+    } else { // Asumsikan GET
+      // Bangun URL dengan parameter query
+      const url = new URL(GAS_APP_URL);
+      url.searchParams.append('action', actionPath);
+      url.searchParams.append('apiKey', GAS_API_KEY);
+
+      // Tambahkan parameter query lain dari request asli
+      for (const key in event.queryStringParameters) {
+        if (key !== 'action') { // hindari duplikasi
+          url.searchParams.append(key, event.queryStringParameters[key]);
+        }
+      }
+
+      response = await fetch(url.toString(), {
+        method: 'GET',
+        redirect: 'follow',
+      });
     }
 
-    try {
-        // Parse request body
-        let requestBody = {};
-        if (event.body) {
-            try {
-                requestBody = JSON.parse(event.body);
-            } catch (e) {
-                console.error('Error parsing request body:', e);
-                return {
-                    statusCode: 400,
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-                    },
-                    body: JSON.stringify({ 
-                        success: false,
-                        message: 'Invalid request body' 
-                    })
-                };
-            }
-        }
+    const data = await response.json();
 
-        // Handle preflight request
-        if (event.httpMethod === 'OPTIONS') {
-            return {
-                statusCode: 200,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-                },
-                body: ''
-            };
-        }
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    };
 
-        // Validasi API key untuk semua request kecuali login
-        const clientApiKey = event.headers['x-api-key'];
-        if (!clientApiKey) {
-            console.error('API key is required');
-            return {
-                statusCode: 401,
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-                },
-                body: JSON.stringify({ 
-                    success: false,
-                    message: 'API key is required' 
-                })
-            };
-        }
-
-        if (clientApiKey !== REQUIRED_API_KEY) {
-            console.error('Invalid API key');
-            return {
-                statusCode: 403,
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-                },
-                body: JSON.stringify({ 
-                    success: false,
-                    message: 'Invalid API key' 
-                })
-            };
-        }
-
-        // Teruskan request ke GAS
-        return await forwardRequest(event, GAS_APP_URL);
-
-    } catch (error) {
-        console.error('Handler error:', error);
-        return {
-            statusCode: 500,
-            headers: { 
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type, x-api-key'
-            },
-            body: JSON.stringify({ 
-                success: false,
-                message: 'Internal server error',
-                error: error.message
-            })
-        };
-    }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, message: `Error proxying to GAS: ${error.message}` }),
+    };
+  }
 };
