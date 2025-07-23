@@ -24,35 +24,41 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthStatus();
 });
 
-// Fungsi untuk memeriksa status autentikasi
+// Fungsi untuk memeriksa status autentikasi dan memperbarui UI (VERSI FINAL)
 function checkAuthStatus() {
+    const user = sessionStorage.getItem('user');
     const loginPage = document.getElementById('login-page');
     const mainContent = document.getElementById('main-content');
-    const user = sessionStorage.getItem('user');
-    
+    const userDisplay = document.getElementById('user-display');
+    const logoutButton = document.getElementById('logout-button');
+
     if (user) {
         try {
-            const userData = JSON.parse(user);
-            const userInfo = document.getElementById('user-info');
-            const userName = document.getElementById('user-name');
-            const userRole = document.getElementById('user-role');
-            
-            if (userInfo) userInfo.textContent = userData.nama || 'User';
-            if (userName) userName.textContent = userData.nama || 'User';
-            if (userRole) userRole.textContent = userData.role || 'User';
-            
+            // Pengguna sudah login
             if (loginPage) loginPage.style.display = 'none';
             if (mainContent) mainContent.style.display = 'block';
             
-            // Load data awal
+            const userData = JSON.parse(user);
+            if (userDisplay) {
+                userDisplay.textContent = `Selamat datang, ${userData.nama || userData.username}!`;
+            }
+            if (logoutButton) {
+                logoutButton.style.display = 'inline-block';
+            }
+            
+            // Muat data yang relevan untuk halaman utama
             loadDashboardData();
         } catch (e) {
-            console.error('Error parsing user data:', e);
-            handleLogout();
+            console.error('Gagal mem-parsing data pengguna, logout paksa:', e);
+            handleLogout(); // Jika data user rusak, paksa logout
         }
     } else {
+        // Pengguna belum login
         if (loginPage) loginPage.style.display = 'block';
         if (mainContent) mainContent.style.display = 'none';
+        if (logoutButton) {
+            logoutButton.style.display = 'none';
+        }
     }
 }
 
