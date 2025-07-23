@@ -8,11 +8,12 @@ const API_TIMEOUT = 20000; // 20 detik timeout
 document.addEventListener('DOMContentLoaded', function() {
     M.AutoInit();
 
-    // Inisialisasi form login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
+    // Gunakan Event Delegation untuk menangani klik login
+    document.body.addEventListener('click', function(event) {
+        if (event.target && event.target.id === 'login-button') {
+            handleLogin(event);
+        }
+    });
 
     // Inisialisasi tombol logout
     const logoutBtn = document.getElementById('logout-btn');
@@ -103,9 +104,17 @@ async function callApi(action, method = 'GET', data = {}) {
 
 // Fungsi untuk menangani login
 async function handleLogin(event) {
-    event.preventDefault();
+    event.preventDefault(); // Mencegah aksi default tombol/form
+
     const usernameInput = document.querySelector('#username');
     const pinInput = document.querySelector('#pin');
+
+    // Tambahkan pengecekan untuk memastikan elemen ada sebelum mengakses .value
+    if (!usernameInput || !pinInput) {
+        console.error('Elemen input username atau pin tidak ditemukan.');
+        showError('Terjadi kesalahan pada halaman. Coba muat ulang.');
+        return;
+    }
 
     const username = usernameInput.value;
     const pin = pinInput.value;

@@ -5,35 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SI-PALING-ZI | Login</title>
     
-    <!-- Konfigurasi Aplikasi -->
-    <script>
-        // Inisialisasi konfigurasi awal
-        window.APP_CONFIG = {
-            API_BASE: '/.netlify/functions/proxy',
-            API_KEY: 'semoga_bisa_wbk_aamiin' // Default value untuk development
-        };
-        
-        // Cek URL parameter untuk override konfigurasi (hanya untuk development)
-        (function() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const apiKey = params.get('apiKey');
-                if (apiKey && apiKey.trim()) {
-                    window.APP_CONFIG.API_KEY = apiKey.trim();
-                    console.log('[Config] Menggunakan API key dari URL parameter');
-                }
-            } catch (e) {
-                console.error('[Config] Error parsing URL parameters:', e);
-            }
-        })();
-        
-        // Log konfigurasi awal (tanpa menampilkan full API key)
-        console.log('[Config] Konfigurasi awal:', {
-            ...window.APP_CONFIG,
-            API_KEY: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
-        });
-    </script>
-    
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <!-- Material Icons -->
