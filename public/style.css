@@ -17,6 +17,11 @@
     --border-radius: 12px;
 }
 
+/* Global Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--background-color);
@@ -31,24 +36,23 @@ body {
     justify-content: center;
     min-height: 100vh; /* Gunakan min-height untuk fleksibilitas */
     background-color: #f4f5f7;
-    padding: 20px; /* Padding untuk mobile view */
+    padding: 1rem; /* Padding untuk viewport kecil */
 }
 
 .login-container {
+    display: flex;
     width: 100%;
-    max-width: 960px; /* Lebar maksimum container */
+    max-width: 1000px;
     margin: auto;
     background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
+    border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    display: flex; /* Jadikan flex container untuk kolom */
-    flex-wrap: wrap; /* Agar bisa wrap di mobile */
+    overflow: hidden;
 }
 
 .login-art-side, .login-form-side {
-    flex: 1; /* Kedua kolom mengambil ruang yang sama */
-    padding: 40px;
+    width: 50%;
+    padding: 3rem;
 }
 
 .login-art-side {
@@ -61,9 +65,14 @@ body {
     text-align: center;
 }
 
+.art-content {
+    /* Tidak perlu padding, sudah diatur di parent */
+}
+
 .art-content h2 {
     font-weight: 600;
     margin-bottom: 15px;
+    margin-top: 2rem;
 }
 
 .art-content p {
@@ -80,16 +89,15 @@ body {
 
 .login-form-side {
     display: flex;
-    flex-direction: column; /* Susun item secara vertikal */
-    justify-content: center; /* Center vertikal */
+    justify-content: center;
+    align-items: center;
 }
 
 .login-panel {
     width: 100%;
-    max-width: 400px; /* Lebar form */
-    margin: auto; /* Center form di dalam kolomnya */
-    padding: 0 !important; /* Hapus padding panel karena sudah ada di kolom */
-    box-shadow: none !important; /* Hapus shadow karena sudah ada di container */
+    max-width: 380px;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
 .login-logo {
@@ -120,8 +128,8 @@ body {
     }
 
     .login-form-side {
-        flex: 0 0 100%; /* Ambil lebar penuh di mobile */
-        min-height: 80vh; /* Beri tinggi agar bisa center vertikal */
+        width: 100%;
+        padding: 2rem; /* Padding khusus mobile */
     }
 }
 
