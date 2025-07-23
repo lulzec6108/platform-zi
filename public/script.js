@@ -104,8 +104,11 @@ async function callApi(action, method = 'GET', data = {}) {
 // Fungsi untuk menangani login
 async function handleLogin(event) {
     event.preventDefault();
-    const username = document.getElementById('username').value;
-    const pin = document.getElementById('pin').value;
+    const usernameInput = document.querySelector('#username');
+    const pinInput = document.querySelector('#pin');
+
+    const username = usernameInput.value;
+    const pin = pinInput.value;
 
     if (!username || !pin) {
         showError('Username dan PIN harus diisi.');
