@@ -1040,3 +1040,22 @@ table tr:hover {
   background-color: #dbeafe;
   color: #1e40af;
 }
+
+/* ========================================================================== */
+/* == PERBAIKAN FINAL v2: WARNA TEKS & IKON SIDEBAR == */
+/* ========================================================================== */
+/* Kesalahan sebelumnya adalah menargetkan kelas .sidenav-menu yang tidak ada.
+   Aturan ini sekarang menargetkan struktur HTML yang benar secara langsung. */
+
+/* Aturan dasar untuk semua link dan ikon di dalam sidebar */
+#slide-out > li > a,
+#slide-out > li > a > i.material-icons {
+    color: var(--text-on-primary) !important;
+}
+
+/* Aturan untuk menu yang sedang AKTIF. Materialize menambahkan warna biru pada
+   .active a, jadi kita harus menimpanya dengan spesifik. */
+#slide-out > li.active > a,
+#slide-out > li.active > a > i.material-icons {
+    color: var(--text-on-primary) !important;
+}

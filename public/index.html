@@ -6,14 +6,14 @@
     <title>Login | Si Paling ZI</title>
     
     <!-- Materialize CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css?v=1.0.0">
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Google Fonts - Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.2">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.imgur.com/ivaX19X.png">
 
@@ -71,7 +71,7 @@
                         <div id="error-message" class="red-text center-align" style="margin-bottom: 15px;"></div>
                         
                         <div class="center-align">
-                            <button type="submit" class="btn waves-effect waves-light">Login</button>
+                            <button type="submit" class="btn">Login</button>
                         </div>
                     </form>
                 </div>
@@ -106,11 +106,11 @@
                         <a href="#email"><span class="white-text email" id="sidenav-user-role">Role</span></a>
                     </div>
                 </li>
-                <li class="active"><a class="waves-effect" href="#!"><i class="material-icons">dashboard</i>Dashboard</a></li>
-                <li><a class="waves-effect" href="#!"><i class="material-icons">assignment</i>Tugas Saya</a></li>
-                <li><a class="waves-effect" href="#!"><i class="material-icons">link</i>Link Pendukung</a></li>
+                <li class="active"><a href="#!"><i class="material-icons">dashboard</i>Dashboard</a></li>
+                <li><a href="#!"><i class="material-icons">assignment</i>Tugas Saya</a></li>
+                <li><a href="#!"><i class="material-icons">link</i>Link Pendukung</a></li>
                 <li><div class="divider"></div></li>
-                <li><a class="waves-effect" id="logout-button"><i class="material-icons">logout</i>Logout</a></li>
+                <li><a id="logout-button"><i class="material-icons">logout</i>Logout</a></li>
             </ul>
         </header>
 
@@ -156,7 +156,7 @@
                             </div>
                         </div>
                         
-                        <button id="btn-upload" class="btn waves-effect waves-light" style="margin-top: 10px;">
+                        <button id="btn-upload" class="btn">
                             <i class="material-icons left">cloud_upload</i> Upload Bukti
                         </button>
                     </div>
