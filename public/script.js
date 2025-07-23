@@ -1,47 +1,26 @@
-// script.js (OPTIMIZED)
+// script.js (REVISED & SECURED)
 
 // Konfigurasi
-const API_BASE = '/.netlify/functions/proxy';
-const API_TIMEOUT = 15000; // 15 detik timeout
+const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify.toml
+const API_TIMEOUT = 20000; // 20 detik timeout
 
 // Inisialisasi Materialize dan komponen
 document.addEventListener('DOMContentLoaded', function() {
     M.AutoInit();
-    
-    // Pastikan APP_CONFIG sudah diinisialisasi oleh config.js
-    window.APP_CONFIG = window.APP_CONFIG || {
-        API_KEY: '',
-        API_BASE: API_BASE
-    };
-    
-    // Log konfigurasi untuk debugging (sensor API key)
-    console.log('APP_CONFIG:', {
-        ...window.APP_CONFIG,
-        API_KEY: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
-    });
-    
-    // Cek API key
-    if (!window.APP_CONFIG.API_KEY) {
-        console.error('API key tidak ditemukan. Pastikan config.js dimuat dengan benar.');
-    }
-    
-    // Inisialisasi komponen Materialize
-    const elems = document.querySelectorAll('.modal');
-    M.Modal.init(elems);
-    
+
     // Inisialisasi form login
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
-    
+
     // Inisialisasi tombol logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
-    
-    // Cek status login
+
+    // Cek status login saat halaman dimuat
     checkAuthStatus();
 });
 
@@ -77,108 +56,76 @@ function checkAuthStatus() {
     }
 }
 
-// Fungsi untuk memanggil API dengan error handling yang lebih baik
+// Fungsi untuk memanggil API yang aman dan sederhana
 async function callApi(action, method = 'GET', data = {}) {
-    // Validasi input
-    if (!action || typeof action !== 'string') {
-        throw new Error('Action harus berupa string yang valid');
+    let url = `${API_BASE_URL}/${action}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+    const options = {
+        method: method.toUpperCase(),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+    };
+
+    // Untuk metode POST, kirim data dalam body
+    if (options.method === 'POST') {
+        options.body = JSON.stringify(data);
+    } 
+    // Untuk metode GET, kirim data sebagai query parameter
+    else if (options.method === 'GET' && Object.keys(data).length > 0) {
+        url += '?' + new URLSearchParams(data).toString();
     }
 
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
-
-        const options = {
-            method: 'POST', // Selalu gunakan POST untuk Netlify Functions
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': window.APP_CONFIG.API_KEY || ''
-            },
-            body: JSON.stringify({
-                action,
-                method,
-                ...(method !== 'GET' && { data }),
-                timestamp: new Date().toISOString()
-            }),
-            signal: controller.signal
-        };
-
-        console.log(`[API] Request: ${action}`, { 
-            method,
-            hasApiKey: !!window.APP_CONFIG.API_KEY,
-            apiKeyLast4: window.APP_CONFIG.API_KEY ? '***' + window.APP_CONFIG.API_KEY.slice(-4) : 'not set'
-        });
-
-        const response = await fetch(window.APP_CONFIG.API_BASE || API_BASE, options);
+        console.log(`[API] Request: ${options.method} ${url}`);
+        const response = await fetch(url, options);
         clearTimeout(timeoutId);
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            error.status = response.status;
-            throw error;
+            throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
         }
 
-        const responseData = await response.json();
-        console.log(`[API] Response: ${action}`, responseData);
         return responseData;
     } catch (error) {
-        console.error(`[API] Error: ${action}`, error);
-        
-        // Handle error spesifik
         if (error.name === 'AbortError') {
-            error.message = 'Permintaan timeout. Silakan coba lagi.';
-        } else if (error.status === 401) {
-            handleLogout();
-            error.message = 'Sesi Anda telah berakhir. Silakan login kembali.';
-        } else if (!navigator.onLine) {
-            error.message = 'Tidak ada koneksi internet. Periksa koneksi Anda.';
+            console.error('API call timed out.');
+            throw new Error('Permintaan ke server memakan waktu terlalu lama.');
         }
-        
-        throw error;
+        console.error(`[API] Error calling ${action}:`, error);
+        throw error; // Lemparkan lagi untuk ditangani oleh pemanggil
     }
 }
 
 // Fungsi untuk menangani login
 async function handleLogin(event) {
     event.preventDefault();
-    
-    const username = document.getElementById('username')?.value;
-    const password = document.getElementById('password')?.value;
-    const errorElement = document.getElementById('login-error');
-    
-    if (!username || !password) {
-        if (errorElement) {
-            errorElement.textContent = 'Username dan password harus diisi';
-            errorElement.style.display = 'block';
-        }
+    const username = document.getElementById('username').value;
+    const pin = document.getElementById('pin').value;
+
+    if (!username || !pin) {
+        showError('Username dan PIN harus diisi.');
         return;
     }
-    
+
+    showLoading(true);
     try {
-        showLoading(true);
-        
-        const response = await callApi('login', 'POST', { username, password });
-        
-        if (response && response.success && response.user) {
-            // Simpan data user ke session storage
-            sessionStorage.setItem('user', JSON.stringify(response.user));
-            
-            // Perbarui UI
-            checkAuthStatus();
-            
-            // Tampilkan notifikasi sukses
-            M.toast({html: 'Login berhasil!', classes: 'green'});
+        // Gunakan callApi dengan metode POST
+        const result = await callApi('login', 'POST', { username, pin });
+
+        if (result.success) {
+            sessionStorage.setItem('user', JSON.stringify(result.user));
+            checkAuthStatus(); // Refresh UI
+            window.location.hash = '#dashboard'; // Arahkan ke dashboard
         } else {
-            throw new Error(response?.message || 'Login gagal. Periksa kembali username dan password Anda.');
+            throw new Error(result.message || 'Login gagal.');
         }
     } catch (error) {
-        console.error('Login error:', error);
-        
-        if (errorElement) {
-            errorElement.textContent = error.message || 'Terjadi kesalahan saat login. Silakan coba lagi.';
-            errorElement.style.display = 'block';
-        }
+        showError(error.message);
     } finally {
         showLoading(false);
     }
@@ -204,33 +151,22 @@ function handleLogout() {
     window.location.hash = '';
 }
 
-// Fungsi untuk menampilkan/menyembunyikan loading
-function showLoading(show = true) {
-    const loadingElement = document.getElementById('loading');
-    if (loadingElement) {
-        loadingElement.style.display = show ? 'flex' : 'none';
-    }
-}
-
-// Fungsi untuk menampilkan pesan error
-function showError(message, duration = 5000) {
-    M.toast({html: message, classes: 'red', displayLength: duration});
-}
-
 // Fungsi untuk memuat data dashboard
 async function loadDashboardData() {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (!user) return;
+
+    showLoading(true);
     try {
-        showLoading(true);
-        const response = await callApi('getDashboardData');
-        
-        if (response.success && response.data) {
-            renderDashboardTable(response.data);
+        // Gunakan callApi dengan metode GET dan kirim username sebagai data
+        const result = await callApi('getDashboardTugasStatus', 'GET', { username: user.username });
+        if (result.success) {
+            renderDashboardTable(result.data);
         } else {
-            throw new Error(response?.message || 'Gagal memuat data dashboard');
+            throw new Error(result.message);
         }
     } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        showError(error.message || 'Terjadi kesalahan saat memuat data dashboard');
+        showError(`Gagal memuat data dashboard: ${error.message}`);
     } finally {
         showLoading(false);
     }
@@ -434,12 +370,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 showLoading(true);
-                const response = await callApi('saveBuktiDukung', 'POST', {
+                const payload = {
                     jenis,
-                    nilai
-                });
+                    nilai,
+                    kode_hirarki: document.getElementById('task-id-hidden').value,
+                    username: JSON.parse(sessionStorage.getItem('user')).username
+                };
+                const result = await callApi('saveBuktiDukung', 'POST', payload);
                 
-                if (response.success) {
+                if (result.success) {
                     showError('Bukti berhasil disimpan', 'success');
                     
                     // Tutup modal
@@ -449,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Refresh data
                     loadDashboardData();
                 } else {
-                    throw new Error(response.message || 'Gagal menyimpan bukti');
+                    throw new Error(result.message || 'Gagal menyimpan bukti');
                 }
             } catch (error) {
                 console.error('Error saving evidence:', error);
@@ -476,12 +415,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 showLoading(true);
-                const response = await callApi('savePenilaianKetua', 'POST', {
+                const payload = {
                     status,
-                    catatan
-                });
+                    catatan,
+                    kode_hirarki: document.getElementById('task-id-hidden').value,
+                    username: JSON.parse(sessionStorage.getItem('user')).username
+                };
+                const result = await callApi('savePenilaianKetua', 'POST', payload);
                 
-                if (response.success) {
+                if (result.success) {
                     showError('Penilaian berhasil disimpan', 'success');
                     
                     // Tutup modal
@@ -491,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Refresh data
                     loadDashboardData();
                 } else {
-                    throw new Error(response.message || 'Gagal menyimpan penilaian');
+                    throw new Error(result.message || 'Gagal menyimpan penilaian');
                 }
             } catch (error) {
                 console.error('Error saving assessment:', error);
@@ -518,12 +460,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 showLoading(true);
-                const response = await callApi('saveVerifikasiAdmin', 'POST', {
+                const payload = {
                     status,
-                    catatan
-                });
+                    catatan,
+                    kode_hirarki: document.getElementById('task-id-hidden').value,
+                    username: JSON.parse(sessionStorage.getItem('user')).username
+                };
+                const result = await callApi('saveVerifikasiAdmin', 'POST', payload);
                 
-                if (response.success) {
+                if (result.success) {
                     showError('Verifikasi berhasil disimpan', 'success');
                     
                     // Tutup modal
@@ -533,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Refresh data
                     loadDashboardData();
                 } else {
-                    throw new Error(response.message || 'Gagal menyimpan verifikasi');
+                    throw new Error(result.message || 'Gagal menyimpan verifikasi');
                 }
             } catch (error) {
                 console.error('Error saving verification:', error);
@@ -544,3 +489,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Fungsi untuk menampilkan/menyembunyikan loading
+function showLoading(show = true) {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        loadingElement.style.display = show ? 'flex' : 'none';
+    }
+}
+
+// Fungsi untuk menampilkan pesan error
+function showError(message, duration = 5000) {
+    M.toast({html: message, classes: 'red', displayLength: duration});
+}

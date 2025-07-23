@@ -1,19 +1,7 @@
-// code.gs (FINAL)
+// code.gs (REVISED & SECURED)
 
 const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-// --- Fungsi Validasi ---
-function isValidRequest(e) {
-  const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
-  if (!SCRIPT_API_KEY) return false;
-
-  if (!e || !e.parameter) {
-    return false;
-  }
-
-  const receivedKey = e.parameter.apiKey;
-  return receivedKey === SCRIPT_API_KEY;
-}
+const SCRIPT_API_KEY = PropertiesService.getScriptProperties().getProperty('API_KEY');
 
 // --- Fungsi Utility ---
 function sendJSON(data) {
@@ -22,93 +10,112 @@ function sendJSON(data) {
 
 // --- Handlers Utama ---
 function doGet(e) {
-  if (!isValidRequest(e)) {
-    return sendJSON({ success: false, message: 'Akses Ditolak' });
+  // Validasi untuk GET: API Key harus ada di parameter URL
+  if (!e || !e.parameter || e.parameter.apiKey !== SCRIPT_API_KEY) {
+    return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid atau tidak ada.' });
   }
 
   const action = e.parameter.action;
   const payload = e.parameter;
+  let result;
 
-  switch (action) {
-    case 'getDashboardTugasStatus':
-      return handleGetDashboardTugasStatus(payload);
-    case 'getMappingTugasForUser':
-      return handleGetMappingTugasForUser(payload);
-    case 'getBuktiDukung':
-      return handleGetBuktiDukung(payload);
-    case 'getLinkPendukung':
-      return handleGetLinkPendukung();
-    default:
-      return sendJSON({ success: false, message: 'Aksi GET tidak valid.' });
+  try {
+    switch (action) {
+      case 'getDashboardTugasStatus':
+        result = handleGetDashboardTugasStatus(payload);
+        break;
+      case 'getMappingTugasForUser':
+        result = handleGetMappingTugasForUser(payload);
+        break;
+      case 'getBuktiDukung':
+        result = handleGetBuktiDukung(payload);
+        break;
+      case 'getLinkPendukung':
+        result = handleGetLinkPendukung();
+        break;
+      default:
+        result = { success: false, message: 'Aksi GET tidak valid.' };
+    }
+  } catch (err) {
+    Logger.log(`Error in doGet action '${action}': ${err.toString()}`);
+    result = { success: false, message: `Terjadi kesalahan server pada aksi: ${action}` };
   }
+  return sendJSON(result);
 }
 
 function doPost(e) {
-  if (!isValidRequest(e)) {
-    return sendJSON({ success: false, message: 'Akses Ditolak' });
+  let requestData;
+  try {
+    requestData = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return sendJSON({ success: false, message: 'Gagal mem-parsing data request.' });
   }
 
-  let response;
+  // Validasi untuk POST: API Key harus ada di body request
+  if (!requestData.apiKey || requestData.apiKey !== SCRIPT_API_KEY) {
+    return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid atau tidak ada.' });
+  }
+
+  const action = requestData.action;
+  const payload = requestData.payload;
+  let result;
+
   try {
-    const payload = JSON.parse(e.postData.contents);
-    switch (payload.action) {
+    switch (action) {
       case 'login':
-        response = handleLogin(payload.payload); 
-        break;
-      case 'getDashboardData':
-        response = getDashboardData(payload.payload); 
+        result = handleLogin(payload);
         break;
       case 'saveBuktiDukung':
-        response = handleSaveBuktiDukung(payload.payload);
+        result = handleSaveBuktiDukung(payload);
         break;
       case 'setStatusPenilaian':
-        response = handleSetStatusPenilaian(payload.payload);
+        result = handleSetStatusPenilaian(payload);
         break;
       default:
-        response = { success: false, message: 'Aksi POST tidak valid.' };
+        result = { success: false, message: 'Aksi POST tidak valid.' };
     }
   } catch (err) {
-    response = { success: false, message: 'Invalid request: ' + err.toString() };
+    Logger.log(`Error in doPost action '${action}': ${err.toString()}`);
+    result = { success: false, message: `Terjadi kesalahan server pada aksi: ${action}` };
   }
-
-  return ContentService
-    .createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON);
+  return sendJSON(result);
 }
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA ---
 function handleGetDashboardTugasStatus(payload) {
-  var user = getUserInfo(payload.username);
-  if (!user || !user.username) return sendJSON({ success: false, message: 'User tidak ditemukan' });
-  var tugasSheet = ss.getSheetByName("MappingTugas");
-  var tugasData = tugasSheet.getDataRange().getValues();
-  var buktiSheet = ss.getSheetByName("BuktiDukung");
-  var buktiData = buktiSheet.getDataRange().getValues();
-  var usersSheet = ss.getSheetByName("Users");
-  var usersData = usersSheet.getDataRange().getValues();
-  var usernameToNama = {};
-  for (var i = 1; i < usersData.length; i++) {
+  const user = getUserInfo(payload.username);
+  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+
+  const tugasSheet = ss.getSheetByName("MappingTugas");
+  const tugasData = tugasSheet.getDataRange().getValues();
+  const buktiSheet = ss.getSheetByName("BuktiDukung");
+  const buktiData = buktiSheet.getDataRange().getValues();
+  const usersSheet = ss.getSheetByName("Users");
+  const usersData = usersSheet.getDataRange().getValues();
+
+  const usernameToNama = {};
+  for (let i = 1; i < usersData.length; i++) {
     usernameToNama[usersData[i][0]] = usersData[i][2];
   }
-  var hasil = [];
-  for (var i = 1; i < tugasData.length; i++) {
-    var row = tugasData[i];
-    var kode = row[6];
-    var pilar = row[1];
-    var tugasUsername = row[0];
-    var namaLengkap = usernameToNama[tugasUsername] || tugasUsername;
-    var tampil = false;
+
+  const hasil = [];
+  for (let i = 1; i < tugasData.length; i++) {
+    const row = tugasData[i];
+    const kode = row[6];
+    const pilar = row[1];
+    const tugasUsername = row[0];
+    const namaLengkap = usernameToNama[tugasUsername] || tugasUsername;
+
+    let tampil = false;
     if (user.role && user.role.toLowerCase() === "admin") tampil = true;
     else if (user.role && user.role.toLowerCase() === "ketua pilar" && user.pilar === pilar) tampil = true;
     else if (user.role && user.role.toLowerCase() === "anggota" && user.username === tugasUsername) tampil = true;
     if (!tampil) continue;
-    var ada = false;
-    var statusKetua = "", catatanKetua = "", statusAdmin = "", catatanAdmin = "";
-    for (var j = 1; j < buktiData.length; j++) {
-      if (
-        buktiData[j][0] == tugasUsername &&
-        buktiData[j][1] == kode
-      ) {
+
+    let ada = false;
+    let statusKetua = "", catatanKetua = "", statusAdmin = "", catatanAdmin = "";
+    for (let j = 1; j < buktiData.length; j++) {
+      if (buktiData[j][0] == tugasUsername && buktiData[j][1] == kode) {
         ada = (buktiData[j][3] && buktiData[j][3].toString().trim() !== "") || (buktiData[j][2] && buktiData[j][2].toString().trim() !== "");
         statusKetua = buktiData[j][5] || "";
         catatanKetua = buktiData[j][6] || "";
@@ -123,7 +130,7 @@ function handleGetDashboardTugasStatus(payload) {
       nama: row[5],
       tugasUsername: tugasUsername,
       namaLengkap: namaLengkap,
-      statusAnggota: ada ? "Sedang dikerjakan" : "Belum mengerjakan",
+      statusAnggota: ada ? "Sudah dikerjakan" : "Belum dikerjakan",
       statusKetua: statusKetua,
       catatanKetua: catatanKetua,
       statusAdmin: statusAdmin,
@@ -132,7 +139,7 @@ function handleGetDashboardTugasStatus(payload) {
       linkGDriveBukti: row[10] || ""
     });
   }
-  return sendJSON(hasil);
+  return { success: true, data: hasil };
 }
 
 function handleGetMappingTugasForUser(payload) {
@@ -149,7 +156,7 @@ function handleGetMappingTugasForUser(payload) {
       res.push(row);
     }
   }
-  return sendJSON(res);
+  return { success: true, data: res };
 }
 
 function handleGetBuktiDukung(payload) {
@@ -157,22 +164,25 @@ function handleGetBuktiDukung(payload) {
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
-      return sendJSON({ 
-        nilai: data[i][2], 
-        jenis: data[i][3],
-        statusKetua: data[i][5] || "",
-        catatanKetua: data[i][6] || "",
-        statusAdmin: data[i][7] || "",
-        catatanAdmin: data[i][8] || ""
-      });
+      return { 
+        success: true, 
+        data: {
+          nilai: data[i][2], 
+          jenis: data[i][3],
+          statusKetua: data[i][5] || "",
+          catatanKetua: data[i][6] || "",
+          statusAdmin: data[i][7] || "",
+          catatanAdmin: data[i][8] || ""
+        }
+      };
     }
   }
-  return sendJSON({ nilai: "", jenis: "", statusKetua: "", catatanKetua: "", statusAdmin: "", catatanAdmin: "" });
+  return { success: true, data: { nilai: "", jenis: "", statusKetua: "", catatanKetua: "", statusAdmin: "", catatanAdmin: "" } };
 }
 
 function handleGetLinkPendukung() {
   var sheet = ss.getSheetByName("LinkPendukung");
-  if (!sheet) return sendJSON([]);
+  if (!sheet) return { success: true, data: [] };
   var data = sheet.getDataRange().getValues();
   var result = [];
   for (var i = 1; i < data.length; i++) {
@@ -183,13 +193,13 @@ function handleGetLinkPendukung() {
       });
     }
   }
-  return sendJSON(result);
+  return { success: true, data: result };
 }
 
 function handleLogin(payload) {
   const { username, password } = payload;
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users'); // FIX: 'user' -> 'Users'
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users'); 
     if (!sheet) {
       return { success: false, message: 'Error: Sheet dengan nama \'Users\' tidak ditemukan.' };
     }
@@ -233,11 +243,11 @@ function handleSaveBuktiDukung(payload) {
       sheet.getRange(i+1, 3).setValue(payload.nilai);
       sheet.getRange(i+1, 4).setValue(payload.jenis);
       sheet.getRange(i+1, 5).setValue(new Date());
-      return sendJSON({ success: true, message: "Bukti dukung diperbarui." });
+      return { success: true, message: "Bukti dukung diperbarui." };
     }
   }
   sheet.appendRow([payload.username, payload.kodeHirarki, payload.nilai, payload.jenis, new Date(), "", "", "", ""]);
-  return sendJSON({ success: true, message: "Bukti dukung disimpan." });
+  return { success: true, message: "Bukti dukung disimpan." };
 }
 
 function handleSetStatusPenilaian(payload) {
@@ -249,14 +259,14 @@ function handleSetStatusPenilaian(payload) {
     if (data[i][0] && data[i][1] && data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
       sheet.getRange(i+1, colStatus+1).setValue(payload.status);
       sheet.getRange(i+1, colCatatan+1).setValue(payload.catatan);
-      return sendJSON({ success: true, message: "Status berhasil diperbarui." });
+      return { success: true, message: "Status berhasil diperbarui." };
     }
   }
   var row = [payload.username, payload.kodeHirarki, "", "", new Date(), "", "", "", ""];
   row[colStatus] = payload.status;
   row[colCatatan] = payload.catatan;
   sheet.appendRow(row);
-  return sendJSON({ success: true, message: "Status berhasil ditambahkan." });
+  return { success: true, message: "Status berhasil ditambahkan." };
 }
 
 function getUserInfo(username) {
@@ -269,130 +279,4 @@ function getUserInfo(username) {
     }
   }
   return {};
-}
-
-function getDashboardData(payload) {
-  const { username } = payload;
-  if (!username) {
-    return { success: false, message: 'Username tidak ditemukan.' };
-  }
-
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const usersSheet = ss.getSheetByName('Users');
-    const tugasSheet = ss.getSheetByName('MappingTugas');
-    const buktiSheet = ss.getSheetByName('BuktiDukung');
-
-    // 1. Dapatkan info user yang login
-    const usersData = usersSheet.getDataRange().getValues();
-    let currentUserInfo = null;
-    const usersHeaders = usersData.shift();
-    const userUsernameIndex = usersHeaders.indexOf('Username');
-    const userNamaIndex = usersHeaders.indexOf('Nama Lengkap');
-    const userPilarIndex = usersHeaders.indexOf('Pilar');
-    const userRoleIndex = usersHeaders.indexOf('Role');
-
-    for (const row of usersData) {
-      if (row[userUsernameIndex] === username) {
-        currentUserInfo = {
-          username: row[userUsernameIndex],
-          nama: row[userNamaIndex],
-          pilar: row[userPilarIndex],
-          role: row[userRoleIndex]
-        };
-        break;
-      }
-    }
-
-    if (!currentUserInfo) {
-      return { success: false, message: 'User tidak valid.' };
-    }
-
-    // 2. Buat map username -> nama lengkap
-    const usernameToNama = {};
-    usersData.forEach(row => {
-      usernameToNama[row[userUsernameIndex]] = row[userNamaIndex];
-    });
-
-    // 3. Baca data tugas dan bukti
-    const tugasData = tugasSheet.getDataRange().getValues();
-    const buktiData = buktiSheet.getDataRange().getValues();
-    const tugasHeaders = tugasData.shift();
-    const buktiHeaders = buktiData.shift();
-
-    // Index kolom untuk performa
-    const tugasUsernameIndex = tugasHeaders.indexOf('Username');
-    const tugasPilarIndex = tugasHeaders.indexOf('Pilar');
-    const tugasKodeIndex = tugasHeaders.indexOf('Kode Hirarki');
-    const tugasNamaIndex = tugasHeaders.indexOf('Tingkatan 4'); // Nama tugas
-    const tugasRefIndex = tugasHeaders.indexOf('Link Referensi Melawi');
-    const tugasGDriveIndex = tugasHeaders.indexOf('Link GDrive Bukti');
-
-    const buktiUsernameIndex = buktiHeaders.indexOf('Username');
-    const buktiKodeIndex = buktiHeaders.indexOf('Kode Hirarki');
-    const buktiNilaiIndex = buktiHeaders.indexOf('Nilai');
-    const buktiJenisIndex = buktiHeaders.indexOf('Jenis');
-    const buktiStatusKetuaIndex = buktiHeaders.indexOf('Status Ketua');
-    const buktiCatatanKetuaIndex = buktiHeaders.indexOf('Catatan Ketua');
-    const buktiStatusAdminIndex = buktiHeaders.indexOf('Status Admin');
-    const buktiCatatanAdminIndex = buktiHeaders.indexOf('Catatan Admin');
-
-    // 4. Proses dan filter tugas
-    const hasil = [];
-    for (const row of tugasData) {
-      const pilar = row[tugasPilarIndex];
-      const tugasUsername = row[tugasUsernameIndex];
-      let tampil = false;
-
-      // Logika filter berdasarkan peran
-      const userRole = (currentUserInfo.role || '').toLowerCase();
-      if (userRole === 'admin') {
-        tampil = true;
-      } else if (userRole === 'ketua pilar' && currentUserInfo.pilar === pilar) {
-        tampil = true;
-      } else if (userRole === 'anggota' && currentUserInfo.username === tugasUsername) {
-        tampil = true;
-      }
-
-      if (!tampil) continue;
-
-      // Cari bukti dukung
-      const kode = row[tugasKodeIndex];
-      let adaBukti = false;
-      let statusKetua = '', catatanKetua = '', statusAdmin = '', catatanAdmin = '';
-      for (const buktiRow of buktiData) {
-        if (buktiRow[buktiUsernameIndex] === tugasUsername && buktiRow[buktiKodeIndex] === kode) {
-          adaBukti = (buktiRow[buktiNilaiIndex] && buktiRow[buktiNilaiIndex].toString().trim() !== '') || 
-                     (buktiRow[buktiJenisIndex] && buktiRow[buktiJenisIndex].toString().trim() !== '');
-          statusKetua = buktiRow[buktiStatusKetuaIndex] || '';
-          catatanKetua = buktiRow[buktiCatatanKetuaIndex] || '';
-          statusAdmin = buktiRow[buktiStatusAdminIndex] || '';
-          catatanAdmin = buktiRow[buktiCatatanAdminIndex] || '';
-          break;
-        }
-      }
-
-      hasil.push({
-        'Kode': kode,
-        'Pilar': pilar,
-        'Nama Tugas': row[tugasNamaIndex],
-        'PIC': usernameToNama[tugasUsername] || tugasUsername,
-        'Status Pengerjaan': adaBukti ? 'Sudah dikerjakan' : 'Belum dikerjakan',
-        'Status Ketua Pilar': statusKetua,
-        'Status Admin': statusAdmin,
-        // Data tambahan untuk modal/detail
-        'tugasUsername': tugasUsername,
-        'catatanKetua': catatanKetua,
-        'catatanAdmin': catatanAdmin,
-        'linkReferensi': row[tugasRefIndex] || '',
-        'linkGDrive': row[tugasGDriveIndex] || ''
-      });
-    }
-
-    return { success: true, data: hasil };
-
-  } catch (e) {
-    Logger.log('getDashboardData Error: ' + e.toString() + ' Stack: ' + e.stack);
-    return { success: false, message: 'Terjadi kesalahan pada server saat mengambil data dashboard: ' + e.message };
-  }
 }
