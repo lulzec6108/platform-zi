@@ -88,14 +88,17 @@ body {
 }
 
 .login-form-side {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* Hapus display:flex, kita akan gunakan padding untuk centering */
+    padding-top: 6rem;    /* KUNCI: Dorong dari atas */
+    padding-bottom: 6rem; /* KUNCI: Dorong dari bawah */
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .login-panel {
     width: 100%;
-    max-width: 380px;
+    max-width: 360px;
+    margin: 0 auto; /* Cukup center horizontal */
     padding: 0 !important;
     box-shadow: none !important;
 }
