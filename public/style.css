@@ -7,13 +7,15 @@
 /* 1. Global Styles & Variables
 -------------------------------------------------- */
 :root {
-    --primary-bg: #2c3e50; /* Warna biru tua keabuan (Midnight Blue) */
-    --primary-accent: #34495e; /* Aksen biru yang lebih gelap (Wet Asphalt) */
-    --text-primary: #ecf0f1; /* Warna teks putih keabuan (Clouds) */
-    --text-secondary: #bdc3c7; /* Warna teks sekunder (Silver) */
-    --card-background: #fff;
-    --shadow-color: rgba(0, 0, 0, 0.08);
-    --border-radius: 12px;
+    --primary-color: #1e88e5; /* Blue 500 - Warna utama yang cerah */
+    --primary-color-dark: #1565c0; /* Blue 700 - Untuk header & sidebar */
+    --primary-color-light: #64b5f6; /* Blue 300 - Untuk aksen hover */
+    --text-on-primary: #ffffff; /* Teks putih untuk kontras tinggi */
+    --text-on-light: #212121; /* Teks gelap untuk background terang */
+    --background-color: #f5f7fa; /* Abu-abu sangat muda untuk body */
+    --card-background: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
 }
 
 /* Global Box Sizing */
@@ -25,7 +27,7 @@ html, body {
     height: 100%; /* KUNCI #1: Fondasi tinggi penuh */
     margin: 0;
     padding: 0;
-    background-color: #f4f5f7;
+    background-color: var(--background-color);
 }
 
 body {
@@ -137,14 +139,14 @@ body {
 
 header {
     /* Samakan warna header dengan user-view di sidebar */
-    background: var(--primary-bg);
-    border-bottom: 1px solid var(--primary-accent);
+    background: var(--primary-color-dark);
+    border-bottom: 1px solid var(--primary-color);
 }
 
 .main-navbar {
     background-color: transparent !important;
     box-shadow: none !important;
-    color: var(--text-primary);
+    color: var(--text-on-primary);
 }
 
 .main-navbar .nav-wrapper {
@@ -153,7 +155,7 @@ header {
 }
 
 .main-navbar .brand-logo {
-    color: var(--text-primary);
+    color: var(--text-on-primary);
     font-weight: 600;
     font-size: 1.2rem;
     display: flex;
@@ -163,22 +165,39 @@ header {
     transform: none;
 }
 
+.logo-main-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.logo-tagline {
+    font-size: 1rem;
+    font-weight: 300;
+    margin-left: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Aturan khusus untuk layout mobile */
 @media only screen and (max-width: 992px) {
     .main-navbar .brand-logo {
         left: 50%;
         transform: translateX(-50%);
-        font-size: 1.4rem;
+    }
+    .logo-main-text {
+        font-size: 1.4rem; /* Sedikit lebih kecil di mobile */
     }
 }
 
+/* Aturan khusus untuk layout desktop */
 @media only screen and (min-width: 993px) {
     .main-navbar .brand-logo {
-        left: 20px; /* Beri sedikit jarak dari tepi */
+        left: 0; /* Logo rata kiri */
+        transform: none;
     }
 }
 
 .main-navbar .sidenav-trigger {
-    color: var(--text-primary);
+    color: var(--text-on-primary);
 }
 
 /*-------------------------------------------------------------------
@@ -190,8 +209,8 @@ header {
     left: 0;
     width: 250px;
     height: 100vh;
-    background-color: var(--primary-bg);
-    color: var(--text-primary);
+    background-color: var(--primary-color-dark);
+    color: var(--text-on-primary);
     padding-top: 20px;
     z-index: 1000;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
@@ -214,7 +233,7 @@ header {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: var(--primary-accent);
+    background-color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,7 +242,7 @@ header {
 
 .sidenav-fixed .user-avatar i {
     font-size: 40px;
-    color: var(--text-primary);
+    color: var(--text-on-primary);
 }
 
 .sidenav-fixed .user-details {
@@ -238,7 +257,7 @@ header {
 
 .sidenav-fixed .user-role {
     font-size: 14px;
-    color: var(--text-secondary);
+    color: var(--text-on-light);
 }
 
 .sidenav-fixed .sidenav-menu {
@@ -256,7 +275,7 @@ header {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: var(--text-primary);
+    color: var(--text-on-primary);
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 15px;
@@ -270,12 +289,12 @@ header {
 }
 
 .sidenav-fixed .sidenav-menu li:hover {
-    background-color: var(--primary-accent);
+    background-color: var(--primary-color-light);
 }
 
 .sidenav-fixed .sidenav-menu li.active {
-    background-color: var(--primary-accent);
-    border-left: 4px solid var(--text-primary);
+    background-color: var(--primary-color);
+    border-left: 4px solid var(--text-on-primary);
 }
 
 .sidenav-fixed .sidenav-menu .divider {
@@ -406,12 +425,12 @@ header {
 -------------------------------------------------- */
 .main-navbar {
     background-color: var(--card-background);
-    color: var(--text-primary);
+    color: var(--text-on-primary);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .main-navbar .brand-logo {
-    color: var(--text-primary);
+    color: var(--text-on-primary);
     font-weight: 600;
     font-size: 1.2rem;
     display: flex;
@@ -422,7 +441,7 @@ header {
 }
 
 .main-navbar .sidenav-trigger {
-    color: var(--secondary-color);
+    color: var(--text-on-primary);
 }
 
 /* 5. Page Content & Cards
@@ -668,8 +687,8 @@ body {
   position: fixed;
   width: 250px;
   height: 100vh;
-  background-color: var(--primary-bg);
-  color: var(--text-primary);
+  background-color: var(--primary-color-dark);
+  color: var(--text-on-primary);
   transition: var(--transition);
   z-index: 1000;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
@@ -692,7 +711,7 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: var(--primary-accent);
+  background-color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -701,7 +720,7 @@ body {
 
 .user-avatar i {
   font-size: 40px;
-  color: var(--text-primary);
+  color: var(--text-on-primary);
 }
 
 .user-details {
@@ -716,7 +735,7 @@ body {
 
 .user-role {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-on-light);
 }
 
 .sidebar-menu {
@@ -734,7 +753,7 @@ body {
   display: flex;
   align-items: center;
   padding: 12px 20px;
-  color: var(--text-primary);
+  color: var(--text-on-primary);
   text-decoration: none;
   transition: var(--transition);
   font-size: 15px;
@@ -748,12 +767,12 @@ body {
 }
 
 .sidebar-menu li:hover {
-  background-color: var(--primary-accent);
+  background-color: var(--primary-color-light);
 }
 
 .sidebar-menu li.active {
-  background-color: var(--primary-accent);
-  border-left: 4px solid var(--text-primary);
+  background-color: var(--primary-color);
+  border-left: 4px solid var(--text-on-primary);
 }
 
 .sidebar-menu .divider {
@@ -913,7 +932,7 @@ table tr:hover {
 }
 
 .btn:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-color-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
