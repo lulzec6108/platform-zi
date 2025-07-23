@@ -29,18 +29,26 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh; /* Gunakan min-height untuk fleksibilitas */
     background-color: #f4f5f7;
+    padding: 20px; /* Padding untuk mobile view */
 }
 
 .login-container {
     width: 100%;
-    max-width: 1200px; /* Lebar maksimum container login */
+    max-width: 960px; /* Lebar maksimum container */
     margin: auto;
     background: #fff;
     border-radius: 10px;
-    overflow: hidden; /* Penting untuk menjaga border-radius */
+    overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex; /* Jadikan flex container untuk kolom */
+    flex-wrap: wrap; /* Agar bisa wrap di mobile */
+}
+
+.login-art-side, .login-form-side {
+    flex: 1; /* Kedua kolom mengambil ruang yang sama */
+    padding: 40px;
 }
 
 .login-art-side {
@@ -50,7 +58,6 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 40px;
     text-align: center;
 }
 
@@ -68,21 +75,21 @@ body {
     width: 80%;
     max-width: 350px;
     margin-top: 30px;
-    content: url('https://images.undraw.co/drawio/undraw_data_processing_yrrv.svg');
+    content: url('https://images.undraw.co/drawio/undraw_project_completed_re_pddq.svg'); /* Ganti ilustrasi agar lebih relevan */
 }
 
 .login-form-side {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh; /* Memastikan form center vertikal */
+    flex-direction: column; /* Susun item secara vertikal */
+    justify-content: center; /* Center vertikal */
 }
 
 .login-panel {
     width: 100%;
     max-width: 400px; /* Lebar form */
-    padding: 40px !important;
-    border-radius: 8px;
+    margin: auto; /* Center form di dalam kolomnya */
+    padding: 0 !important; /* Hapus padding panel karena sudah ada di kolom */
+    box-shadow: none !important; /* Hapus shadow karena sudah ada di container */
 }
 
 .login-logo {
@@ -108,14 +115,13 @@ body {
 
 /* Responsive adjustments for login page */
 @media (max-width: 992px) {
-    .login-form-side {
-        height: auto; /* Hapus tinggi 100vh di mobile */
-        padding: 20px;
+    .login-art-side {
+        display: none; /* Sembunyikan sisi seni di mobile */
     }
 
-    #login-page {
-        height: auto;
-        min-height: 100vh;
+    .login-form-side {
+        flex: 0 0 100%; /* Ambil lebar penuh di mobile */
+        min-height: 80vh; /* Beri tinggi agar bisa center vertikal */
     }
 }
 
