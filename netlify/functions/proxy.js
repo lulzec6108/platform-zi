@@ -17,22 +17,22 @@ exports.handler = async function (event, context) {
   try {
     let response;
 
-    if (event.httpMethod === 'POST') {
-      const body = JSON.parse(event.body);
-      // Gabungkan action, payload, dan API Key untuk dikirim ke GAS
-      const requestBody = {
-        action: actionPath,
-        payload: body,
-        apiKey: GAS_API_KEY, // Tambahkan API Key ke body
+    const method = event.httpMethod;
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (method === 'POST') {
+      // FIX: Membuat struktur payload yang benar yang diharapkan oleh GAS
+      const finalPayload = {
+        action: actionPath, // 'login', 'getDashboardTugasStatus', etc.
+        payload: JSON.parse(event.body), // { username, password }
+        apiKey: GAS_API_KEY
       };
 
       response = await fetch(GAS_APP_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-        redirect: 'follow',
+        headers: headers,
+        body: JSON.stringify(finalPayload)
       });
-
     } else { // Asumsikan GET
       // Bangun URL dengan parameter query
       const url = new URL(GAS_APP_URL);
