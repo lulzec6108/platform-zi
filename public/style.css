@@ -52,60 +52,53 @@ body {
 
 .login-art-side, .login-form-side {
     width: 50%;
-    padding: 3rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .login-art-side {
     background: linear-gradient(45deg, #2962ff, #00b0ff);
     color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
     text-align: center;
 }
 
 .art-content {
-    /* Tidak perlu padding, sudah diatur di parent */
-}
-
-.art-content h2 {
-    font-weight: 600;
-    margin-bottom: 15px;
-    margin-top: 2rem;
-}
-
-.art-content p {
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.9);
-}
-
-.art-illustration {
-    width: 80%;
-    max-width: 350px;
-    margin-top: 30px;
-    content: url('https://images.undraw.co/drawio/undraw_project_completed_re_pddq.svg'); /* Ganti ilustrasi agar lebih relevan */
+    padding: 1rem;
 }
 
 .login-form-side {
-    /* Hapus display:flex, kita akan gunakan padding untuk centering */
-    padding-top: 6rem;    /* KUNCI: Dorong dari atas */
-    padding-bottom: 6rem; /* KUNCI: Dorong dari bawah */
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding: 3rem;
 }
 
 .login-panel {
     width: 100%;
     max-width: 360px;
-    margin: 0 auto; /* Cukup center horizontal */
+    margin: 0 auto; /* Center panel secara horizontal */
     padding: 0 !important;
     box-shadow: none !important;
+    background: transparent; /* Hapus background putih panel */
+}
+
+/* Penataan Tombol Login */
+.button-field {
+    text-align: center; /* KUNCI: Membuat button di dalamnya center */
+    margin-top: 1.5rem;
+}
+
+#login-form .btn {
+    width: 100%;
+    max-width: 280px;
+    height: 44px;
+    line-height: 44px;
+    border-radius: 22px;
 }
 
 .login-logo {
     width: 60px;
-    margin-bottom: 15px;
+    margin-bottom: 1rem;
 }
 
 .login-header h4 {
@@ -116,26 +109,57 @@ body {
 .login-header p {
     color: #757575;
     margin-top: 5px;
-    margin-bottom: 30px;
-}
-
-#login-form .btn {
-    margin-top: 20px;
-    border-radius: 25px; /* Membuat tombol lebih rounded */
+    margin-bottom: 2rem;
 }
 
 /* Responsive adjustments for login page */
 @media (max-width: 992px) {
+    #login-page {
+        align-items: flex-start; /* Mulai dari atas di mobile */
+        padding-top: 4rem;
+    }
+
+    .login-container {
+        flex-direction: column;
+        background: linear-gradient(45deg, #2962ff, #00b0ff); /* KUNCI: Gradien di mobile */
+        box-shadow: none;
+    }
+
     .login-art-side {
-        display: none; /* Sembunyikan sisi seni di mobile */
+        display: none;
     }
 
     .login-form-side {
         width: 100%;
-        padding: 2rem; /* Padding khusus mobile */
+        padding: 2rem 1.5rem;
+    }
+
+    /* Ubah warna elemen form agar terbaca di background gelap */
+    .login-panel .login-header h4,
+    .login-panel .login-header p {
+        color: #fff;
+    }
+
+    .login-panel .input-field label,
+    .login-panel .input-field .prefix {
+        color: #fff !important;
+    }
+
+    .login-panel .input-field input {
+        color: #fff;
+        border-bottom: 1px solid rgba(255,255,255,0.7) !important;
+        box-shadow: 0 1px 0 0 rgba(255,255,255,0.7) !important;
+    }
+    .login-panel .input-field input:focus + label {
+        color: #fff !important;
+    }
+    .login-panel .input-field input:focus {
+        border-bottom: 1px solid #fff !important;
+        box-shadow: 0 1px 0 0 #fff !important;
     }
 }
 
+/*-------------------------------------------------------------------
 /* 3. Main Dashboard Layout (Sidenav)
 -------------------------------------------------- */
 header, main, footer {
