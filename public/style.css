@@ -182,10 +182,26 @@ header {
     .main-navbar .brand-logo {
         left: 50%;
         transform: translateX(-50%);
+        /* PERUBAHAN BARU: Gunakan Flexbox untuk layout dinamis */
+        display: flex;
+        align-items: baseline; /* Agar teks sejajar rapi */
+        white-space: nowrap; /* Mencegah teks turun baris */
+        width: auto; /* Biarkan lebar menyesuaikan konten */
     }
+
     .logo-main-text {
-        font-size: 1.4rem; /* Sedikit lebih kecil di mobile */
+        /* Ukuran font dinamis: min 1rem, ideal 4vw, max 1.2rem */
+        font-size: clamp(1rem, 4vw, 1.2rem);
     }
+
+    .logo-tagline {
+        display: inline; /* Pastikan tetap terlihat */
+        /* Ukuran font dinamis: min 0.4rem, ideal 2.5vw, max 0.6rem */
+        font-size: clamp(0.4rem, 2.5vw, 0.6rem);
+        margin-left: 8px;
+        opacity: 0.8;
+    }
+
     .brand-logo .tagline {
         display: inline; /* Tampilkan tagline */
         font-size: 0.5rem; /* Perkecil font tagline */
@@ -506,6 +522,7 @@ header {
     border-radius: var(--border-radius);
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     border: none;
+    overflow: hidden;
 }
 
 .card .card-title {
