@@ -37,14 +37,38 @@ body {
     width: 100%;
     max-width: 1200px; /* Lebar maksimum container login */
     margin: auto;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden; /* Penting untuk menjaga border-radius */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .login-art-side {
-    background-image: url('https://images.undraw.co/drawio/undraw_data_processing_yrrv.svg');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 100vh; /* Hanya untuk large screen */
+    background: linear-gradient(45deg, #2962ff, #00b0ff);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.art-content h2 {
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.art-content p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+}
+
+.art-illustration {
+    width: 80%;
+    max-width: 350px;
+    margin-top: 30px;
+    content: url('https://images.undraw.co/drawio/undraw_data_processing_yrrv.svg');
 }
 
 .login-form-side {
