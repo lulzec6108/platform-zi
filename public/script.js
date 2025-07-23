@@ -91,7 +91,7 @@ function checkAuthStatus() {
         }
     } else {
         // Pengguna belum login
-        if (loginPage) loginPage.style.display = 'block';
+        if (loginPage) loginPage.style.display = 'flex'; // DIUBAH DARI 'block' ke 'flex'
         if (mainContent) mainContent.style.display = 'none';
     }
 }
