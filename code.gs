@@ -217,7 +217,7 @@ function handleLogin(payload) {
       if (row[usernameIndex] === username && row[passwordIndex].toString() === password.toString()) {
         return {
           success: true,
-          user: {
+          data: {
             username: row[usernameIndex],
             nama: row[namaIndex],
             pilar: row[pilarIndex],

@@ -4,33 +4,70 @@
 const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify.toml
 const API_TIMEOUT = 20000; // 20 detik timeout
 
-// Inisialisasi Materialize dan komponen
-document.addEventListener('DOMContentLoaded', function() {
+// Event listener utama saat DOM sudah siap
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM siap. Inisialisasi aplikasi...');
+
+    // Inisialisasi semua komponen Materialize, termasuk Sidenav
     M.AutoInit();
 
-    // KEMBALI KE CARA YANG BENAR: Dengarkan event SUBMIT pada FORM
+    // Tambahkan event listener untuk form login
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
 
-    // Inisialisasi tombol logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
+    // Tambahkan event listener untuk KEDUA tombol logout
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
+    }
+    const logoutButtonNav = document.getElementById('logout-button-nav');
+    if (logoutButtonNav) {
+        logoutButtonNav.addEventListener('click', handleLogout);
     }
 
-    // Cek status login saat halaman dimuat
+    // Periksa status otentikasi saat halaman dimuat
     checkAuthStatus();
+
+    // Tambahkan event listener untuk navigasi Sidenav
+    document.querySelectorAll('.sidenav a[data-view]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewId = link.getAttribute('data-view');
+            switchView(viewId);
+
+            // Tutup sidenav setelah item diklik (khusus mobile)
+            const sidenavInstance = M.Sidenav.getInstance(document.querySelector('.sidenav'));
+            if (sidenavInstance.isOpen) {
+                sidenavInstance.close();
+            }
+        });
+    });
 });
+
+// Fungsi untuk beralih antar view (Dashboard, Tugas Saya, dll.)
+function switchView(viewId) {
+    // Sembunyikan semua view utama
+    document.querySelectorAll('.page-content > div').forEach(view => {
+        view.style.display = 'none';
+    });
+
+    // Tampilkan view yang dipilih
+    const activeView = document.getElementById(viewId);
+    if (activeView) {
+        activeView.style.display = 'block';
+        console.log(`Menampilkan view: ${viewId}`);
+    } else {
+        console.error(`View dengan ID '${viewId}' tidak ditemukan.`);
+    }
+}
 
 // Fungsi untuk memeriksa status autentikasi dan memperbarui UI (VERSI FINAL)
 function checkAuthStatus() {
     const user = sessionStorage.getItem('user');
     const loginPage = document.getElementById('login-page');
     const mainContent = document.getElementById('main-content');
-    const userDisplay = document.getElementById('user-display');
-    const logoutButton = document.getElementById('logout-button');
 
     if (user) {
         try {
@@ -39,12 +76,12 @@ function checkAuthStatus() {
             if (mainContent) mainContent.style.display = 'block';
             
             const userData = JSON.parse(user);
-            if (userDisplay) {
-                userDisplay.textContent = `Selamat datang, ${userData.nama || userData.username}!`;
-            }
-            if (logoutButton) {
-                logoutButton.style.display = 'inline-block';
-            }
+            
+            // Perbarui info pengguna di Sidenav
+            const sidenavUserName = document.getElementById('sidenav-user-name');
+            const sidenavUserRole = document.getElementById('sidenav-user-role');
+            if (sidenavUserName) sidenavUserName.textContent = userData.nama || 'Pengguna';
+            if (sidenavUserRole) sidenavUserRole.textContent = userData.role || 'Role';
             
             // Muat data yang relevan untuk halaman utama
             loadDashboardData();
@@ -56,9 +93,6 @@ function checkAuthStatus() {
         // Pengguna belum login
         if (loginPage) loginPage.style.display = 'block';
         if (mainContent) mainContent.style.display = 'none';
-        if (logoutButton) {
-            logoutButton.style.display = 'none';
-        }
     }
 }
 

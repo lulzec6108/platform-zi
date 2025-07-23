@@ -1,3 +1,182 @@
+/*
+ * Custom Styles for SI-PALING-ZI
+ * Author: Cascade
+ * Version: 1.0
+ */
+
+/* 1. Global Styles & Variables
+-------------------------------------------------- */
+:root {
+    --primary-color: #29b6f6; /* Light Blue 400 */
+    --primary-color-light: #81d4fa; /* Light Blue 200 */
+    --primary-color-dark: #0288d1; /* Light Blue 700 */
+    --secondary-color: #424242; /* Grey 800 */
+    --text-color: #37474f; /* Blue Grey 800 */
+    --background-color: #f4f6f9; /* Light Grey Background */
+    --card-background: #ffffff;
+    --border-radius: 12px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* 2. Login Page Styles
+-------------------------------------------------- */
+.login-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-container {
+    max-width: 420px;
+    width: 100%;
+}
+
+.login-card {
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.login-card .card-content {
+    padding: 40px;
+}
+
+.login-card .card-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.login-card p {
+    margin-bottom: 30px;
+}
+
+.btn.login-btn {
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    height: 44px;
+    line-height: 44px;
+    width: 100%;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.btn.login-btn:hover {
+    background-color: var(--primary-color-dark);
+}
+
+/* 3. Main Dashboard Layout (Sidenav)
+-------------------------------------------------- */
+header, main, footer {
+    padding-left: 300px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer {
+        padding-left: 0;
+    }
+}
+
+.sidenav {
+    background-color: var(--card-background);
+}
+
+.sidenav .user-view {
+    background-color: var(--primary-color);
+    padding: 32px 32px 16px;
+}
+
+.sidenav .user-view .name,
+.sidenav .user-view .email {
+    color: white;
+    font-weight: 500;
+}
+
+.sidenav li > a {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.sidenav li.active, .sidenav li:hover {
+    background-color: var(--primary-color-light);
+}
+
+.sidenav li.active > a {
+    color: var(--primary-color-dark) !important;
+    font-weight: 600;
+}
+
+.sidenav li > a > i.material-icons {
+    color: var(--secondary-color);
+}
+
+.sidenav li.active > a > i.material-icons {
+    color: var(--primary-color-dark) !important;
+}
+
+/* 4. Top Navigation (Navbar)
+-------------------------------------------------- */
+.main-navbar {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.main-navbar .brand-logo {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+}
+
+.main-navbar .sidenav-trigger {
+    color: var(--secondary-color);
+}
+
+/* 5. Page Content & Cards
+-------------------------------------------------- */
+.page-content {
+    padding: 24px;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.card {
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: none;
+}
+
+.card .card-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* 6. Utility Classes
+-------------------------------------------------- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
 /* style.css */
 
 body {
