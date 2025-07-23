@@ -439,33 +439,43 @@ async function loadLinkPendukung() {
     // Membangun URL lengkap dengan parameter yang diperlukan
     const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
 
-    try {
-        showLoading(true);
-        const response = await fetch(fullUrl);
-        const data = await response.json();
+    // Tampilkan status loading
+    container.innerHTML = `
+        <div class="preloader-wrapper active" style="margin: 40px auto;">
+            <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+        </div>`;
 
-        if (data.success) {
-            const linkPendukungBody = document.getElementById('link-pendukung-body');
-            if (linkPendukungBody) {
-                linkPendukungBody.innerHTML = data.data.map(link => `
-                    <tr>
-                        <td>${link.deskripsi || '-'}</td>
-                        <td>
-                            <a href="${link.url}" target="_blank" rel="noopener noreferrer">
-                                ${link.nama || 'Buka Link'}
-                            </a>
-                        </td>
-                    </tr>
-                `).join('');
+    try {
+        const response = await fetch(fullUrl);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            container.innerHTML = ''; // Bersihkan loading spinner
+            if (result.data.length === 0) {
+                container.innerHTML = '<p>Belum ada link pendukung yang ditambahkan.</p>';
+                return;
             }
+
+            result.data.forEach(link => {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+                // Menggunakan 'link.link' sesuai respons dari code.gs
+                card.innerHTML = `
+                    <p class="link-description">${link.deskripsi}</p>
+                    <a href="${link.link}" target="_blank" rel="noopener noreferrer" class="btn waves-effect waves-light link-button">Klik Disini</a>
+                `;
+                container.appendChild(card);
+            });
         } else {
-            throw new Error(data.message || 'Gagal memuat link pendukung');
+            throw new Error(result.message || 'Gagal mengambil data dari server.');
         }
     } catch (error) {
-        console.error('Error loading support links:', error);
-        showError('Gagal memuat link pendukung: ' + (error.message || 'Terjadi kesalahan'));
-    } finally {
-        showLoading(false);
+        console.error('Error memuat Link Pendukung:', error);
+        container.innerHTML = '<p class="red-text">Gagal memuat data link. Periksa URL API atau koneksi internet.</p>';
     }
 }
 
