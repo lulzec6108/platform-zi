@@ -475,33 +475,52 @@ async function loadLinkPendukung() {
             const cardContainer = document.createElement('div');
             cardContainer.className = 'link-pendukung-cards-container';
 
-            // Palet ikon dan warna yang akan dipilih secara acak
-            const icons = ['link', 'description', 'article', 'assignment', 'folder_open', 'launch', 'open_in_new', 'picture_as_pdf', 'gavel', 'attachment'];
-            const colors = ['teal', 'cyan', 'light-blue', 'indigo', 'blue-grey', 'green'];
+            // Koleksi Ikon SVG Berwarna
+            const icons = [
+                // Ikon Dokumen Biru
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#42A5F5"/></svg>`,
+                // Ikon Link Hijau
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#66BB6A"/></svg>`,
+                // Ikon Laporan Oranye
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`,
+                // Ikon Folder Abu-abu
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`,
+                // Ikon PDF Merah
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5-.67 1.5-1.5v-1zm-1.5-2.5H9v1h.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5zm7 6H15v-2h-1.5v4h2c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5zm-2.5-4H12v6h1.5V9zm-4.5 2H12v-2h-1.5V9z" fill="#EF5350"/></svg>`
+            ];
+
+            // Fungsi hash sederhana untuk memilih ikon secara konsisten
+            function simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = (str.charCodeAt(i) + ((hash << 5) - hash)) & 0xFFFFFFFF;
+                }
+                return Math.abs(hash);
+            }
 
             console.log('[DIAG] 9. Mulai iterasi data untuk membuat kartu.');
             result.data.forEach(item => {
-                // Pilih ikon dan warna secara acak
-                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                // Pilih ikon secara konsisten berdasarkan judul
+                const iconIndex = simpleHash(item.judul) % icons.length;
+                const selectedIconSvg = icons[iconIndex];
 
                 const card = document.createElement('div');
-                // Terapkan warna ke kartu. Contoh: 'card link-pendukung-card teal lighten-5'
-                card.className = `card link-pendukung-card ${randomColor} lighten-5`;
+                card.className = `card link-pendukung-card`; // Warna solid tidak lagi di sini
                 
                 const cardContent = document.createElement('div');
-                cardContent.className = 'card-content white-text'; // Teks putih agar kontras dengan background
+                cardContent.className = 'card-content';
                 cardContent.innerHTML = `
                     <div class="card-icon-wrapper">
-                        <i class="material-icons medium">${randomIcon}</i>
+                        ${selectedIconSvg}
                     </div>
-                    <span class="card-title">${item.deskripsi}</span>
+                    <span class="card-title">${item.judul}</span>
+                    <p class="link-description">${item.deskripsi}</p>
                 `;
 
                 const cardAction = document.createElement('div');
                 cardAction.className = 'card-action';
                 cardAction.innerHTML = `
-                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light white ${randomColor}-text text-darken-4">Kunjungi Link</a>
+                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
                 `;
 
                 card.appendChild(cardContent);
@@ -511,7 +530,7 @@ async function loadLinkPendukung() {
 
             container.appendChild(cardContainer);
 
-            console.log('[DIAG] 10. Data berhasil dirender sebagai kartu.');
+            console.log('[DIAG] 10. Data berhasil dirender sebagai kartu dengan ikon SVG.');
 
         } catch (error) {
             console.error('[DIAG] FINAL ERROR CATCH BLOCK:', error);

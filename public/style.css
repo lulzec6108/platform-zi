@@ -1136,14 +1136,30 @@ table tr:hover {
     text-align: center; /* Pusatkan teks di dalam kartu */
 }
 
+/* Hapus aturan lama untuk ikon font */
+/*
 .link-pendukung-card .card-icon-wrapper i {
-    font-size: 48px; /* Buat ikon sedikit lebih besar */
+    font-size: 48px; 
     margin-bottom: 8px;
-    /* Beri warna ikon yang lebih gelap dari background-nya */
     color: rgba(0,0,0,0.54);
+}
+*/
+
+/* Aturan baru untuk ikon SVG */
+.link-pendukung-card .card-icon-wrapper svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
 }
 
 .link-pendukung-card .card-content .card-title {
     line-height: 1.4;
-    color: rgba(0,0,0,0.87); /* Pastikan teks judul selalu gelap agar terbaca */
+    /* Pastikan warna teks sesuai untuk background putih */
+    color: #424242; /* Grey darken-3 */
+}
+
+.link-pendukung-card p.link-description {
+    font-size: 0.9rem;
+    margin-top: 8px;
+    color: #757575; /* Grey darken-1 */
 }
