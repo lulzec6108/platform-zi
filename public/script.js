@@ -75,7 +75,8 @@ function switchView(viewId) {
     // Muat data yang relevan berdasarkan view yang aktif
     switch (viewId) {
         case 'dashboard-view':
-            loadDashboardData();
+            // Di masa depan, panggil fungsi untuk memuat data dashboard di sini
+            // loadDashboardData(); 
             break;
         case 'tugas-saya-view':
             loadTugasSaya();
@@ -84,7 +85,7 @@ function switchView(viewId) {
             loadLinkPendukung();
             break;
         case 'kinerja-tim-view':
-            // Di masa depan, panggil fungsi seperti loadKinerjaTimData() di sini
+            // Di masa depan, panggil fungsi untuk memuat data kinerja tim di sini
             console.log('Memuat data Kinerja Tim...');
             break;
     }
