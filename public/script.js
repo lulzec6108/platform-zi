@@ -433,50 +433,43 @@ async function loadLinkPendukung() {
     const container = document.getElementById('link-pendukung-container');
     if (!container) return;
 
-    // GANTI DENGAN INFORMASI DARI GOOGLE APPS SCRIPT ANDA
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
-    const API_KEY = 'semoga_bisa_wbk_aamiin';
-
-    // Membangun URL lengkap dengan parameter yang diperlukan
-    const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
-
-    // Tampilkan status loading
-    container.innerHTML = `
-        <div class="preloader-wrapper active" style="margin: 40px auto;">
-            <div class="spinner-layer spinner-blue-only">
-                <div class="circle-clipper left"><div class="circle"></div></div>
-                <div class="gap-patch"><div class="circle"></div></div>
-                <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-        </div>`;
-
     try {
+        showLoading(true); // Gunakan loading overlay global
+
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
+        const API_KEY = 'semoga_bisa_wbk_aamiin';
+        const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
+
         const response = await fetch(fullUrl);
         const result = await response.json();
 
+        container.innerHTML = ''; // Selalu bersihkan kontainer sebelum mengisi
+
         if (result.success && result.data) {
-            container.innerHTML = ''; // Bersihkan loading spinner
             if (result.data.length === 0) {
                 container.innerHTML = '<p>Belum ada link pendukung yang ditambahkan.</p>';
-                return;
+            } else {
+                result.data.forEach(link => {
+                    const card = document.createElement('div');
+                    card.className = 'link-card';
+                    card.innerHTML = `
+                        <p class="link-description">${link.deskripsi}</p>
+                        <a href="${link.link}" target="_blank" rel="noopener noreferrer" class="btn waves-effect waves-light link-button">Klik Disini</a>
+                    `;
+                    container.appendChild(card);
+                });
             }
-
-            result.data.forEach(link => {
-                const card = document.createElement('div');
-                card.className = 'link-card';
-                // Menggunakan 'link.link' sesuai respons dari code.gs
-                card.innerHTML = `
-                    <p class="link-description">${link.deskripsi}</p>
-                    <a href="${link.link}" target="_blank" rel="noopener noreferrer" class="btn waves-effect waves-light link-button">Klik Disini</a>
-                `;
-                container.appendChild(card);
-            });
         } else {
             throw new Error(result.message || 'Gagal mengambil data dari server.');
         }
     } catch (error) {
         console.error('Error memuat Link Pendukung:', error);
-        container.innerHTML = '<p class="red-text">Gagal memuat data link. Periksa URL API atau koneksi internet.</p>';
+        // Tampilkan pesan error di dalam kontainer
+        if(container) container.innerHTML = '<p class="red-text">Gagal memuat data link. Silakan coba lagi nanti.</p>';
+        // Juga tampilkan notifikasi global
+        showError('Gagal memuat Link Pendukung.');
+    } finally {
+        showLoading(false); // Selalu sembunyikan loading overlay
     }
 }
 
