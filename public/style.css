@@ -209,7 +209,7 @@ header {
     left: 0;
     width: 250px;
     height: 100vh;
-    background-color: var(--primary-color-dark);
+    background-color: var(--primary-color); /* Warna biru utama yang seragam */
     color: var(--text-on-primary);
     padding-top: 20px;
     z-index: 1000;
@@ -218,7 +218,7 @@ header {
 
 .sidenav-fixed .sidenav-header {
     padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none; /* Menghapus garis pemisah */
     text-align: center;
 }
 
@@ -233,7 +233,7 @@ header {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.2); /* Latar avatar transparan */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -253,11 +253,13 @@ header {
     font-weight: 600;
     font-size: 16px;
     margin-bottom: 4px;
+    color: var(--text-on-primary); /* Pastikan warna putih */
 }
 
 .sidenav-fixed .user-role {
     font-size: 14px;
-    color: var(--text-on-light);
+    color: var(--text-on-primary);
+    opacity: 0.8; /* Sedikit redup untuk membedakan */
 }
 
 .sidenav-fixed .sidenav-menu {
@@ -275,7 +277,7 @@ header {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: var(--text-on-primary);
+    color: var(--text-on-primary); /* Font & ikon putih */
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 15px;
@@ -286,15 +288,16 @@ header {
     font-size: 20px;
     width: 24px;
     text-align: center;
+    color: var(--text-on-primary); /* Ikon putih */
 }
 
 .sidenav-fixed .sidenav-menu li:hover {
-    background-color: var(--primary-color-light);
+    background-color: var(--primary-color-light); /* Biru muda saat hover */
 }
 
 .sidenav-fixed .sidenav-menu li.active {
-    background-color: var(--primary-color);
-    border-left: 4px solid var(--text-on-primary);
+    background-color: var(--primary-color-dark); /* Biru tua untuk menu aktif */
+    border-left: none; /* Hapus border kiri agar lebih bersih */
 }
 
 .sidenav-fixed .sidenav-menu .divider {
