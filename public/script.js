@@ -37,9 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const viewId = link.getAttribute('data-view');
             switchView(viewId);
 
-            // Tutup sidenav setelah item diklik (khusus mobile)
+            // PERBAIKAN: Hanya tutup sidenav jika dalam mode mobile (overlay)
             const sidenavInstance = M.Sidenav.getInstance(document.querySelector('.sidenav'));
-            if (sidenavInstance.isOpen) {
+            if (window.innerWidth < 993 && sidenavInstance.isOpen) {
                 sidenavInstance.close();
             }
         });
