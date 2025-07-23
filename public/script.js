@@ -107,30 +107,30 @@ async function handleLogin(event) {
 
     console.log('--- Memulai handleLogin ---');
     const usernameInput = document.querySelector('#username');
-    const pinInput = document.querySelector('#pin');
+    const passwordInput = document.querySelector('#password'); // FIX: Menggunakan ID yang benar
 
     // Logging untuk diagnostik
     console.log('Mencari elemen #username:', usernameInput);
-    console.log('Mencari elemen #pin:', pinInput);
+    console.log('Mencari elemen #password:', passwordInput); // FIX: Logging ID yang benar
 
     // Tambahkan pengecekan untuk memastikan elemen ada sebelum mengakses .value
-    if (!usernameInput || !pinInput) {
-        console.error('Elemen input username atau pin tidak ditemukan.');
+    if (!usernameInput || !passwordInput) { // FIX: Memeriksa variabel yang benar
+        console.error('Elemen input username atau password tidak ditemukan.');
         showError('Terjadi kesalahan pada halaman. Coba muat ulang.');
         return;
     }
 
     const username = usernameInput.value;
-    const pin = pinInput.value;
+    const password = passwordInput.value; // FIX: Menggunakan variabel yang benar
 
-    if (!username || !pin) {
-        showError('Username dan PIN harus diisi.');
+    if (!username || !password) { // FIX: Memeriksa variabel yang benar
+        showError('Username dan Password harus diisi.');
         return;
     }
 
     try {
         M.toast({ html: 'Mencoba masuk...', classes: 'blue' });
-        const result = await callApi('login', 'POST', { username, pin });
+        const result = await callApi('login', 'POST', { username, password }); // FIX: Mengirim 'password'
 
         // --- LOGGING DIAGNOSTIK ---
         console.log('Respons mentah dari server:', result);
