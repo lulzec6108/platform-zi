@@ -209,7 +209,7 @@ header {
     left: 0;
     width: 250px;
     height: 100vh;
-    background-color: var(--primary-color); /* Warna biru utama yang seragam */
+    background-color: var(--primary-color-dark); /* Menyamakan dengan warna header */
     color: var(--text-on-primary);
     padding-top: 20px;
     z-index: 1000;
@@ -296,7 +296,7 @@ header {
 }
 
 .sidenav-fixed .sidenav-menu li.active {
-    background-color: var(--primary-color-dark); /* Biru tua untuk menu aktif */
+    background-color: var(--primary-color); /* Highlight biru cerah untuk menu aktif */
     border-left: none; /* Hapus border kiri agar lebih bersih */
 }
 

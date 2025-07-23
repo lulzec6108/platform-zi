@@ -83,6 +83,9 @@ function checkAuthStatus() {
             const sidenavUserRole = document.getElementById('sidenav-user-role');
             if (sidenavUserName) sidenavUserName.textContent = userData.nama || 'Pengguna';
             if (sidenavUserRole) sidenavUserRole.textContent = userData.role || 'Role';
+
+            // Atur avatar pengguna secara acak
+            setRandomAvatar();
             
             // Muat data yang relevan untuk halaman utama
             loadDashboardData();
@@ -566,4 +569,24 @@ function showLoading(show = true) {
 // Fungsi untuk menampilkan pesan error
 function showError(message, duration = 5000) {
     M.toast({html: message, classes: 'red', displayLength: duration});
+}
+
+// Fungsi untuk mengatur ikon avatar secara acak
+function setRandomAvatar() {
+    const avatarIcons = [
+        'face',
+        'account_circle',
+        'supervised_user_circle',
+        'tag_faces',
+        'sentiment_very_satisfied',
+        'person_pin',
+        'rocket_launch',
+        'star',
+        'emoji_events'
+    ];
+    const randomIcon = avatarIcons[Math.floor(Math.random() * avatarIcons.length)];
+    const avatarElement = document.getElementById('user-avatar-icon');
+    if (avatarElement) {
+        avatarElement.textContent = randomIcon;
+    }
 }
