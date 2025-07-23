@@ -834,7 +834,7 @@ body {
 }
 
 .sidebar-menu li.active {
-  background-color: var(--primary-color);
+  background-color: var(--primary-color); /* Highlight biru cerah untuk menu aktif */
   border-left: 4px solid var(--text-on-primary);
 }
 
@@ -1101,6 +1101,11 @@ table tr:hover {
 #slide-out > li.active > a,
 #slide-out > li.active > a > i.material-icons {
     color: var(--text-on-primary) !important;
+}
+
+/* Tambahkan background yang lebih gelap untuk menu aktif agar lebih menonjol */
+#slide-out > li.active {
+    background-color: var(--primary-color-dark);
 }
 
 /* Link Pendukung - Card Layout */
