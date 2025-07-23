@@ -468,29 +468,41 @@ async function loadLinkPendukung() {
             const result = await response.json();
             console.log('[DIAG] 7. Parsing JSON berhasil. Data diterima:', result);
 
-            container.innerHTML = '';
+            console.log('[DIAG] 8. Membersihkan kontainer.');
+            container.innerHTML = ''; // Kosongkan kontainer sebelum mengisi
 
-            if (result.success && result.data) {
-                console.log(`[DIAG] 8. Data valid. Ditemukan ${result.data.length} link.`);
-                if (result.data.length === 0) {
-                    container.innerHTML = '<p>Belum ada link pendukung yang ditambahkan.</p>';
-                } else {
-                    result.data.forEach((link, index) => {
-                        console.log(`[DIAG] 9.${index + 1}. Membuat kartu untuk: ${link.deskripsi}`);
-                        const card = document.createElement('div');
-                        card.className = 'link-card';
-                        card.innerHTML = `
-                            <p class="link-description">${link.deskripsi}</p>
-                            <a href="${link.link}" target="_blank" rel="noopener noreferrer" class="btn waves-effect waves-light link-button">Klik Disini</a>
-                        `;
-                        container.appendChild(card);
-                    });
-                }
-            } else {
-                 console.error('[DIAG] GAGAL: Properti success:false atau data tidak ada.');
-                throw new Error(result.message || 'Gagal mengambil data dari server.');
-            }
-            console.log('[DIAG] 10. Render selesai.');
+            // Buat struktur tabel
+            const table = document.createElement('table');
+            table.className = 'highlight responsive-table'; // Tambahkan kelas Materialize
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Deskripsi Link</th>
+                    <th class="center-align">Alamat Tautan</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+
+            console.log('[DIAG] 9. Mulai iterasi data untuk membuat baris tabel.');
+            result.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.deskripsi}</td>
+                    <td class="center-align">
+                        <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            container.appendChild(table);
+
+            console.log('[DIAG] 10. Data berhasil dirender sebagai tabel.');
+
         } catch (error) {
             console.error('[DIAG] FINAL ERROR CATCH BLOCK:', error);
             if(container) container.innerHTML = '<p class="red-text">Gagal memuat data link. Silakan coba lagi nanti.</p>';
