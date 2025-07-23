@@ -22,10 +22,16 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%; /* KUNCI: Pastikan root elements mengisi layar */
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: #f4f5f7; /* Warna abu-abu muda untuk background */
+    color: #424242;
 }
 
 /* 2. Login Page Styles
@@ -34,9 +40,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh; /* Gunakan min-height untuk fleksibilitas */
-    background-color: #f4f5f7;
-    padding: 1rem; /* Padding untuk viewport kecil */
+    min-height: 100vh; /* KUNCI: Ambil minimal seluruh tinggi layar */
+    padding: 2rem 0;
 }
 
 .login-container {
@@ -48,6 +53,8 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     overflow: hidden;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .login-art-side, .login-form-side {
@@ -134,7 +141,7 @@ body {
 
     .login-form-side {
         width: 100%;
-        height: 100vh;
+        height: auto; /* Biarkan tinggi otomatis, karena parent sudah center */
         background: linear-gradient(45deg, #2962ff, #00b0ff); /* KUNCI: Gradien di kolom form */
         display: flex; /* Gunakan flex untuk centering di mobile */
         flex-direction: column;
