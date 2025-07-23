@@ -34,27 +34,26 @@ body {
     color: #424242;
 }
 
-/* 2. Login Page Styles
+/* 2. Login Page Layout
 -------------------------------------------------- */
 #login-page {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh; /* KUNCI: Ambil minimal seluruh tinggi layar */
-    padding: 2rem 0;
+    align-items: center;     /* KUNCI: Vertically center the .login-container */
+    justify-content: center; /* Horizontally center the .login-container */
+    min-height: 100vh;       /* KUNCI: Make the stage take full screen height */
+    padding: 1rem;           /* Padding for smaller viewports */
 }
 
 .login-container {
     display: flex;
+    flex-direction: row; /* KUNCI: Ensure side-by-side layout */
     width: 100%;
     max-width: 1000px;
-    margin: auto;
+    margin: 0; /* Margin is handled by parent flex now */
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     overflow: hidden;
-    flex-direction: column;
-    justify-content: center;
 }
 
 .login-art-side, .login-form-side {
@@ -63,7 +62,6 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-self: stretch;
 }
 
 .login-art-side {
@@ -123,7 +121,7 @@ body {
 /* Responsive adjustments for login page */
 @media (max-width: 992px) {
     #login-page {
-        padding: 0; /* Hapus padding agar container bisa full screen */
+        padding: 0;
     }
 
     .login-container {
@@ -132,20 +130,16 @@ body {
         height: 100%;
         border-radius: 0;
         box-shadow: none;
-        background: none; /* Hapus background dari container */
     }
 
     .login-art-side {
-        display: none !important; /* Pastikan kolom ini benar-benar hilang */
+        display: none !important;
     }
 
     .login-form-side {
         width: 100%;
-        height: auto; /* Biarkan tinggi otomatis, karena parent sudah center */
-        background: linear-gradient(45deg, #2962ff, #00b0ff); /* KUNCI: Gradien di kolom form */
-        display: flex; /* Gunakan flex untuk centering di mobile */
-        flex-direction: column;
-        justify-content: center;
+        height: 100%;
+        background: linear-gradient(45deg, #2962ff, #00b0ff);
         padding: 2rem 1.5rem;
     }
 
