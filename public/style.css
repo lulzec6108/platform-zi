@@ -152,50 +152,50 @@ body {
     .login-form-side {
         width: 100%;
         height: 100%;
-        background: linear-gradient(45deg, #2962ff, #00b0ff);
+        background: #fff;
         padding: 2rem 1.5rem;
         justify-content: center; /* Center konten di mobile */
     }
 
     /* Ubah warna elemen form agar terbaca di background gelap */
     .login-panel {
-        background-color: transparent !important;
+        background-color: #fff !important;
         box-shadow: none !important;
     }
 
     .login-header h4,
     .login-header p {
-        color: #fff;
+        color: #333;
     }
 
     .input-field label {
-        color: #fff !important;
+        color: #333 !important;
     }
 
     .input-field .prefix {
-        color: #fff !important;
+        color: #333 !important;
     }
 
     .input-field input[type=text]:not(.browser-default),
     .input-field input[type=password]:not(.browser-default) {
-        border-bottom: 1px solid #fff !important;
-        color: #fff !important;
+        border-bottom: 1px solid #333 !important;
+        color: #333 !important;
     }
 
     .input-field input[type=text]:focus:not([readonly])+label,
     .input-field input[type=password]:focus:not([readonly])+label {
-        color: #fff !important;
+        color: #333 !important;
     }
 
     .input-field input[type=text]:focus:not([readonly]),
     .input-field input[type=password]:focus:not([readonly]) {
-        border-bottom: 1px solid #fff !important;
-        box-shadow: 0 1px 0 0 #fff !important;
+        border-bottom: 1px solid #333 !important;
+        box-shadow: 0 1px 0 0 #333 !important;
     }
 
     .login-btn {
-        background-color: #fff;
-        color: #1976d2;
+        background-color: #1976d2;
+        color: #fff;
     }
 }
 
@@ -203,9 +203,9 @@ body {
     4. Responsive Styles (Mobile First)
 -------------------------------------------------------------------*/
 @media only screen and (max-width: 992px) {
-    /* Latar belakang halaman menjadi biru di mobile */
+    /* Latar belakang halaman menjadi putih di mobile */
     #login-page {
-        background: linear-gradient(45deg, #2962ff, #00b0ff);
+        background: #fff;
     }
 
     .login-container {
