@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Periksa status otentikasi saat halaman dimuat
     checkAuthStatus();
 
-    // Tambahkan event listener untuk SEMUA link navigasi (sidebar & topnav)
-    document.querySelectorAll('a[data-view]').forEach(link => {
+    // Tambahkan event listener untuk navigasi Sidenav
+    document.querySelectorAll('.sidenav a[data-view]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const viewId = link.getAttribute('data-view');
@@ -63,20 +63,15 @@ function switchView(viewId) {
         return; // Hentikan jika view tidak ditemukan
     }
 
-    // --- LOGIKA ACTIVE MENU TERPUSAT ---
-    // 1. Hapus kelas 'active' dari semua item menu (di sidenav dan topnav)
-    document.querySelectorAll('.sidenav li, .topnav-menu li').forEach(li => {
+    // Perbarui status 'active' pada menu sidebar
+    document.querySelectorAll('.sidenav li').forEach(li => {
         li.classList.remove('active');
     });
 
-    // 2. Tambahkan kelas 'active' ke link yang diklik (baik di sidenav maupun topnav)
-    const activeLinks = document.querySelectorAll(`a[data-view='${viewId}']`);
-    activeLinks.forEach(link => {
-        if (link.parentElement) {
-            link.parentElement.classList.add('active');
-        }
-    });
-    // --- AKHIR LOGIKA TERPUSAT ---
+    const activeLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
+    if (activeLink && activeLink.parentElement) {
+        activeLink.parentElement.classList.add('active');
+    }
 
     // Muat data yang relevan berdasarkan view yang aktif
     switch (viewId) {
