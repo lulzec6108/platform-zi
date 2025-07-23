@@ -12,7 +12,7 @@ exports.handler = async function (event, context) {
   }
 
   // Dapatkan path dari permintaan asli (misal: /login, /getDashboardData)
-  const actionPath = event.path.replace('/proxy/', '');
+  const actionPath = event.path.replace('/api/', '');
 
   try {
     let response;
