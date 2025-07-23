@@ -471,37 +471,35 @@ async function loadLinkPendukung() {
             console.log('[DIAG] 8. Membersihkan kontainer.');
             container.innerHTML = ''; // Kosongkan kontainer sebelum mengisi
 
-            // Buat struktur tabel
-            const table = document.createElement('table');
-            table.className = 'highlight responsive-table'; // Tambahkan kelas Materialize
+            // Buat kontainer untuk kartu-kartu
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'link-pendukung-cards-container';
 
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th>Deskripsi Link</th>
-                    <th class="center-align">Alamat Tautan</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-
-            const tbody = document.createElement('tbody');
-
-            console.log('[DIAG] 9. Mulai iterasi data untuk membuat baris tabel.');
+            console.log('[DIAG] 9. Mulai iterasi data untuk membuat kartu.');
             result.data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.deskripsi}</td>
-                    <td class="center-align">
-                        <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
-                    </td>
+                const card = document.createElement('div');
+                card.className = 'card link-pendukung-card'; // Menggunakan kelas 'card' dari Materialize dan custom
+                
+                const cardContent = document.createElement('div');
+                cardContent.className = 'card-content';
+                cardContent.innerHTML = `
+                    <p class="card-title">${item.deskripsi}</p>
                 `;
-                tbody.appendChild(tr);
+
+                const cardAction = document.createElement('div');
+                cardAction.className = 'card-action';
+                cardAction.innerHTML = `
+                    <a href="${item.link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
+                `;
+
+                card.appendChild(cardContent);
+                card.appendChild(cardAction);
+                cardContainer.appendChild(card);
             });
 
-            table.appendChild(tbody);
-            container.appendChild(table);
+            container.appendChild(cardContainer);
 
-            console.log('[DIAG] 10. Data berhasil dirender sebagai tabel.');
+            console.log('[DIAG] 10. Data berhasil dirender sebagai kartu.');
 
         } catch (error) {
             console.error('[DIAG] FINAL ERROR CATCH BLOCK:', error);

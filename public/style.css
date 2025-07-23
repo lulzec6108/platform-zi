@@ -1102,3 +1102,32 @@ table tr:hover {
 #slide-out > li.active > a > i.material-icons {
     color: var(--text-on-primary) !important;
 }
+
+/* Link Pendukung - Card Layout */
+.link-pendukung-cards-container {
+    display: grid;
+    /* Membuat kolom yang fleksibel, minimal 300px, dan mengisi ruang yang tersedia */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px; /* Jarak antar kartu */
+    padding-top: 16px;
+}
+
+.link-pendukung-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Mendorong tombol ke bagian bawah kartu */
+}
+
+.link-pendukung-card .card-content {
+    flex-grow: 1; /* Memastikan konten mengisi ruang yang tersedia */
+}
+
+.link-pendukung-card .card-action {
+    text-align: right; /* Meratakan tombol ke kanan */
+    padding: 16px 24px !important; /* Menyesuaikan padding agar lebih seimbang */
+}
+
+.link-pendukung-card .card-title {
+    font-size: 1.1rem; /* Sedikit memperbesar judul agar lebih mudah dibaca */
+    font-weight: 500;
+}
