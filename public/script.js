@@ -436,35 +436,45 @@ async function loadTugasSaya() {
 
 // Fungsi untuk memuat data Link Pendukung dari Google Sheet
 async function loadLinkPendukung() {
+    console.log('[DIAG] 1. Memulai loadLinkPendukung.');
     const container = document.getElementById('link-pendukung-container');
-    if (!container) return;
+    if (!container) {
+        console.error('[DIAG] GAGAL: Kontainer #link-pendukung-container tidak ditemukan.');
+        return;
+    }
+    console.log('[DIAG] 2. Kontainer ditemukan.');
 
     try {
-        showLoading(true); // Gunakan loading overlay global
+        showLoading(true);
+        console.log('[DIAG] 3. Menampilkan loading overlay.');
 
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
         const API_KEY = 'semoga_bisa_wbk_aamiin';
         const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
+        console.log(`[DIAG] 4. Melakukan fetch ke: ${fullUrl}`);
 
         const response = await fetch(fullUrl);
+        console.log('[DIAG] 5. Fetch selesai. Status respons:', response.status);
 
-        // --- PENGECEKAN PENTING ---
-        // Pastikan respons adalah JSON sebelum di-parsing
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Respons dari server bukan JSON. Kemungkinan ada error di Google Apps Script.');
+            console.error('[DIAG] GAGAL: Respons bukan JSON. Tipe Konten:', contentType);
+            throw new Error('Respons dari server bukan JSON.');
         }
-        // --- AKHIR PENGECEKAN ---
+        console.log('[DIAG] 6. Pengecekan Content-Type berhasil.');
 
         const result = await response.json();
+        console.log('[DIAG] 7. Parsing JSON berhasil. Data diterima:', result);
 
-        container.innerHTML = ''; // Selalu bersihkan kontainer sebelum mengisi
+        container.innerHTML = '';
 
         if (result.success && result.data) {
+            console.log(`[DIAG] 8. Data valid. Ditemukan ${result.data.length} link.`);
             if (result.data.length === 0) {
                 container.innerHTML = '<p>Belum ada link pendukung yang ditambahkan.</p>';
             } else {
-                result.data.forEach(link => {
+                result.data.forEach((link, index) => {
+                    console.log(`[DIAG] 9.${index + 1}. Membuat kartu untuk: ${link.deskripsi}`);
                     const card = document.createElement('div');
                     card.className = 'link-card';
                     card.innerHTML = `
@@ -475,16 +485,17 @@ async function loadLinkPendukung() {
                 });
             }
         } else {
+             console.error('[DIAG] GAGAL: Properti success:false atau data tidak ada.');
             throw new Error(result.message || 'Gagal mengambil data dari server.');
         }
+        console.log('[DIAG] 10. Render selesai.');
     } catch (error) {
-        console.error('Error memuat Link Pendukung:', error);
-        // Tampilkan pesan error di dalam kontainer
+        console.error('[DIAG] FINAL ERROR CATCH BLOCK:', error);
         if(container) container.innerHTML = '<p class="red-text">Gagal memuat data link. Silakan coba lagi nanti.</p>';
-        // Juga tampilkan notifikasi global
         showError('Gagal memuat Link Pendukung.');
     } finally {
-        showLoading(false); // Selalu sembunyikan loading overlay
+        showLoading(false);
+        console.log('[DIAG] 11. Selesai. Menyembunyikan loading overlay.');
     }
 }
 
