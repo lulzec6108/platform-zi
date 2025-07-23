@@ -138,13 +138,14 @@ body {
 
 header {
     /* Samakan warna header dengan user-view di sidebar */
-    background-color: var(--primary-color);
+    background: linear-gradient(45deg, #1e88e5, #42a5f5);
     box-shadow: none;
 }
 
 .main-navbar {
     background-color: transparent !important;
     box-shadow: none !important;
+    color: #fff; /* Pastikan warna default teks adalah putih */
 }
 
 .main-navbar .nav-wrapper {
@@ -153,7 +154,7 @@ header {
 }
 
 .main-navbar .brand-logo {
-    color: #fff; /* Ubah warna teks jadi putih */
+    color: #fff; /* Ubah teks jadi putih */
     font-weight: 600;
     font-size: 1.8rem;
     display: flex;
@@ -163,8 +164,21 @@ header {
     transform: none;
 }
 
+@media only screen and (max-width: 992px) {
+    .main-navbar .brand-logo {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media only screen and (min-width: 993px) {
+    .main-navbar .brand-logo {
+        left: 20px; /* Beri sedikit jarak dari tepi */
+    }
+}
+
 .main-navbar .sidenav-trigger {
-    color: #fff; /* Ubah warna ikon jadi putih */
+    color: #fff; /* Ubah ikon menu jadi putih */
 }
 
 /*-------------------------------------------------------------------
