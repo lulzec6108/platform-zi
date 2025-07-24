@@ -5,7 +5,7 @@ const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify
 const API_TIMEOUT = 20000; // 20 detik timeout
 
 // Event listener utama saat DOM sudah siap
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
     console.log("%cHallo, aku masih belajar bikin webapp jangan didebug yaa wkw. Maklum masih banyak bug, bukan anak KS soalnya.. wkw 😂 ~Fayadh", "color: #f0f0f0; background-color: #1e88e5; padding: 10px 20px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);");
 
     // Inisialisasi semua komponen Materialize, termasuk Sidenav
@@ -44,42 +44,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // PERBAIKAN BUG: Sembunyikan semua view saat load, lalu tampilkan dashboard
+    document.querySelectorAll('main .view').forEach(view => {
+        view.style.display = 'none';
+    });
+    const initialView = document.getElementById('dashboard-view');
+    if (initialView) {
+        initialView.style.display = 'block';
+    }
+
+    // Set menu 'Dashboard' sebagai aktif saat pertama kali load
+    const initialActiveMenu = document.querySelector('a[data-view="dashboard-view"]');
+    if (initialActiveMenu) {
+        initialActiveMenu.parentElement.classList.add('active');
+    }
+
+    // Event listener untuk menu navigasi
+    document.querySelectorAll('.sidenav a, .topnav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewId = link.getAttribute('data-view');
+            switchView(viewId);
+        });
+    });
 });
 
 // Fungsi untuk beralih antar view (Dashboard, Tugas Saya, dll.)
 function switchView(viewId) {
-    // Sembunyikan semua view utama
-    document.querySelectorAll('.page-content > div').forEach(view => {
+    // Sembunyikan semua view
+    document.querySelectorAll('main .view').forEach(view => {
         view.style.display = 'none';
     });
 
     // Tampilkan view yang dipilih
-    const activeView = document.getElementById(viewId);
-    if (activeView) {
-        activeView.style.display = 'block';
-    } else {
-        console.error(`View dengan ID '${viewId}' tidak ditemukan.`);
-        // Jika view dari hash tidak ada, kembali ke dashboard
-        window.location.hash = 'dashboard-view';
-        return;
+    const targetView = document.getElementById(viewId);
+    if (targetView) {
+        targetView.style.display = 'block';
     }
 
-    // Simpan view aktif ke URL hash
-    window.location.hash = viewId;
-
-    // --- PERBAIKAN LOGIKA MENU AKTIF ---
-    // 1. Hapus kelas 'active' dari SEMUA item menu (sidebar dan navbar atas)
-    document.querySelectorAll('.sidenav li, .topnav-menu li').forEach(li => {
+    // Hapus kelas 'active' dari semua item menu
+    document.querySelectorAll('.sidenav li, .topnav li').forEach(li => {
         li.classList.remove('active');
     });
 
-    // 2. Tambahkan kelas 'active' ke item yang diklik di sidebar
+    // Tambahkan kelas 'active' ke item yang diklik di sidebar
     const activeSidebarLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
     if (activeSidebarLink && activeSidebarLink.parentElement) {
         activeSidebarLink.parentElement.classList.add('active');
     }
 
-    // 3. Tambahkan kelas 'active' ke item yang sesuai di navbar atas
+    // Tambahkan kelas 'active' ke item yang sesuai di navbar atas
     const activeNavMenuLink = document.querySelector(`.topnav-menu a[data-view='${viewId}']`);
     if (activeNavMenuLink && activeNavMenuLink.parentElement) {
         activeNavMenuLink.parentElement.classList.add('active');
@@ -304,8 +319,8 @@ async function loadLinkPendukung() {
                             // Kategori Data & Grafik (Oranye & Kuning)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`, // Laporan Oranye
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#FFCA28"/></svg>`, // Grafik Naik Kuning
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h9v2zm0-4H7V7h9v2z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-6h-2v6zm0-8h2v-2h-2v2z" fill="#FFEE58"/></svg>`, // Database Kuning
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h8v2zm3-4H7v-2h9v2zm0-4H7V7h9v2z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h2v-6h-2v6zm0-8h2v-2h-2v2z" fill="#FFEE58"/></svg>`, // Database Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#FF7043"/></svg>`, // Info Oranye Tua
 
                             // Kategori Web & Jaringan (Hijau & Teal)
@@ -316,7 +331,7 @@ async function loadLinkPendukung() {
 
                             // Kategori Pengguna & Tim (Indigo & Ungu)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#7E57C2"/></svg>`, // User Ungu
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="#5C6BC0"/></svg>`, // Grup Indigo
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#5C6BC0"/></svg>`, // Grup Indigo
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 0H6v4h8v-4h4V4h-4v2h-4V4h-4v4h-2z" fill="#7986CB"/></svg>`, // Tas Kerja Indigo Muda
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#9575CD"/></svg>`, // Kontak Ungu Muda
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="#BA68C8"/></svg>`, // Mood Senang Ungu

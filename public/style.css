@@ -198,14 +198,38 @@ body {
 }
 
 .main-navbar .brand-logo {
+    display: flex;
+    align-items: center; /* Memastikan logo dan teks terpusat vertikal */
+    height: 100%;
     color: var(--text-on-primary);
     font-weight: 600;
     font-size: 1.2rem;
-    display: flex;
-    align-items: center;
     position: relative;
     left: 0;
     transform: translateX(0);
+}
+
+.logo-img {
+    height: 40px; /* Sesuaikan ukuran logo */
+    width: auto;
+    margin-right: 12px;
+}
+
+.brand-logo div {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.logo-main-text {
+    font-weight: 600; /* Nama brand lebih tebal */
+    font-size: 1.2rem;
+}
+
+.logo-tagline {
+    font-weight: 300; /* Tagline lebih tipis */
+    font-size: 0.7rem;
+    opacity: 0.9;
 }
 
 main {
@@ -489,11 +513,12 @@ ul.sidenav-fixed li.active {
 }
 
 .main-navbar .brand-logo {
+    display: flex;
+    align-items: center; /* Memastikan logo dan teks terpusat vertikal */
+    height: 100%;
     color: var(--text-on-primary);
     font-weight: 600;
     font-size: 1.2rem;
-    display: flex;
-    align-items: center;
     position: relative;
     left: 0;
     transform: translateX(0);
