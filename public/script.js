@@ -59,8 +59,13 @@ function switchView(viewId) {
         activeView.style.display = 'block';
     } else {
         console.error(`View dengan ID '${viewId}' tidak ditemukan.`);
-        return; // Hentikan jika view tidak ditemukan
+        // Jika view dari hash tidak ada, kembali ke dashboard
+        window.location.hash = 'dashboard-view';
+        return;
     }
+
+    // Simpan view aktif ke URL hash
+    window.location.hash = viewId;
 
     // --- PERBAIKAN LOGIKA MENU AKTIF ---
     // 1. Hapus kelas 'active' dari SEMUA item menu (sidebar dan navbar atas)
@@ -119,9 +124,11 @@ function checkAuthStatus() {
             // Panggil kembali fungsi untuk set avatar
             setRandomAvatar();
 
-            // Cek apakah ada view yang sudah aktif, jika tidak, set default ke dashboard
-            const currentActiveView = document.querySelector('.page-content > div[style*="display: block"]');
-            if (!currentActiveView) {
+            // PERBAIKAN: Baca view dari URL hash, atau default ke dashboard
+            const viewIdFromHash = window.location.hash.substring(1);
+            if (viewIdFromHash) {
+                switchView(viewIdFromHash);
+            } else {
                 switchView('dashboard-view');
             }
 
@@ -296,7 +303,7 @@ async function loadLinkPendukung() {
                             // Ikon Folder Abu-abu
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`,
                             // Ikon PDF Merah
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 6c0 .55.45 1 1 1h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1zm-1-5h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1V8zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1z" fill="#EF5350"/></svg>`
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#EF5350"/></svg>`
                         ];
 
                         // Fungsi hash sederhana untuk memilih ikon secara konsisten
