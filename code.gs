@@ -33,6 +33,9 @@ function doGet(e) {
       case 'getLinkPendukung':
         result = handleGetLinkPendukung();
         break;
+      case 'getTugasSaya':
+        result = handleGetTugasSaya(payload);
+        break;
       default:
         result = { success: false, message: 'Aksi GET tidak valid.' };
     }
@@ -196,6 +199,62 @@ function handleGetLinkPendukung() {
   return { success: true, data: result };
 }
 
+function handleGetTugasSaya(payload) {
+  const user = getUserInfo(payload.username);
+  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+
+  const tugasSheet = ss.getSheetByName("MappingTugas");
+  const buktiSheet = ss.getSheetByName("BuktiDukung");
+
+  const tugasData = tugasSheet.getDataRange().getValues();
+  const buktiData = buktiSheet.getDataRange().getValues();
+
+  const tugasHeaders = tugasData.shift();
+  const buktiHeaders = buktiData.shift();
+
+  // Buat map dari bukti dukung untuk pencarian cepat (O(1) lookup)
+  const buktiMap = buktiData.reduce((map, row) => {
+    const username = row[buktiHeaders.indexOf('Username')];
+    const kodeHirarki = row[buktiHeaders.indexOf('Kode Hirarki')];
+    if (username && kodeHirarki) {
+      map[`${username}-${kodeHirarki}`] = {
+        nilai: row[buktiHeaders.indexOf('Nilai')],
+        jenisBuktiDukung: row[buktiHeaders.indexOf('Jenis Bukti Dukung')],
+        timestamp: row[buktiHeaders.indexOf('Timestamp')]
+      };
+    }
+    return map;
+  }, {});
+
+  const userTugas = [];
+  tugasData.forEach(row => {
+    const tugasUsername = row[tugasHeaders.indexOf('Username')];
+    if (tugasUsername === user.username) {
+      const kodeHirarki = row[tugasHeaders.indexOf('Kode Hirarki')];
+      const bukti = buktiMap[`${user.username}-${kodeHirarki}`] || {}; // Ambil bukti atau objek kosong
+
+      userTugas.push({
+        username: tugasUsername,
+        pilar: row[tugasHeaders.indexOf('Pilar')],
+        tingkatan1: row[tugasHeaders.indexOf('Tingkatan 1')],
+        tingkatan2: row[tugasHeaders.indexOf('Tingkatan 2')],
+        tingkatan3: row[tugasHeaders.indexOf('Tingkatan 3')],
+        tingkatan4: row[tugasHeaders.indexOf('Tingkatan 4')],
+        kodeHirarki: kodeHirarki,
+        panduanPenilaian: row[tugasHeaders.indexOf('Panduan Penilaian')],
+        pilihanJawaban: row[tugasHeaders.indexOf('Pilihan Jawaban')],
+        linkReferensi: row[tugasHeaders.indexOf('Link Referensi Melawi')],
+        linkGDrive: row[tugasHeaders.indexOf('Link GDrive Bukti')],
+        // Gabungkan dengan data dari bukti dukung
+        nilai: bukti.nilai || '',
+        jenisBuktiDukung: bukti.jenisBuktiDukung || ''
+      });
+    }
+  });
+
+  return { success: true, data: userTugas };
+}
+
 function handleLogin(payload) {
   const { username, password } = payload;
   try {
@@ -236,18 +295,42 @@ function handleLogin(payload) {
 }
 
 function handleSaveBuktiDukung(payload) {
-  var sheet = ss.getSheetByName("BuktiDukung");
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
-      sheet.getRange(i+1, 3).setValue(payload.nilai);
-      sheet.getRange(i+1, 4).setValue(payload.jenis);
-      sheet.getRange(i+1, 5).setValue(new Date());
-      return { success: true, message: "Bukti dukung diperbarui." };
+  const sheet = ss.getSheetByName("BuktiDukung");
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift(); // Ambil header
+
+  const usernameIndex = headers.indexOf('Username');
+  const kodeIndex = headers.indexOf('Kode Hirarki');
+  const nilaiIndex = headers.indexOf('Nilai');
+  const jenisIndex = headers.indexOf('Jenis Bukti Dukung');
+  const timestampIndex = headers.indexOf('Timestamp');
+
+  // Dapatkan username dari payload (dikirim otomatis oleh callApi)
+  const username = payload.username;
+  if (!username) {
+      return { success: false, message: 'Sesi pengguna tidak ditemukan. Silakan login ulang.' };
+  }
+
+  // Cari baris yang cocok
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][usernameIndex] == username && data[i][kodeIndex] == payload.kodeHirarki) {
+      sheet.getRange(i + 2, nilaiIndex + 1).setValue(payload.nilai);
+      sheet.getRange(i + 2, jenisIndex + 1).setValue(payload.jenisBuktiDukung);
+      sheet.getRange(i + 2, timestampIndex + 1).setValue(new Date());
+      return { success: true, message: "Bukti dukung berhasil diperbarui." };
     }
   }
-  sheet.appendRow([payload.username, payload.kodeHirarki, payload.nilai, payload.jenis, new Date(), "", "", "", ""]);
-  return { success: true, message: "Bukti dukung disimpan." };
+
+  // Jika tidak ditemukan, tambahkan baris baru
+  const newRow = new Array(headers.length).fill('');
+  newRow[usernameIndex] = username;
+  newRow[kodeIndex] = payload.kodeHirarki;
+  newRow[nilaiIndex] = payload.nilai;
+  newRow[jenisIndex] = payload.jenisBuktiDukung;
+  newRow[timestampIndex] = new Date();
+  
+  sheet.appendRow(newRow);
+  return { success: true, message: "Bukti dukung berhasil disimpan." };
 }
 
 function handleSetStatusPenilaian(payload) {

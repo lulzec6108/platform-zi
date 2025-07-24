@@ -165,7 +165,15 @@ function checkAuthStatus() {
 
 // Fungsi untuk memanggil API yang aman dan sederhana
 async function callApi(action, method = 'GET', data = {}) {
-    let url = `${API_BASE_URL}/${action}`;
+    // Ambil info user dari localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Tambahkan username ke data jika user sudah login, kecuali untuk aksi login itu sendiri
+    if (user && user.username && action !== 'login') {
+        data.username = user.username;
+    }
+
+    let url = `${API_BASE_URL}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
@@ -177,12 +185,16 @@ async function callApi(action, method = 'GET', data = {}) {
         signal: controller.signal,
     };
 
-    // Untuk metode POST, kirim data dalam body
+    // Untuk metode POST, kirim data dalam body dengan format yang diharapkan backend
     if (options.method === 'POST') {
-        options.body = JSON.stringify(data);
+        options.body = JSON.stringify({ 
+            action: action, 
+            payload: data 
+        });
     } 
     // Untuk metode GET, kirim data sebagai query parameter
-    else if (options.method === 'GET' && Object.keys(data).length > 0) {
+    else if (options.method === 'GET') {
+        data.action = action; // Tambahkan action ke query params
         url += '?' + new URLSearchParams(data).toString();
     }
 
