@@ -1085,28 +1085,20 @@ table tr:hover {
 }
 
 /* ========================================================================== */
-/* == PERBAIKAN FINAL v2: WARNA TEKS & IKON SIDEBAR == */
+/* == PERBAIKAN FINAL v3: WARNA SIDEBAR AKTIF (SIMPLE & CORRECT) == */
 /* ========================================================================== */
-/* Kesalahan sebelumnya adalah menargetkan kelas .sidenav-menu yang tidak ada.
-   Aturan ini sekarang menargetkan struktur HTML yang benar secara langsung. */
 
-/* Aturan dasar untuk semua link dan ikon di dalam sidebar */
+/* Aturan dasar untuk semua link dan ikon di dalam sidebar (sudah benar) */
 #slide-out li > a,
 #slide-out li > a > i.material-icons {
-    color: var(--text-on-primary) !important;
+    color: var(--text-on-primary) !important; /* !important di sini diperlukan untuk menimpa warna default Materialize */
 }
 
-/* Aturan untuk menu yang sedang AKTIF. */
-/* Ini adalah perbaikan: kita menargetkan 'li.active' dan 'li.active > a' secara eksplisit */
-/* untuk menimpa background transparan dari Materialize dan memastikan warna teks tetap putih. */
-#slide-out li.active,
-#slide-out li.active > a {
-    background-color: var(--primary-color-dark) !important; /* Gunakan !important untuk menimpa Materialize */
-    color: var(--text-on-primary) !important;
-}
-
-#slide-out li.active > a > i.material-icons {
-    color: var(--text-on-primary) !important;
+/* Aturan untuk menu yang sedang AKTIF. Ini adalah perbaikan final. */
+/* Kita hanya perlu menargetkan 'li.active' dan memberinya background. */
+/* Tidak perlu !important karena selector ini sudah cukup spesifik. */
+#slide-out li.active {
+    background-color: var(--primary-color-dark);
 }
 
 /* Link Pendukung - Card Layout */
