@@ -145,8 +145,14 @@ body {
 
     /* PERMINTAAN BARU: Pusatkan brand logo di desktop */
     .main-navbar .brand-logo {
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        display: flex;
+        align-items: center; /* Kunci: Memastikan logo dan teks terpusat vertikal */
+        height: 100%;
+        color: var(--text-on-primary);
+        /* Kunci: Memusatkan brand logo di tengah navbar pada desktop */
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     /* Atur lebar container agar card konten bisa melebar */
@@ -197,22 +203,11 @@ body {
     padding: 0 20px;
 }
 
-.main-navbar .brand-logo {
-    display: flex;
-    align-items: center; /* Memastikan logo dan teks terpusat vertikal */
-    height: 100%;
-    color: var(--text-on-primary);
-    font-weight: 600;
-    font-size: 1.2rem;
-    position: relative;
-    left: 0;
-    transform: translateX(0);
-}
-
 .logo-img {
     height: 40px; /* Sesuaikan ukuran logo */
     width: auto;
     margin-right: 12px;
+    opacity: 0.9;
 }
 
 .brand-logo div {
@@ -512,20 +507,56 @@ ul.sidenav-fixed li.active {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.main-navbar .brand-logo {
+.main-navbar .nav-wrapper {
     display: flex;
-    align-items: center; /* Memastikan logo dan teks terpusat vertikal */
-    height: 100%;
-    color: var(--text-on-primary);
-    font-weight: 600;
-    font-size: 1.2rem;
-    position: relative;
-    left: 0;
-    transform: translateX(0);
+    align-items: center; /* Sejajarkan semua item secara vertikal */
+    padding: 0 20px;
 }
 
-.main-navbar .sidenav-trigger {
+.main-navbar .brand-logo {
+    display: flex;
+    align-items: center;
+    height: 100%;
     color: var(--text-on-primary);
+
+    /* Kunci: Hapus posisi absolut dan biarkan flexbox bekerja */
+    position: static;
+    transform: none;
+
+    /* Kunci: Gunakan margin auto untuk mengisi ruang & memusatkan diri */
+    margin: 0 auto;
+}
+
+.sidenav-trigger {
+    /* Ditempatkan di awal oleh flexbox */
+    order: -1; /* Pastikan trigger selalu di paling kiri */
+}
+
+.brand-logo .logo-img {
+    height: 40px;
+    width: auto;
+    margin-right: 15px;  /* Beri jarak antara logo dan teks */
+    flex-shrink: 0;      /* Jangan biarkan logo menyusut */
+}
+
+.brand-logo div {
+    display: flex;
+    flex-direction: column; /* Teks brand di atas, tagline di bawah */
+    justify-content: center;
+    line-height: 1.2;
+}
+
+.logo-main-text {
+    font-weight: 600;
+    font-size: 1.2rem;
+    white-space: nowrap; /* Jangan biarkan teks brand pecah baris */
+}
+
+.logo-tagline {
+    font-weight: 300;
+    font-size: 0.7rem;
+    opacity: 0.9;
+    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
 }
 
 /* 5. Page Content & Cards
@@ -1201,6 +1232,7 @@ table tr:hover {
         display: flex;
         flex-wrap: wrap;
         gap: 20px; /* Jarak antar kartu */
+        justify-content: center; /* Kunci: Pusatkan kartu secara horizontal */
     }
 
     .link-pendukung-card {
@@ -1238,3 +1270,59 @@ table tr:hover {
 .link-pendukung-card .card-action {
     text-align: center; /* Pusatkan tombol */
 }
+
+/* PERBAIKAN V8: Tata letak Navbar dan Pusatkan Kartu */
+
+/* 1. Perbaikan Tata Letak Brand Logo di Navbar */
+.main-navbar .brand-logo {
+    display: flex;         /* Gunakan flexbox */
+    align-items: center;   /* Pusatkan item secara vertikal */
+    height: 100%;
+    width: max-content;    /* Pastikan container tidak pecah */
+    max-width: 80%;
+    color: var(--text-on-primary);
+    
+    /* Pusatkan di tengah untuk desktop */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.brand-logo .logo-img {
+    height: 40px;
+    width: auto;
+    margin-right: 15px;  /* Beri jarak antara logo dan teks */
+    flex-shrink: 0;      /* Jangan biarkan logo menyusut */
+}
+
+.brand-logo div {
+    display: flex;
+    flex-direction: column; /* Teks brand di atas, tagline di bawah */
+    justify-content: center;
+    line-height: 1.2;
+}
+
+.logo-main-text {
+    font-weight: 600;
+    font-size: 1.2rem;
+    white-space: nowrap; /* Jangan biarkan teks brand pecah baris */
+}
+
+.logo-tagline {
+    font-weight: 300;
+    font-size: 0.7rem;
+    opacity: 0.9;
+    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
+}
+
+/* 2. Pusatkan Kartu Link Pendukung */
+#link-pendukung-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Kunci: Pusatkan kartu secara horizontal */
+}
+
+main {
+    flex-grow: 1;
+    background-color: var(--background-color);
