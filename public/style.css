@@ -146,11 +146,13 @@ body {
     /* PERMINTAAN BARU: Pusatkan brand logo di desktop */
     .main-navbar .brand-logo {
         display: flex;
-        justify-content: center; /* Kunci: Pusatkan konten di dalam brand-logo */
+        /* Kunci: Ubah ke rata kiri (flex-start) */
+        justify-content: flex-start;
         align-items: center;
         height: 100%;
         color: var(--text-on-primary);
-        flex-grow: 1; /* Kunci: Biarkan elemen ini mengisi ruang tengah */
+        /* Kunci: Hapus flex-grow agar tidak lagi mencoba mengisi ruang */
+        flex-grow: 0;
         position: static;
         transform: none;
     }
@@ -565,12 +567,12 @@ main {
 }
 
 .page-content {
-    /* Kunci: Padding responsif untuk mobile */
-    padding: clamp(15px, 4vw, 24px);
+    /* Kunci: Padding responsif untuk mobile, lebih kecil di layar sempit */
+    padding: clamp(12px, 3vw, 24px);
 }
 
 .page-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 600;
     margin-bottom: 20px;
 }
