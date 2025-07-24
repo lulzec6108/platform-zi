@@ -10,38 +10,25 @@ function sendJSON(data) {
 
 // --- Handlers Utama ---
 function doGet(e) {
-  // ====================== TEMPORARY DEBUGGING CODE ======================
-  // Mengirim kembali parameter yang diterima untuk di-debug di frontend.
-  // HAPUS BLOK INI SETELAH SELESAI DEBUGGING.
-  return sendJSON({ 
-    debug_mode: true, 
-    message: "Ini adalah data yang diterima oleh Google Server",
-    received_parameters: e.parameter 
-  });
-  // ====================================================================
+  // Logger.log('doGet received parameters: ' + JSON.stringify(e.parameter));
 
-  // LOG DIAGNOSTIK: Catat semua parameter yang diterima oleh server
-  Logger.log('doGet received parameters: ' + JSON.stringify(e.parameter));
-
-  // Validasi untuk GET: API Key harus ada di parameter URL
-  if (!e || !e.parameter || e.parameter.apiKey !== SCRIPT_API_KEY) {
+  // Validasi API Key
+  if (!e || !e.parameter || !e.parameter.apiKey || e.parameter.apiKey !== SCRIPT_API_KEY) {
     return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid atau tidak ada.' });
   }
 
   const action = e.parameter.action;
-  const payload = e.parameter;
+  const payload = e.parameter; // Semua parameter adalah payload
   let result;
 
   try {
+    // Routing berdasarkan parameter 'action'
     switch (action) {
+      case 'login':
+        result = handleLogin(payload);
+        break;
       case 'getDashboardTugasStatus':
         result = handleGetDashboardTugasStatus(payload);
-        break;
-      case 'getMappingTugasForUser':
-        result = handleGetMappingTugasForUser(payload);
-        break;
-      case 'getBuktiDukung':
-        result = handleGetBuktiDukung(payload);
         break;
       case 'getLinkPendukung':
         result = handleGetLinkPendukung(payload);
@@ -51,11 +38,13 @@ function doGet(e) {
         break;
       default:
         result = { success: false, message: 'Aksi GET tidak valid.' };
+        break;
     }
   } catch (err) {
-    Logger.log(`Error in doGet action '${action}': ${err.toString()}`);
-    result = { success: false, message: `Terjadi kesalahan server pada aksi: ${action}` };
+    Logger.log(`Error in doGet action '${action}': ${err.message} Stack: ${err.stack}`);
+    result = { success: false, message: `Terjadi kesalahan server pada aksi: ${action}. Detail: ${err.message}` };
   }
+
   return sendJSON(result);
 }
 
