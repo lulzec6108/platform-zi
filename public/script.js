@@ -1,12 +1,13 @@
 // script.js (REVISED & SECURED)
 
 // Konfigurasi
-const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify.toml
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
+const API_KEY = 'semoga_bisa_wbk_aamiin'; // Kunci API sederhana
 const API_TIMEOUT = 20000; // 20 detik timeout
 
 // Event listener utama saat DOM sudah siap
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM siap. Inisialisasi aplikasi...');
+    console.log('%cHehe, masih belajar bikin webapp jangan didebug yaa, maklum masih banyak bug, bukan anak KS soalnya.. ~Fayadh', 'font-weight: bold; font-size: 14px; color: #1e88e5;');
 
     // Inisialisasi semua komponen Materialize, termasuk Sidenav
     M.AutoInit();
@@ -57,20 +58,27 @@ function switchView(viewId) {
     const activeView = document.getElementById(viewId);
     if (activeView) {
         activeView.style.display = 'block';
-        console.log(`Menampilkan view: ${viewId}`);
     } else {
         console.error(`View dengan ID '${viewId}' tidak ditemukan.`);
         return; // Hentikan jika view tidak ditemukan
     }
 
-    // Perbarui status 'active' pada menu sidebar
-    document.querySelectorAll('.sidenav li').forEach(li => {
+    // --- PERBAIKAN LOGIKA MENU AKTIF ---
+    // 1. Hapus kelas 'active' dari SEMUA item menu (sidebar dan navbar atas)
+    document.querySelectorAll('.sidenav li, .topnav-menu li').forEach(li => {
         li.classList.remove('active');
     });
 
-    const activeLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
-    if (activeLink && activeLink.parentElement) {
-        activeLink.parentElement.classList.add('active');
+    // 2. Tambahkan kelas 'active' ke item yang diklik di sidebar
+    const activeSidebarLink = document.querySelector(`.sidenav a[data-view='${viewId}']`);
+    if (activeSidebarLink && activeSidebarLink.parentElement) {
+        activeSidebarLink.parentElement.classList.add('active');
+    }
+
+    // 3. Tambahkan kelas 'active' ke item yang sesuai di navbar atas
+    const activeNavMenuLink = document.querySelector(`.topnav-menu a[data-view='${viewId}']`);
+    if (activeNavMenuLink && activeNavMenuLink.parentElement) {
+        activeNavMenuLink.parentElement.classList.add('active');
     }
 
     // Muat data yang relevan berdasarkan view yang aktif
@@ -104,42 +112,44 @@ function checkAuthStatus() {
             if (loginPage) loginPage.style.display = 'none';
             if (mainContent) mainContent.style.display = 'block';
             document.title = 'Dashboard | Si Paling ZI'; // Ganti judul halaman
-            
-            const userData = JSON.parse(user);
-            
-            // Perbarui info pengguna di Sidenav
-            const sidenavUserName = document.getElementById('sidenav-user-name');
-            const sidenavUserRole = document.getElementById('sidenav-user-role');
-            if (sidenavUserName) sidenavUserName.textContent = userData.nama || 'Pengguna';
-            if (sidenavUserRole) sidenavUserRole.textContent = userData.role || 'Role';
 
-            // Atur avatar pengguna secara acak
-            setRandomAvatar();
-            
-            // Saat pertama kali login, tampilkan dashboard
-            switchView('dashboard-view');
+            const userData = JSON.parse(user);
+
+            // Perbarui info pengguna di Sidenav
+            const userNameElement = document.getElementById('user-name');
+            const userRoleElement = document.getElementById('user-role');
+            if (userNameElement) userNameElement.textContent = userData.nama;
+            if (userRoleElement) userRoleElement.textContent = userData.role;
+
+            // Pindahkan ke dashboard sebagai default view setelah login
+            // Cek apakah ada view yang sudah aktif, jika tidak, set default ke dashboard
+            const currentActiveView = document.querySelector('.page-content > div[style*="display: block"]');
+            if (!currentActiveView) {
+                switchView('dashboard-view');
+            }
+
         } catch (e) {
-            console.error('Gagal mem-parsing data pengguna, logout paksa:', e);
-            handleLogout(); // Jika data user rusak, paksa logout
+            console.error("Gagal mem-parsing data user, melakukan logout paksa.", e);
+            handleLogout();
         }
     } else {
         // Pengguna belum login
-        if (loginPage) loginPage.style.display = 'flex'; // DIUBAH DARI 'block' ke 'flex'
+        if (loginPage) loginPage.style.display = 'flex';
         if (mainContent) mainContent.style.display = 'none';
-        document.title = 'Login | Si Paling ZI'; // Kembalikan judul halaman
+        document.title = 'Login | Si Paling ZI';
     }
 }
 
 // Fungsi untuk memanggil API yang aman dan sederhana
 async function callApi(action, method = 'GET', data = {}) {
-    let url = `${API_BASE_URL}/${action}`;
+    let url = `${API_BASE_URL}?action=${action}&apiKey=${API_KEY}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
     const options = {
         method: method.toUpperCase(),
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain;charset=utf-8', // Diperlukan untuk GAS
         },
         signal: controller.signal,
     };
@@ -147,10 +157,14 @@ async function callApi(action, method = 'GET', data = {}) {
     // Untuk metode POST, kirim data dalam body
     if (options.method === 'POST') {
         options.body = JSON.stringify(data);
+        // Perlu mode 'no-cors' untuk beberapa jenis POST ke GAS, tapi kita coba dulu tanpa
+        // options.mode = 'no-cors'; 
     } 
     // Untuk metode GET, kirim data sebagai query parameter
     else if (options.method === 'GET' && Object.keys(data).length > 0) {
-        url += '?' + new URLSearchParams(data).toString();
+        for (const key in data) {
+            url += `&${key}=${data[key]}`;
+        }
     }
 
     try {
@@ -450,98 +464,69 @@ async function loadLinkPendukung() {
             showLoading(true);
             console.log('[DIAG] 3. Menampilkan loading overlay.');
 
-            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi8ZxbUCzEa5QHiZW32Ifh23H9y8HaljrJOHjKa2f8rjUPuxuxKcr0TV9ygSVTbrY/exec';
-            const API_KEY = 'semoga_bisa_wbk_aamiin';
-            const fullUrl = `${WEB_APP_URL}?action=getLinkPendukung&apiKey=${API_KEY}`;
-            console.log(`[DIAG] 4. Melakukan fetch ke: ${fullUrl}`);
+            const result = await callApi('getLinkPendukung', 'GET');
 
-            const response = await fetch(fullUrl);
-            console.log('[DIAG] 5. Fetch selesai. Status respons:', response.status);
+            if (result.success && result.data) {
+                let cardsHtml = '';
+                if (result.data.length > 0) {
+                    result.data.forEach(item => {
+                        // Guard clause untuk data yang tidak valid atau baris kosong
+                        if (!item || !item.judul_link) {
+                            console.warn('[DIAG] Melewati item data yang tidak valid:', item);
+                            return; // Lewati iterasi ini
+                        }
 
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                console.error('[DIAG] GAGAL: Respons bukan JSON. Tipe Konten:', contentType);
-                throw new Error('Respons dari server bukan JSON.');
-            }
-            console.log('[DIAG] 6. Pengecekan Content-Type berhasil.');
+                        // Koleksi Ikon SVG Berwarna
+                        const icons = [
+                            // Ikon Dokumen Biru
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#42A5F5"/></svg>`,
+                            // Ikon Link Hijau
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#66BB6A"/></svg>`,
+                            // Ikon Laporan Oranye
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`,
+                            // Ikon Folder Abu-abu
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`,
+                            // Ikon PDF Merah
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 6c0 .55.45 1 1 1h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-2 4h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1zm-1-5h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1V8zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1z" fill="#EF5350"/></svg>`
+                        ];
 
-            const result = await response.json();
-            console.log('[DIAG] 7. Parsing JSON berhasil. Data diterima:', result);
+                        // Fungsi hash sederhana untuk memilih ikon secara konsisten
+                        function simpleHash(str) {
+                            let hash = 0;
+                            for (let i = 0; i < str.length; i++) {
+                                hash = (str.charCodeAt(i) + ((hash << 5) - hash)) & 0xFFFFFFFF;
+                            }
+                            return Math.abs(hash);
+                        }
 
-            console.log('[DIAG] 8. Membersihkan kontainer.');
-            container.innerHTML = ''; // Kosongkan kontainer sebelum mengisi
+                        // Pilih ikon secara konsisten berdasarkan judul
+                        const iconIndex = simpleHash(item.judul_link) % icons.length;
+                        const selectedIconSvg = icons[iconIndex];
 
-            // Buat kontainer untuk kartu-kartu
-            const cardContainer = document.createElement('div');
-            cardContainer.className = 'link-pendukung-cards-container';
-
-            // Koleksi Ikon SVG Berwarna
-            const icons = [
-                // Ikon Dokumen Biru
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#42A5F5"/></svg>`,
-                // Ikon Link Hijau
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#66BB6A"/></svg>`,
-                // Ikon Laporan Oranye
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`,
-                // Ikon Folder Abu-abu
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`,
-                // Ikon PDF Merah
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 6c0 .55.45 1 1 1h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-2 4h2v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1h-2V6c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v2zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1zm-1-5h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1V8zm-1 4h1v1c0 .55-.45 1-1 1h-1c-.55 0-1-.45-1-1v-1z" fill="#EF5350"/></svg>`
-            ];
-
-            // Fungsi hash sederhana untuk memilih ikon secara konsisten
-            function simpleHash(str) {
-                let hash = 0;
-                for (let i = 0; i < str.length; i++) {
-                    hash = (str.charCodeAt(i) + ((hash << 5) - hash)) & 0xFFFFFFFF;
+                        cardsHtml += `
+                            <div class="card link-pendukung-card">
+                                <div class="card-content">
+                                    <div class="card-icon-wrapper">
+                                        ${selectedIconSvg}
+                                    </div>
+                                    <span class="card-title">${item.judul_link}</span>
+                                    <p class="link-description">${item.deskripsi_link || ''}</p>  <!-- Fallback jika deskripsi kosong -->
+                                </div>
+                                <div class="card-action">
+                                    <a href="${item.alamat_link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
+                                </div>
+                            </div>
+                        `;
+                    });
                 }
-                return Math.abs(hash);
+                container.innerHTML = cardsHtml;
+            } else {
+                throw new Error(result.message || 'Gagal memuat link pendukung.');
             }
-
-            console.log('[DIAG] 9. Mulai iterasi data untuk membuat kartu.');
-            result.data.forEach(item => {
-                // Guard clause untuk data yang tidak valid atau baris kosong
-                if (!item || !item.judul_link) {
-                    console.warn('[DIAG] Melewati item data yang tidak valid:', item);
-                    return; // Lewati iterasi ini
-                }
-
-                // Pilih ikon secara konsisten berdasarkan judul
-                const iconIndex = simpleHash(item.judul_link) % icons.length;
-                const selectedIconSvg = icons[iconIndex];
-
-                const card = document.createElement('div');
-                card.className = `card link-pendukung-card`; // Warna solid tidak lagi di sini
-                
-                const cardContent = document.createElement('div');
-                cardContent.className = 'card-content';
-                cardContent.innerHTML = `
-                    <div class="card-icon-wrapper">
-                        ${selectedIconSvg}
-                    </div>
-                    <span class="card-title">${item.judul_link}</span>
-                    <p class="link-description">${item.deskripsi_link || ''}</p>  <!-- Fallback jika deskripsi kosong -->
-                `;
-
-                const cardAction = document.createElement('div');
-                cardAction.className = 'card-action';
-                cardAction.innerHTML = `
-                    <a href="${item.alamat_link}" target="_blank" class="btn waves-effect waves-light blue">Kunjungi Link</a>
-                `;
-
-                card.appendChild(cardContent);
-                card.appendChild(cardAction);
-                cardContainer.appendChild(card);
-            });
-
-            container.appendChild(cardContainer);
-
-            console.log('[DIAG] 10. Data berhasil dirender sebagai kartu dengan ikon SVG.');
-
         } catch (error) {
-            console.error('[DIAG] FINAL ERROR CATCH BLOCK:', error);
-            if(container) container.innerHTML = '<p class="red-text">Gagal memuat data link. Silakan coba lagi nanti.</p>';
-            showError('Gagal memuat Link Pendukung.');
+            console.error('Error loading link pendukung:', error);
+            const container = document.getElementById('link-pendukung-container');
+            container.innerHTML = `<p class="center-align red-text">Gagal memuat data. ${error.message}</p>`;
         } finally {
             showLoading(false);
             console.log('[DIAG] 11. Selesai. Menyembunyikan loading overlay.');
@@ -550,162 +535,64 @@ async function loadLinkPendukung() {
 }
 
 // Inisialisasi event listener untuk form bukti dukung
-document.addEventListener('DOMContentLoaded', function() {
-    const saveBuktiBtn = document.getElementById('save-bukti-btn');
-    if (saveBuktiBtn) {
-        saveBuktiBtn.addEventListener('click', async function() {
-            const jenis = document.getElementById('bukti-jenis').value;
-            const nilai = document.getElementById('bukti-nilai').value.trim();
-            
-            if (!nilai) {
-                showError('Nilai bukti harus diisi');
-                return;
+document.addEventListener('submit', async (event) => {
+    // Cek apakah event berasal dari form yang kita inginkan
+    if (event.target && event.target.matches('.bukti-form')) {
+        event.preventDefault(); // Mencegah form dari submit tradisional
+
+        const form = event.target;
+        const button = form.querySelector('button[type="submit"]');
+        const kode_hirarki = form.dataset.kode;
+        const nilai = form.querySelector('input[type="url"]').value.trim();
+        const user = JSON.parse(sessionStorage.getItem('user'));
+
+        if (!nilai) {
+            M.toast({ html: 'Link bukti dukung tidak boleh kosong!', classes: 'red' });
+            return;
+        }
+
+        if (!user || !user.username) {
+            M.toast({ html: 'Sesi tidak valid, silakan login ulang.', classes: 'red' });
+            return;
+        }
+
+        button.disabled = true;
+        button.innerHTML = 'Menyimpan...';
+
+        try {
+            const payload = {
+                username: user.username,
+                kode_hirarki: kode_hirarki,
+                nilai: nilai
+            };
+
+            const result = await callApi('updateBuktiDukung', 'POST', payload);
+
+            if (result.success) {
+                M.toast({ html: 'Bukti dukung berhasil disimpan!', classes: 'green' });
+            } else {
+                throw new Error(result.message || 'Gagal menyimpan data.');
             }
-            
-            try {
-                showLoading(true);
-                const payload = {
-                    jenis,
-                    nilai,
-                    kode_hirarki: document.getElementById('task-id-hidden').value,
-                    username: JSON.parse(sessionStorage.getItem('user')).username
-                };
-                const result = await callApi('saveBuktiDukung', 'POST', payload);
-                
-                if (result.success) {
-                    showError('Bukti berhasil disimpan', 'success');
-                    
-                    // Tutup modal
-                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
-                    if (modal) modal.close();
-                    
-                    // Refresh data
-                    loadDashboardData();
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan bukti');
-                }
-            } catch (error) {
-                console.error('Error saving evidence:', error);
-                showError('Gagal menyimpan bukti: ' + (error.message || 'Terjadi kesalahan'));
-            } finally {
-                showLoading(false);
-            }
-        });
+
+        } catch (error) {
+            console.error('Gagal menyimpan bukti dukung:', error);
+            M.toast({ html: `Error: ${error.message}`, classes: 'red' });
+        } finally {
+            button.disabled = false;
+            button.innerHTML = 'Simpan <i class="material-icons right">save</i>';
+        }
     }
 });
 
-// Inisialisasi event listener untuk form penilaian ketua pilar
-document.addEventListener('DOMContentLoaded', function() {
-    const saveKetuaBtn = document.getElementById('save-ketua-status-btn');
-    if (saveKetuaBtn) {
-        saveKetuaBtn.addEventListener('click', async function() {
-            const status = document.getElementById('ketua-status').value;
-            const catatan = document.getElementById('ketua-catatan').value.trim();
-            
-            if (!status) {
-                showError('Status penilaian harus dipilih');
-                return;
-            }
-            
-            try {
-                showLoading(true);
-                const payload = {
-                    status,
-                    catatan,
-                    kode_hirarki: document.getElementById('task-id-hidden').value,
-                    username: JSON.parse(sessionStorage.getItem('user')).username
-                };
-                const result = await callApi('savePenilaianKetua', 'POST', payload);
-                
-                if (result.success) {
-                    showError('Penilaian berhasil disimpan', 'success');
-                    
-                    // Tutup modal
-                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
-                    if (modal) modal.close();
-                    
-                    // Refresh data
-                    loadDashboardData();
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan penilaian');
-                }
-            } catch (error) {
-                console.error('Error saving assessment:', error);
-                showError('Gagal menyimpan penilaian: ' + (error.message || 'Terjadi kesalahan'));
-            } finally {
-                showLoading(false);
-            }
-        });
-    }
-});
-
-// Inisialisasi event listener untuk form verifikasi admin
-document.addEventListener('DOMContentLoaded', function() {
-    const saveAdminBtn = document.getElementById('save-admin-status-btn');
-    if (saveAdminBtn) {
-        saveAdminBtn.addEventListener('click', async function() {
-            const status = document.getElementById('admin-status').value;
-            const catatan = document.getElementById('admin-catatan').value.trim();
-            
-            if (!status) {
-                showError('Status verifikasi harus dipilih');
-                return;
-            }
-            
-            try {
-                showLoading(true);
-                const payload = {
-                    status,
-                    catatan,
-                    kode_hirarki: document.getElementById('task-id-hidden').value,
-                    username: JSON.parse(sessionStorage.getItem('user')).username
-                };
-                const result = await callApi('saveVerifikasiAdmin', 'POST', payload);
-                
-                if (result.success) {
-                    showError('Verifikasi berhasil disimpan', 'success');
-                    
-                    // Tutup modal
-                    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
-                    if (modal) modal.close();
-                    
-                    // Refresh data
-                    loadDashboardData();
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan verifikasi');
-                }
-            } catch (error) {
-                console.error('Error saving verification:', error);
-                showError('Gagal menyimpan verifikasi: ' + (error.message || 'Terjadi kesalahan'));
-            } finally {
-                showLoading(false);
-            }
-        });
-    }
-});
-
-// Fungsi untuk menampilkan/menyembunyikan loading
-function showLoading(show = true) {
+// Fungsi untuk menampilkan/menyembunyikan loading overlay
+function showLoading(isLoading) {
     const loadingElement = document.getElementById('loading');
     if (loadingElement) {
-        loadingElement.style.display = show ? 'flex' : 'none';
+        loadingElement.style.display = isLoading ? 'flex' : 'none';
     }
 }
 
 // Fungsi untuk menampilkan pesan error
 function showError(message, duration = 5000) {
     M.toast({html: message, classes: 'red', displayLength: duration});
-}
-
-// Fungsi untuk mengatur avatar gambar berwarna secara acak menggunakan DiceBear API
-function setRandomAvatar() {
-    // Menggunakan gaya 'adventurer' untuk avatar manusia yang lebih menarik
-    // Kita buat string acak untuk memastikan avatar selalu baru setiap kali dimuat ulang
-    const seed = Math.random().toString(36).substring(7);
-    const avatarUrl = `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}`;
-    
-    const avatarElement = document.getElementById('user-avatar-img');
-    if (avatarElement) {
-        avatarElement.src = avatarUrl;
-    }
 }
