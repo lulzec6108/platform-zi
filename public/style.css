@@ -141,6 +141,12 @@ body {
         border-top-left-radius: 25px;
         border-bottom-left-radius: 25px;
     }
+
+    /* PERMINTAAN BARU: Pusatkan brand logo di desktop */
+    .main-navbar .brand-logo {
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
 .main-navbar {
@@ -200,6 +206,14 @@ main {
     overflow-y: auto;
     /* Beri padding atas seukuran tinggi navbar agar konten tidak tertutup */
     padding: 64px 20px 20px 20px;
+}
+
+main .view {
+    background-color: #ffffff;
+    margin: 24px;
+    padding: 24px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /*-------------------------------------------------------------------
