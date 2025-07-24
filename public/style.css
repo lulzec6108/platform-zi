@@ -894,7 +894,13 @@ body {
 }
 
 .sidebar-menu li.active {
-    background-color: #1565c0; /* Biru yang lebih gelap untuk kontras */
+    background-color: #0D47A1; /* Biru lebih gelap untuk kontras */
+}
+
+.sidebar-menu li.active a,
+.sidebar-menu li.active a i.material-icons {
+    color: #FFFFFF !important; /* Pastikan ikon dan teks tetap putih */
+    font-weight: 500; /* Sedikit tebalkan font menu aktif */
 }
 
 .sidebar-menu .divider {
