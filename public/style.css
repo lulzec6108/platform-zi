@@ -144,14 +144,18 @@ header {
 }
 
 .main-navbar {
-    background-color: transparent !important;
-    box-shadow: none !important;
+    background-color: var(--primary-color-dark);
     color: var(--text-on-primary);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed; /* Membuat navbar tetap di atas */
+    top: 0;
+    left: 0; /* Memastikan rata kiri */
+    right: 0; /* Memastikan rata kanan */
+    z-index: 1001; /* Pastikan di atas sidenav */
 }
 
 .main-navbar .nav-wrapper {
-    /* Hapus padding default agar konten tidak terdorong aneh */
-    padding-left: 20px;
+    padding: 0 20px;
 }
 
 .main-navbar .brand-logo {
@@ -507,6 +511,14 @@ ul.sidenav-fixed li.active {
 
 /* 5. Page Content & Cards
 -------------------------------------------------- */
+main {
+    flex-grow: 1;
+    padding: 20px;
+    padding-top: 84px; /* (tinggi navbar 64px + padding 20px) */
+    background-color: var(--background-color);
+    overflow-y: auto;
+}
+
 .page-content {
     padding: 24px;
 }
