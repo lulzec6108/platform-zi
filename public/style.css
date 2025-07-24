@@ -128,17 +128,18 @@ body {
     z-index: 1001 !important; /* Naikkan z-index agar di atas navbar (1000) */
 }
 
-/* PERBAIKAN V3: Mengatur layout Header dan Main untuk Desktop */
+/* PERBAIKAN V4: Mengatur layout Header dan Main untuk Desktop */
 @media only screen and (min-width: 993px) {
-    header,
     main,
     footer {
-        padding-left: 250px; /* Beri ruang untuk sidenav */
+        /* Geser konten utama ke kanan seukuran sidebar */
+        margin-left: 250px;
     }
 
     .main-navbar {
-        /* Membuat sudut kiri atas navbar membulat agar serasi dengan sidebar */
-        border-top-left-radius: 20px;
+        /* Membuat sudut kiri navbar membulat agar serasi dengan sidebar */
+        border-top-left-radius: 25px;
+        border-bottom-left-radius: 25px;
     }
 }
 
@@ -155,6 +156,26 @@ body {
     .main-navbar {
         left: 0; /* Di mobile, navbar memenuhi seluruh lebar */
         border-top-left-radius: 0; /* Hapus radius di mobile */
+        border-bottom-left-radius: 0;
+    }
+
+    /* KEMBALIKAN: Aturan untuk logo/judul di mobile agar responsif */
+    .main-navbar .brand-logo {
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: baseline;
+        white-space: nowrap;
+        width: auto;
+    }
+
+    .logo-main-text {
+        font-size: clamp(1rem, 4vw, 1.2rem);
+    }
+
+    .logo-tagline {
+        font-size: clamp(0.5rem, 2.5vw, 0.7rem);
+        margin-left: 8px;
     }
 }
 
@@ -162,15 +183,23 @@ body {
     padding: 0 20px;
 }
 
+.main-navbar .brand-logo {
+    color: var(--text-on-primary);
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    left: 0;
+    transform: translateX(0);
+}
+
 main {
     flex-grow: 1;
     background-color: var(--background-color);
     overflow-y: auto;
     /* Beri padding atas seukuran tinggi navbar agar konten tidak tertutup */
-    padding-top: 64px; 
-    padding-right: 20px;
-    padding-bottom: 20px;
-    /* Padding kiri sudah diatur oleh media query di atas */
+    padding: 64px 20px 20px 20px;
 }
 
 /*-------------------------------------------------------------------
