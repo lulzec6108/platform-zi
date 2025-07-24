@@ -285,24 +285,18 @@ function handleLogout() {
 async function loadLinkPendukung() {
     // Tunda eksekusi untuk memastikan DOM view sudah dirender sepenuhnya
     setTimeout(async () => {
-        console.log('[DIAG] 1. Memulai loadLinkPendukung (setelah jeda).');
         const container = document.getElementById('link-pendukung-container');
         if (!container) {
-            console.error('[DIAG] GAGAL: Kontainer #link-pendukung-container masih tidak ditemukan.');
+            console.error('Kontainer #link-pendukung-container tidak ditemukan.');
             return;
         }
-        console.log('[DIAG] 2. Kontainer ditemukan.');
-
+        
         try {
             showLoading(true);
-            console.log('[DIAG] 3. Menampilkan loading overlay.');
-
+            
             // Panggil callApi hanya dengan action, karena method defaultnya GET
             // dan username akan ditambahkan secara otomatis oleh callApi.
             const result = await callApi('getLinkPendukung');
-
-            // LOG DIAGNOSTIK: Tampilkan data mentah yang diterima dari server
-            console.log('[DIAG] Data Link Pendukung diterima:', result);
 
             if (result.success && result.data) {
                 let cardsHtml = '';
@@ -310,7 +304,7 @@ async function loadLinkPendukung() {
                     result.data.forEach(item => {
                         // Guard clause untuk data yang tidak valid atau baris kosong
                         if (!item || !item.judul_link) {
-                            console.warn('[DIAG] Melewati item data yang tidak valid:', item);
+                            console.warn('Melewati item data yang tidak valid:', item);
                             return; // Lewati iterasi ini
                         }
 
@@ -321,14 +315,13 @@ async function loadLinkPendukung() {
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#EF5350"/></svg>`, // PDF Merah
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`, // Folder Abu-abu
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#AB47BC"/></svg>`, // Attachment Ungu
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#26A69A"/></svg>`, // Spreadsheet Hijau
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFA726"/></svg>`, // Spreadsheet Hijau
 
                             // Kategori Data & Grafik (Oranye & Kuning)
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`, // Laporan Oranye
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#FFCA28"/></svg>`, // Grafik Naik Kuning
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="#FFEE58"/></svg>`, // Database Kuning
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#FF7043"/></svg>`, // Info Oranye Tua
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FF7043"/></svg>`, // Info Oranye Tua
 
                             // Kategori Web & Jaringan (Hijau & Teal)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 13v8h8v-8h-8zM3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#66BB6A"/></svg>`, // Link Hijau
@@ -349,7 +342,7 @@ async function loadLinkPendukung() {
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 13v8h8v-8h-8zM3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#4DD0E1"/></svg>`, // Dashboard Cyan
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" fill="#4FC3F7"/></svg>`, // Komentar Biru Muda
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" fill="#F06292"/></svg>`, // Peringatan Pink
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#E57373"/></svg>`, // Hati Merah
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="#E57373"/></svg>`, // Hati Merah
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 12l-2.5 2.5 1.41 1.41L16.17 12l-4.58-4.59L13 12zm-2.5 6.5L5.83 12l1.41-1.41L11.41 16.17l4.59-4.58L10.5 18.5z" fill="#FFF176"/></svg>`, // Bintang Kuning
                         ];
 
@@ -392,7 +385,6 @@ async function loadLinkPendukung() {
             container.innerHTML = `<p class="center-align red-text">Gagal memuat data. ${error.message}</p>`;
         } finally {
             showLoading(false);
-            console.log('[DIAG] 11. Selesai. Menyembunyikan loading overlay.');
         }
     }, 0); // Jeda 0ms untuk menempatkan eksekusi di akhir antrian event
 }
@@ -631,7 +623,6 @@ async function loadTugasSaya() {
 
     try {
         const result = await callApi('getTugasSaya');
-        console.log("[DIAG] Data Tugas Saya diterima:", result);
 
         if (result.success && Array.isArray(result.data)) {
             if (result.data.length === 0) {
@@ -642,73 +633,24 @@ async function loadTugasSaya() {
             container.innerHTML = ''; // Kosongkan kontainer
 
             result.data.forEach(tugas => {
-                const li = document.createElement('li');
-                li.id = `tugas-${tugas.kodeHirarki}`;
-
-                // === Header Collapsible ===
-                const header = document.createElement('div');
-                header.className = 'collapsible-header';
-                header.innerHTML = `<b>${tugas.kodeHirarki}</b> - ${tugas.tingkatan4}`;
-
-                // === Body Collapsible (Struktur Baru) ===
-                const body = document.createElement('div');
-                body.className = 'collapsible-body';
-                
-                // Buat dropdown nilai dinamis
-                const pilihanJawaban = tugas.pilihanJawaban.split('/').map(item => 
-                    `<option value="${item}" ${tugas.nilai === item ? 'selected' : ''}>${item}</option>`
-                ).join('');
-
-                body.innerHTML = `
-                    <div class="task-breadcrumb">
-                        <p>${tugas.tingkatan1}</p>
-                        <p>└─ ${tugas.tingkatan2}</p>
-                        <p>&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan3}</p>
-                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan4}</p>
-                    </div>
-
-                    <h5>Panduan Pemberian Nilai:</h5>
-                    <p>${tugas.panduanPenilaian}</p>
-
-                    <h5>Referensi:</h5>
-                    <p><a href="${tugas.linkReferensi}" target="_blank">Berkas Referensi ZI</a></p>
-
-                    <div class="divider" style="margin: 20px 0;"></div>
-
-                    <a href="${tugas.linkGDrive}" target="_blank" class="btn blue waves-effect waves-light" style="width:100%; margin-bottom: 20px;">
-                        <i class="material-icons left">cloud_upload</i>
-                        Upload Bukti Dukung: ${tugas.tingkatan4}
-                    </a>
-
-                    <div class="row">
-                        <div class="input-field col s12 m6">
-                            <select id="nilai-${tugas.kodeHirarki}">
-                                <option value="" disabled ${!tugas.nilai ? 'selected' : ''}>Pilih Nilai</option>
-                                ${pilihanJawaban}
-                            </select>
-                            <label>Nilai</label>
-                        </div>
-                        <div class="input-field col s12 m6">
-                            <textarea id="rincian-${tugas.kodeHirarki}" class="materialize-textarea">${tugas.jenisBuktiDukung || ''}</textarea>
-                            <label for="rincian-${tugas.kodeHirarki}">Rincian Jenis Dokumen Bukti Dukung</label>
+                const cardHtml = `
+                    <div class="col s12 m6 l4">
+                        <div class="card task-card hoverable">
+                            <div class="card-content">
+                                ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
+                                <span class="card-title">${tugas.tingkatan4}</span>
+                                <p class="task-code">Kode: ${tugas.kodeHirarki}</p>
+                            </div>
+                            <div class="card-action">
+                                <a href="#detailModal" class="btn-flat waves-effect waves-teal modal-trigger" onclick='showTugasDetail(${JSON.stringify(tugas)})'>
+                                    Detail & Upload
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    
-                    <button class="btn green waves-effect waves-light" onclick="simpanBuktiDukung('${tugas.kodeHirarki}')">
-                        <i class="material-icons left">save</i>
-                        Simpan Rincian Bukti Dukung
-                    </button>
                 `;
-
-                li.appendChild(header);
-                li.appendChild(body);
-                container.appendChild(li);
+                container.innerHTML += cardHtml;
             });
-
-            // Inisialisasi ulang semua komponen Materialize di dalam view ini
-            M.Collapsible.init(container);
-            const selects = container.querySelectorAll('select');
-            M.FormSelect.init(selects);
 
         } else {
             throw new Error(result.message || 'Gagal mengambil data tugas.');
@@ -721,33 +663,85 @@ async function loadTugasSaya() {
     }
 }
 
-// Fungsi untuk menyimpan data bukti dukung
-async function simpanBuktiDukung(kodeHirarki) {
-    const nilai = document.getElementById(`nilai-${kodeHirarki}`).value;
-    const rincian = document.getElementById(`rincian-${kodeHirarki}`).value;
+function getStatusBadge(statusAdmin, statusKetua) {
+    let status, className, icon;
 
-    if (!nilai) {
-        M.toast({ html: 'Silakan pilih nilai terlebih dahulu.', classes: 'orange' });
-        return;
+    if (statusAdmin === 'diterima') {
+        status = 'Disetujui';
+        className = 'green';
+        icon = 'check_circle';
+    } else if (statusAdmin === 'ditolak') {
+        status = 'Revisi (Admin)';
+        className = 'red';
+        icon = 'cancel';
+    } else if (statusKetua === 'diterima') {
+        status = 'Menunggu Verifikasi Admin';
+        className = 'blue';
+        icon = 'hourglass_top';
+    } else if (statusKetua === 'ditolak') {
+        status = 'Revisi (Ketua Tim)';
+        className = 'orange';
+        icon = 'warning';
+    } else {
+        status = 'Belum Dikerjakan';
+        className = 'grey';
+        icon = 'pending';
     }
 
-    showLoading(true);
-    try {
-        const response = await callApi('saveBuktiDukung', 'POST', {
-            kodeHirarki: kodeHirarki,
-            nilai: nilai,
-            jenisBuktiDukung: rincian
-        });
+    return `<span class="status-badge ${className}"><i class="material-icons">${icon}</i> ${status}</span>`;
+}
 
-        if (response.success) {
-            M.toast({ html: 'Bukti dukung berhasil disimpan!', classes: 'green' });
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan data.');
-        }
-    } catch (error) {
-        console.error('Error saving bukti dukung:', error);
-        M.toast({ html: `Error: ${error.message}`, classes: 'red' });
-    } finally {
-        showLoading(false);
+// Fungsi untuk membuka detail tugas
+function showTugasDetail(tugas) {
+    // Update modal content
+    document.getElementById('modal-kode').textContent = tugas.kode || '-';
+    document.getElementById('modal-nama-tugas').textContent = tugas.namaTugas || '-';
+    document.getElementById('modal-pic').textContent = tugas.pic || '-';
+    
+    // Update links
+    const linkReferensi = document.getElementById('modal-link-referensi');
+    const linkGDrive = document.getElementById('modal-link-gdrive');
+    
+    if (tugas.linkReferensi) {
+        linkReferensi.href = tugas.linkReferensi;
+        linkReferensi.textContent = 'Buka Referensi';
+    } else {
+        linkReferensi.href = '#';
+        linkReferensi.textContent = 'Tidak ada';
+        linkReferensi.onclick = (e) => e.preventDefault();
     }
+    
+    if (tugas.linkGDrive) {
+        linkGDrive.href = tugas.linkGDrive;
+        linkGDrive.textContent = 'Buka GDrive';
+    } else {
+        linkGDrive.href = '#';
+        linkGDrive.textContent = 'Tidak ada';
+        linkGDrive.onclick = (e) => e.preventDefault();
+    }
+    
+    // Tampilkan/sembunyikan section berdasarkan role
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    const isPIC = user && user.username === tugas.pic;
+    const isKetuaPilar = user && user.role === 'Ketua Pilar' && user.pilar === tugas.pilar;
+    const isAdmin = user && user.role === 'Admin';
+    
+    document.getElementById('anggota-form-section').style.display = isPIC ? 'block' : 'none';
+    document.getElementById('ketua-pilar-section').style.display = isKetuaPilar ? 'block' : 'none';
+    document.getElementById('admin-section').style.display = isAdmin ? 'block' : 'none';
+    
+    // Update status dan catatan
+    document.getElementById('modal-status-anggota').textContent = tugas.statusPengerjaan || '-';
+    document.getElementById('modal-bukti-detail').textContent = tugas.buktiDukung || '-';
+    document.getElementById('modal-status-ketua').textContent = tugas.statusKetuaPilar || '-';
+    document.getElementById('modal-catatan-ketua').textContent = tugas.catatanKetua || '-';
+    
+    // Inisialisasi select
+    const selects = document.querySelectorAll('select');
+    M.FormSelect.init(selects);
+    
+    // Tampilkan modal
+    const modal = M.Modal.getInstance(document.getElementById('detailModal')) || 
+                 M.Modal.init(document.getElementById('detailModal'));
+    modal.open();
 }

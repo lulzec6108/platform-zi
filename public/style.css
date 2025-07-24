@@ -1349,3 +1349,81 @@ table tr:hover {
 -------------------------------------------------- */
 #login-page {
     display: flex;
+
+}
+
+/* === Gaya Khusus untuk Kartu Tugas Cerdas (Smart Task Cards) === */
+
+/* --- Gaya untuk Kartu Tugas Cerdas (Smart Task Cards) --- */
+.task-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Mendorong card-action ke bawah */
+    height: 100%; /* Memastikan semua kartu dalam satu baris punya tinggi sama */
+    transition: box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.task-card .card-content {
+    padding-bottom: 10px; /* Kurangi padding bawah untuk memberi ruang bagi action */
+}
+
+.task-card .card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 12px; /* Jarak dari badge status */
+}
+
+.task-card .task-code {
+    font-size: 0.85rem;
+    color: #9e9e9e; /* Abu-abu */
+    margin-top: 5px;
+}
+
+.task-card .card-action {
+    padding: 8px 16px !important; /* Timpa padding default Materialize */
+    border-top: 1px solid #eee;
+    background-color: #fafafa;
+}
+
+.task-card .card-action a {
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+/* --- Gaya untuk Badge Status --- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge .material-icons {
+    font-size: 16px;
+    margin-right: 6px;
+}
+
+/* Warna-warni Badge */
+.status-badge.green { background-color: #4CAF50; } /* Disetujui */
+.status-badge.red { background-color: #F44336; } /* Revisi Admin */
+.status-badge.blue { background-color: #2196F3; } /* Menunggu Verifikasi */
+.status-badge.orange { background-color: #FF9800; } /* Revisi Ketua */
+.status-badge.grey { background-color: #9E9E9E; } /* Belum Dikerjakan */
+
+.task-breadcrumb {
+    background-color: #fffaf0; /* Warna krem lembut */
+    border-left: 3px solid #ffab40; /* Aksen oranye */

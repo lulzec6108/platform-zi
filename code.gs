@@ -187,10 +187,16 @@ function handleGetBuktiDukung(payload) {
 
 function handleGetLinkPendukung(payload) {
   const user = getUserInfo(payload.username);
-  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+  if (!user || !user.username) {
+    return { success: false, message: 'User tidak ditemukan' };
+  }
 
-  const sheet = ss.getSheetByName("Link Pendukung");
-  if (!sheet) return { success: true, data: [] };
+  const sheet = ss.getSheetByName("LinkPendukung"); // FIX: Nama sheet disesuaikan (tanpa spasi)
+  if (!sheet) {
+    // Jika sheet tidak ditemukan, kirim pesan error yang jelas
+    Logger.log('Error: Sheet dengan nama "LinkPendukung" tidak ditemukan.');
+    return { success: false, message: 'Sheet "LinkPendukung" tidak ditemukan.' };
+  }
   const data = sheet.getDataRange().getValues();
   const headers = data.shift(); // Ambil header untuk dijadikan key
 
