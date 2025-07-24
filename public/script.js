@@ -6,7 +6,7 @@ const API_TIMEOUT = 20000; // 20 detik timeout
 
 // Event listener utama saat DOM sudah siap
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('%cHehe, masih belajar bikin webapp jangan didebug yaa, maklum masih banyak bug, bukan anak KS soalnya.. ~Fayadh', 'font-weight: bold; font-size: 14px; color: #1e88e5;');
+    console.log("%cHallo, aku masih belajar bikin webapp jangan didebug yaa wkw. Maklum masih banyak bug, bukan anak KS soalnya.. wkw 😂 ~Fayadh", "color: #f0f0f0; background-color: #1e88e5; padding: 10px 20px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);");
 
     // Inisialisasi semua komponen Materialize, termasuk Sidenav
     M.AutoInit();

@@ -324,8 +324,8 @@ header {
     background-color: var(--primary-color-light); /* Biru muda saat hover */
 }
 
-.sidenav-fixed .sidenav-menu li.active {
-    background-color: #1565c0; /* Biru yang lebih gelap untuk kontras */
+ul.sidenav-fixed li.active {
+    background-color: #1565c0 !important; /* Biru gelap dengan !important untuk memastikan anulasi */
 }
 
 .sidenav-fixed .sidenav-menu .divider {
