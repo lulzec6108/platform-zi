@@ -10,6 +10,19 @@ function sendJSON(data) {
 
 // --- Handlers Utama ---
 function doGet(e) {
+  // ====================== TEMPORARY DEBUGGING CODE ======================
+  // Mengirim kembali parameter yang diterima untuk di-debug di frontend.
+  // HAPUS BLOK INI SETELAH SELESAI DEBUGGING.
+  return sendJSON({ 
+    debug_mode: true, 
+    message: "Ini adalah data yang diterima oleh Google Server",
+    received_parameters: e.parameter 
+  });
+  // ====================================================================
+
+  // LOG DIAGNOSTIK: Catat semua parameter yang diterima oleh server
+  Logger.log('doGet received parameters: ' + JSON.stringify(e.parameter));
+
   // Validasi untuk GET: API Key harus ada di parameter URL
   if (!e || !e.parameter || e.parameter.apiKey !== SCRIPT_API_KEY) {
     return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid atau tidak ada.' });

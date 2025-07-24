@@ -208,7 +208,21 @@ async function callApi(action, method = 'GET', data = {}) {
             const errorData = await response.json().catch(() => ({ message: 'Gagal mem-parsing error JSON dari server.' }));
             throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
         }
-        return await response.json();
+        const result = await response.json();
+
+        // ====================== TEMPORARY DEBUGGING CODE ======================
+        if (result.debug_mode) {
+          console.log('%c[DEBUG] Data yang diterima oleh Google Server:', 'color: #fff; background-color: #007bff; padding: 5px; border-radius: 3px;');
+          console.log(result.received_parameters);
+          // Hentikan eksekusi lebih lanjut untuk mencegah error
+          throw new Error('Mode Debug Aktif. Lihat log di atas untuk detail parameter.'); 
+        }
+        // ====================================================================
+
+        if (!result.success) {
+          throw new Error(result.message || 'Terjadi kesalahan tidak diketahui dari server.');
+        }
+        return result;
     } catch (error) {
         clearTimeout(timeoutId);
         console.error(`Gagal memanggil API '${action}':`, error);
@@ -338,7 +352,7 @@ async function loadLinkPendukung() {
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" fill="#FFA726"/></svg>`, // Laporan Oranye
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#FFCA28"/></svg>`, // Grafik Naik Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h2v-6h-2v6zm0-8h2v-2h-2v2z" fill="#FFEE58"/></svg>`, // Database Kuning
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10z" fill="#FFEE58"/></svg>`, // Database Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#FF7043"/></svg>`, // Info Oranye Tua
 
                             // Kategori Web & Jaringan (Hijau & Teal)
