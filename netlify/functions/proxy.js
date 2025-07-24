@@ -1,13 +1,12 @@
 const fetch = require('node-fetch');
 
 exports.handler = async function (event, context) {
-  // Baca KEDUA environment variable yang penting
   const { GAS_APP_URL, GAS_API_KEY } = process.env;
 
   if (!GAS_APP_URL || !GAS_API_KEY) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, message: 'Konfigurasi GAS_APP_URL atau GAS_API_KEY di server tidak lengkap.' }),
+      body: JSON.stringify({ success: false, message: 'Konfigurasi environment variable di server belum lengkap.' }),
     };
   }
 
@@ -21,15 +20,19 @@ exports.handler = async function (event, context) {
 
     if (method === 'POST') {
         options.headers = { 'Content-Type': 'application/json' };
-        // Ambil body asli, lalu suntikkan apiKey di dalamnya
-        const requestBody = JSON.parse(event.body);
-        requestBody.apiKey = GAS_API_KEY; // Tambahkan API Key
-        options.body = JSON.stringify(requestBody); 
+        // Ambil body dari frontend
+        const frontendBody = JSON.parse(event.body || '{}');
+        // Tambahkan apiKey ke level atas body, sesuai harapan backend
+        frontendBody.apiKey = GAS_API_KEY;
+        // Kirim body yang sudah dimodifikasi
+        options.body = JSON.stringify(frontendBody); 
 
     } else if (method === 'GET') {
-        // Bangun parameter dari request asli, lalu tambahkan apiKey
+        // Ambil semua parameter dari request asli (cth: action=...&username=...)
         const params = new URLSearchParams(event.rawQuery || '');
-        params.append('apiKey', GAS_API_KEY);
+        // Tambahkan apiKey ke parameter yang sudah ada
+        params.set('apiKey', GAS_API_KEY);
+        // Gabungkan dengan URL dasar
         finalUrl += '?' + params.toString();
     }
 
