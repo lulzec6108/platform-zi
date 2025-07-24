@@ -140,12 +140,20 @@ body {
         /* Membuat sudut kiri navbar membulat agar serasi dengan sidebar */
         border-top-left-radius: 25px;
         border-bottom-left-radius: 25px;
+        margin-left: 10px; /* Memberi jarak dari sidebar */
     }
 
     /* PERMINTAAN BARU: Pusatkan brand logo di desktop */
     .main-navbar .brand-logo {
-        left: 50%;
-        transform: translateX(-50%);
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+    /* Atur lebar container agar card konten bisa melebar */
+    main .container {
+        width: auto;
+        max-width: none;
+        padding: 0;
     }
 }
 
@@ -205,7 +213,7 @@ main {
     background-color: var(--background-color);
     overflow-y: auto;
     /* Beri padding atas seukuran tinggi navbar agar konten tidak tertutup */
-    padding: 64px 20px 20px 20px;
+    padding: 64px 0 20px 0;
 }
 
 main .view {
