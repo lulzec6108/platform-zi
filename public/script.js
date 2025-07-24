@@ -110,13 +110,15 @@ function checkAuthStatus() {
 
             const userData = JSON.parse(user);
 
-            // Perbarui info pengguna di Sidenav
-            const userNameElement = document.getElementById('user-name');
-            const userRoleElement = document.getElementById('user-role');
+            // Perbarui info pengguna di Sidenav dengan ID yang BENAR
+            const userNameElement = document.getElementById('sidenav-user-name');
+            const userRoleElement = document.getElementById('sidenav-user-role');
             if (userNameElement) userNameElement.textContent = userData.nama;
             if (userRoleElement) userRoleElement.textContent = userData.role;
 
-            // Pindahkan ke dashboard sebagai default view setelah login
+            // Panggil kembali fungsi untuk set avatar
+            setRandomAvatar();
+
             // Cek apakah ada view yang sudah aktif, jika tidak, set default ke dashboard
             const currentActiveView = document.querySelector('.page-content > div[style*="display: block"]');
             if (!currentActiveView) {

@@ -325,8 +325,7 @@ header {
 }
 
 .sidenav-fixed .sidenav-menu li.active {
-    background-color: var(--primary-color); /* Highlight biru cerah untuk menu aktif */
-    border-left: none; /* Hapus border kiri agar lebih bersih */
+    background-color: #1565c0; /* Biru yang lebih gelap untuk kontras */
 }
 
 .sidenav-fixed .sidenav-menu .divider {
@@ -834,8 +833,7 @@ body {
 }
 
 .sidebar-menu li.active {
-  background-color: var(--primary-color); /* Highlight biru cerah untuk menu aktif */
-  border-left: 4px solid var(--text-on-primary);
+    background-color: #1565c0; /* Biru yang lebih gelap untuk kontras */
 }
 
 .sidebar-menu .divider {
