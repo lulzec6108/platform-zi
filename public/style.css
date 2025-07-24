@@ -397,6 +397,13 @@ main .view {
 
 /* Responsive adjustments for login page */
 @media (max-width: 992px) {
+    /* === OPTIMALISASI MOBILE: Lebarkan Kontainer Utama === */
+    main .container {
+        width: 100% !important;
+        padding-left: 8px !important; /* Beri sedikit padding agar tidak menempel */
+        padding-right: 8px !important;
+    }
+
     #login-page {
         padding: 0; /* Hapus padding di mobile agar form bisa full screen */
     }

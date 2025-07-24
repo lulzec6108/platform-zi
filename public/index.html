@@ -176,23 +176,31 @@
             <div>
                 <div class="card">
                     <div class="card-content">
-                        <span class="card-title">Bukti Dukung</span>
-                        <div id="bukti-dukung-container">
-                            <p>Tidak ada bukti dukung yang diunggah.</p>
-                        </div>
-                        
-                        <div class="file-field input-field" id="upload-container">
-                            <div class="btn blue">
-                                <span>Pilih File</span>
-                                <input type="file" id="bukti-file" multiple>
+                        <span class="card-title">Lengkapi Bukti Dukung</span>
+
+                        <!-- Form untuk melengkapi bukti dukung -->
+                        <div class="row" style="margin-top: 20px;">
+                            <div class="input-field col s12">
+                                <select id="modal-nilai">
+                                    <!-- Opsi akan diisi oleh JavaScript -->
+                                </select>
+                                <label for="modal-nilai">Nilai</label>
                             </div>
-                            <div class="file-path-wrapper">
-                                <input class="file-path validate" type="text" placeholder="Unggah satu atau lebih file">
+                            <div class="input-field col s12">
+                                <textarea id="modal-rincian" class="materialize-textarea"></textarea>
+                                <label for="modal-rincian">Rincian Jenis Dokumen Bukti Dukung</label>
                             </div>
                         </div>
-                        
-                        <button id="btn-upload" class="btn">
-                            <i class="material-icons left">cloud_upload</i> Upload Bukti
+                        <button id="btn-simpan-dukungan" class="btn green waves-effect waves-light">
+                            <i class="material-icons left">save</i> Simpan Rincian
+                        </button>
+
+                        <div class="divider" style="margin: 20px 0;"></div>
+
+                        <span class="card-title">Upload File</span>
+                        <p>Upload file Anda ke folder Google Drive yang sesuai melalui tombol di bawah ini.</p>
+                        <button id="btn-upload" class="btn blue" style="margin-top: 10px;">
+                            <i class="material-icons left">cloud_upload</i> Buka Folder Upload
                         </button>
                     </div>
                 </div>

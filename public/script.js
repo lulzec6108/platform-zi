@@ -694,54 +694,90 @@ function getStatusBadge(statusAdmin, statusKetua) {
 // Fungsi untuk membuka detail tugas
 function showTugasDetail(tugas) {
     // Update modal content
-    document.getElementById('modal-kode').textContent = tugas.kode || '-';
-    document.getElementById('modal-nama-tugas').textContent = tugas.namaTugas || '-';
-    document.getElementById('modal-pic').textContent = tugas.pic || '-';
-    
-    // Update links
-    const linkReferensi = document.getElementById('modal-link-referensi');
-    const linkGDrive = document.getElementById('modal-link-gdrive');
-    
-    if (tugas.linkReferensi) {
-        linkReferensi.href = tugas.linkReferensi;
-        linkReferensi.textContent = 'Buka Referensi';
-    } else {
-        linkReferensi.href = '#';
-        linkReferensi.textContent = 'Tidak ada';
-        linkReferensi.onclick = (e) => e.preventDefault();
-    }
-    
+    document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || '-';
+    document.getElementById('modal-deskripsi').innerHTML = tugas.panduanPenilaian || 'Tidak ada panduan.';
+
+    // Update status dari badge yang sudah kita buat
+    const statusContainer = document.getElementById('modal-status');
+    statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+
+    // --- Mengelola Form Interaktif di Modal ---
+
+    // 1. Mengisi Dropdown Nilai
+    const nilaiSelect = document.getElementById('modal-nilai');
+    nilaiSelect.innerHTML = `<option value="" disabled>Pilih Nilai</option>`; // Opsi default
+    const pilihanJawaban = tugas.pilihanJawaban.split('/');
+    pilihanJawaban.forEach(item => {
+        const isSelected = tugas.nilai === item ? 'selected' : '';
+        nilaiSelect.innerHTML += `<option value="${item}" ${isSelected}>${item}</option>`;
+    });
+
+    // 2. Mengisi Rincian yang Sudah Ada
+    const rincianTextarea = document.getElementById('modal-rincian');
+    rincianTextarea.value = tugas.jenisBuktiDukung || '';
+    M.textareaAutoResize(rincianTextarea); // Memicu resize jika ada konten
+
+    // 3. Menghubungkan Tombol Simpan
+    const simpanButton = document.getElementById('btn-simpan-dukungan');
+    simpanButton.onclick = () => {
+        // Ambil nilai terbaru dari form di modal
+        const nilaiBaru = nilaiSelect.value;
+        const rincianBaru = rincianTextarea.value;
+        
+        // Panggil fungsi simpan yang sudah ada
+        simpanBuktiDukung(tugas.kodeHirarki, nilaiBaru, rincianBaru);
+    };
+
+    // 4. Inisialisasi ulang komponen Materialize di dalam modal
+    M.FormSelect.init(nilaiSelect); 
+
+    // Mengatur tombol upload bukti dukung
+    const uploadButton = document.getElementById('btn-upload');
     if (tugas.linkGDrive) {
-        linkGDrive.href = tugas.linkGDrive;
-        linkGDrive.textContent = 'Buka GDrive';
+        uploadButton.href = tugas.linkGDrive;
+        uploadButton.textContent = 'Buka GDrive';
     } else {
-        linkGDrive.href = '#';
-        linkGDrive.textContent = 'Tidak ada';
-        linkGDrive.onclick = (e) => e.preventDefault();
+        uploadButton.href = '#';
+        uploadButton.textContent = 'Tidak ada';
+        uploadButton.onclick = (e) => e.preventDefault();
     }
-    
-    // Tampilkan/sembunyikan section berdasarkan role
-    const user = JSON.parse(sessionStorage.getItem('user'));
-    const isPIC = user && user.username === tugas.pic;
-    const isKetuaPilar = user && user.role === 'Ketua Pilar' && user.pilar === tugas.pilar;
-    const isAdmin = user && user.role === 'Admin';
-    
-    document.getElementById('anggota-form-section').style.display = isPIC ? 'block' : 'none';
-    document.getElementById('ketua-pilar-section').style.display = isKetuaPilar ? 'block' : 'none';
-    document.getElementById('admin-section').style.display = isAdmin ? 'block' : 'none';
-    
-    // Update status dan catatan
-    document.getElementById('modal-status-anggota').textContent = tugas.statusPengerjaan || '-';
-    document.getElementById('modal-bukti-detail').textContent = tugas.buktiDukung || '-';
-    document.getElementById('modal-status-ketua').textContent = tugas.statusKetuaPilar || '-';
-    document.getElementById('modal-catatan-ketua').textContent = tugas.catatanKetua || '-';
-    
-    // Inisialisasi select
-    const selects = document.querySelectorAll('select');
-    M.FormSelect.init(selects);
-    
+
     // Tampilkan modal
     const modal = M.Modal.getInstance(document.getElementById('detailModal')) || 
                  M.Modal.init(document.getElementById('detailModal'));
     modal.open();
+}
+
+// Fungsi untuk menyimpan data bukti dukung
+// Diubah untuk menerima nilai dan rincian sebagai argumen
+async function simpanBuktiDukung(kodeHirarki, nilai, rincian) {
+    if (!nilai) {
+        M.toast({ html: 'Silakan pilih nilai terlebih dahulu.', classes: 'orange' });
+        return;
+    }
+
+    showLoading(true);
+    try {
+        const response = await callApi('saveBuktiDukung', 'POST', {
+            kodeHirarki: kodeHirarki,
+            nilai: nilai,
+            jenisBuktiDukung: rincian
+        });
+
+        if (response.success) {
+            M.toast({ html: 'Bukti dukung berhasil disimpan!', classes: 'green' });
+            // Muat ulang data tugas untuk menampilkan status terbaru
+            loadTugasSaya(); 
+            // Tutup modal setelah berhasil menyimpan
+            const modal = M.Modal.getInstance(document.getElementById('detailModal'));
+            modal.close();
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan data.');
+        }
+    } catch (error) {
+        console.error('Error saving bukti dukung:', error);
+        M.toast({ html: `Error: ${error.message}`, classes: 'red' });
+    } finally {
+        showLoading(false);
+    }
 }
