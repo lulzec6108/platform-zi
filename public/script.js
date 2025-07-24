@@ -165,15 +165,18 @@ function checkAuthStatus() {
 
 // Fungsi untuk memanggil API yang aman dan sederhana
 async function callApi(action, method = 'GET', data = {}) {
-    // Ambil info user dari localStorage
     const user = JSON.parse(localStorage.getItem('user'));
 
-    // Tambahkan username ke data jika user sudah login, kecuali untuk aksi login itu sendiri
+    // Siapkan payload. Untuk GET, ini akan menjadi query params.
+    // Untuk POST, ini akan menjadi bagian dari body.
+    const payload = { ...data };
+
     if (user && user.username && action !== 'login') {
-        data.username = user.username;
+        payload.username = user.username;
     }
 
-    let url = `${API_BASE_URL}`;
+    // URL dasar adalah proxy, bukan endpoint spesifik
+    let url = API_BASE_URL; 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
@@ -185,17 +188,16 @@ async function callApi(action, method = 'GET', data = {}) {
         signal: controller.signal,
     };
 
-    // Untuk metode POST, kirim data dalam body dengan format yang diharapkan backend
     if (options.method === 'POST') {
+        // Backend mengharapkan format { action: '...', payload: {...} }
         options.body = JSON.stringify({ 
             action: action, 
-            payload: data 
+            payload: payload 
         });
-    } 
-    // Untuk metode GET, kirim data sebagai query parameter
-    else if (options.method === 'GET') {
-        data.action = action; // Tambahkan action ke query params
-        url += '?' + new URLSearchParams(data).toString();
+    } else if (options.method === 'GET') {
+        // Untuk GET, semua data, termasuk 'action', menjadi query parameter
+        payload.action = action;
+        url += '?' + new URLSearchParams(payload).toString();
     }
 
     try {
@@ -203,8 +205,8 @@ async function callApi(action, method = 'GET', data = {}) {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal mem-parsing error JSON.' }));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({ message: 'Gagal mem-parsing error JSON dari server.' }));
+            throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
