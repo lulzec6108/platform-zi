@@ -122,36 +122,27 @@ body {
 }
 
 /*-------------------------------------------------------------------
-    3. Dashboard Layout
--------------------------------------------------------------------*/
+    3. Header, Navbar, & Sidenav
+-------------------------------------------------- */
+header,
+main,
+footer {
+    padding-left: 250px; /* Lebar default sidenav */
+}
 
-/*-------------------------------------------------------------------
-    5. Dashboard Layout
--------------------------------------------------------------------*/
-/* Saat Sidenav aktif di desktop */
-@media only screen and (min-width: 993px) {
+@media only screen and (max-width: 992px) {
     header,
     main,
     footer {
-        padding-left: 300px; /* Lebar default sidenav */
+        padding-left: 0;
     }
 }
 
-header {
-    /* Samakan warna header dengan user-view di sidebar */
-    background: var(--primary-color-dark);
-    border-bottom: 1px solid var(--primary-color);
-}
-
 .main-navbar {
-    background-color: var(--primary-color-dark);
-    color: var(--text-on-primary);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: fixed; /* Membuat navbar tetap di atas */
+    background-color: var(--primary-color-dark) !important; /* Pastikan warna biru diterapkan */
+    position: sticky; /* Gunakan sticky, lebih aman dari fixed */
     top: 0;
-    left: 0; /* Memastikan rata kiri */
-    right: 0; /* Memastikan rata kanan */
-    z-index: 1001; /* Pastikan di atas sidenav */
+    z-index: 1000;
 }
 
 .main-navbar .nav-wrapper {
@@ -228,6 +219,10 @@ header {
 
 .main-navbar .sidenav-trigger {
     color: var(--text-on-primary);
+}
+
+.sidenav {
+    z-index: 1001 !important; /* Naikkan z-index agar di atas navbar (1000) */
 }
 
 /*-------------------------------------------------------------------
@@ -514,7 +509,7 @@ ul.sidenav-fixed li.active {
 main {
     flex-grow: 1;
     padding: 20px;
-    padding-top: 84px; /* (tinggi navbar 64px + padding 20px) */
+    /* Hapus padding-top yang lama, karena sudah diatur oleh padding-left di atas */
     background-color: var(--background-color);
     overflow-y: auto;
 }
