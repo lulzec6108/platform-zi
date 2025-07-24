@@ -351,10 +351,8 @@ main .view {
     background-color: var(--primary-color-light); /* Biru muda saat hover */
 }
 
-.sidenav-fixed .sidenav-menu li.active a {
+.sidenav-fixed .sidenav-menu li.active {
     background-color: #0D47A1 !important; /* Biru lebih gelap untuk kontras */
-    color: #FFFFFF !important; /* Pastikan ikon dan teks tetap putih */
-    font-weight: 500; /* Sedikit tebalkan font menu aktif */
 }
 
 .sidenav-fixed .sidenav-menu .divider {
@@ -895,10 +893,8 @@ body {
   background-color: var(--primary-color-light);
 }
 
-.sidebar-menu li.active a {
+.sidebar-menu li.active {
     background-color: #0D47A1 !important; /* Biru lebih gelap untuk kontras */
-    color: #FFFFFF !important; /* Pastikan ikon dan teks tetap putih */
-    font-weight: 500; /* Sedikit tebalkan font menu aktif */
 }
 
 .sidebar-menu .divider {
@@ -1161,7 +1157,7 @@ table tr:hover {
 /* Kita hanya perlu menargetkan 'li.active' dan memberinya background. */
 /* Tidak perlu !important karena selector ini sudah cukup spesifik. */
 #slide-out li.active {
-    background-color: var(--primary-color-dark);
+    background-color: #0D47A1 !important; /* Biru lebih gelap untuk kontras */
 }
 
 /* Link Pendukung - Card Layout */
