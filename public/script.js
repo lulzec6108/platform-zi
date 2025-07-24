@@ -163,71 +163,50 @@ function checkAuthStatus() {
     }
 }
 
-// Fungsi untuk memanggil API yang aman dan sederhana
-async function callApi(action, method = 'GET', data = {}) {
-    const user = JSON.parse(localStorage.getItem('user'));
+// Fungsi terpusat untuk semua panggilan API ke backend
+async function callApi(action, method = 'GET', body = null) {
+  const user = JSON.parse(sessionStorage.getItem('user'));
+  const params = new URLSearchParams({ action });
 
-    // Siapkan payload. Untuk GET, ini akan menjadi query params.
-    // Untuk POST, ini akan menjadi bagian dari body.
-    const payload = { ...data };
+  // PENTING: Selalu tambahkan username untuk request GET jika user sudah login
+  if (user && user.username) {
+    params.append('username', user.username);
+  }
 
-    if (user && user.username && action !== 'login') {
-        payload.username = user.username;
+  // Untuk POST, body akan di-handle terpisah. Untuk GET, semua ada di params.
+  const url = (method === 'GET') ? `/api/proxy?${params.toString()}` : '/api/proxy';
+
+  const options = {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  if (method === 'POST' && body) {
+    // Untuk POST, kirim payload lengkap di body. Proxy akan menambahkan apiKey.
+    options.body = JSON.stringify({ action, payload: body });
+  }
+
+  try {
+    const response = await fetch(url, options);
+    const result = await response.json();
+
+    // ====================== TEMPORARY DEBUGGING CODE ======================
+    if (result.debug_mode) {
+      console.log('%c[DEBUG] Data yang diterima oleh Google Server:', 'color: #fff; background-color: #007bff; padding: 5px; border-radius: 3px;');
+      console.log(result.received_parameters);
+      // Hentikan eksekusi lebih lanjut untuk mencegah error
+      throw new Error('Mode Debug Aktif. Lihat log di atas untuk detail parameter.'); 
     }
+    // ====================================================================
 
-    // URL dasar adalah proxy, bukan endpoint spesifik
-    let url = API_BASE_URL; 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
-
-    const options = {
-        method: method.toUpperCase(),
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-    };
-
-    if (options.method === 'POST') {
-        // Backend mengharapkan format { action: '...', payload: {...} }
-        options.body = JSON.stringify({ 
-            action: action, 
-            payload: payload 
-        });
-    } else if (options.method === 'GET') {
-        // Untuk GET, semua data, termasuk 'action', menjadi query parameter
-        payload.action = action;
-        url += '?' + new URLSearchParams(payload).toString();
+    if (!result.success) {
+      throw new Error(result.message || 'Terjadi kesalahan tidak diketahui dari server.');
     }
-
-    try {
-        const response = await fetch(url, options);
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal mem-parsing error JSON dari server.' }));
-            throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-        }
-        const result = await response.json();
-
-        // ====================== TEMPORARY DEBUGGING CODE ======================
-        if (result.debug_mode) {
-          console.log('%c[DEBUG] Data yang diterima oleh Google Server:', 'color: #fff; background-color: #007bff; padding: 5px; border-radius: 3px;');
-          console.log(result.received_parameters);
-          // Hentikan eksekusi lebih lanjut untuk mencegah error
-          throw new Error('Mode Debug Aktif. Lihat log di atas untuk detail parameter.'); 
-        }
-        // ====================================================================
-
-        if (!result.success) {
-          throw new Error(result.message || 'Terjadi kesalahan tidak diketahui dari server.');
-        }
-        return result;
-    } catch (error) {
-        clearTimeout(timeoutId);
-        console.error(`Gagal memanggil API '${action}':`, error);
-        throw error;
-    }
+    return result;
+  } catch (error) {
+    console.error(`Gagal memanggil API '${action}':`, error);
+    throw error;
+  }
 }
 
 // Fungsi untuk menangani login
