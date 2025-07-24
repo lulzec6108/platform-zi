@@ -1322,4 +1322,30 @@ table tr:hover {
 /*
 ==========================================================================
    5. Page Content & Cards
-{{ ... */}
+{{ ... */
+
+/* === Gaya Khusus untuk View 'Tugas Saya' === */
+.task-breadcrumb {
+    background-color: #fffaf0; /* Warna krem lembut */
+    border-left: 3px solid #ffab40; /* Aksen oranye */
+    padding: 15px;
+    margin: 10px 0 25px 0;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.task-breadcrumb p {
+    margin: 0;
+    padding: 0;
+}
+
+.collapsible-body {
+    padding: 2rem;
+}
+
+/* 6. Login Page Specifics
+-------------------------------------------------- */
+#login-page {
+    display: flex;

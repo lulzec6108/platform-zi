@@ -622,38 +622,77 @@ async function loadTugasSaya() {
     if (!container) return;
 
     showLoading(true);
-    container.innerHTML = '<p class="center-align">Memuat tugas Anda...</p>'; // Pesan sementara
+    container.innerHTML = '<p class="center-align">Memuat tugas ZI Anda...</p>';
 
     try {
-        const response = await callApi('getTugasSaya');
+        // API akan mengembalikan gabungan data dari MappingTugas dan BuktiDukung
+        const response = await callApi('getTugasSaya'); 
+
         if (response.success && Array.isArray(response.data)) {
             if (response.data.length === 0) {
-                container.innerHTML = '<p class="center-align">Anda tidak memiliki tugas saat ini.</p>';
+                container.innerHTML = '<div class="center-align"><i class="large material-icons green-text">check_circle</i><p>Anda tidak memiliki tugas saat ini. Selamat bersantai!</p></div>';
                 return;
             }
 
-            // Kosongkan kontainer sebelum mengisi dengan data baru
-            container.innerHTML = '';
+            container.innerHTML = ''; // Kosongkan kontainer
 
             response.data.forEach(tugas => {
                 const li = document.createElement('li');
+                li.id = `tugas-${tugas.kodeHirarki}`;
 
-                // Header Collapsible
+                // === Header Collapsible ===
                 const header = document.createElement('div');
                 header.className = 'collapsible-header';
-                header.innerHTML = `
-                    <i class="material-icons">assignment</i>
-                    ${tugas.namaTugas}
-                    <span class="badge new" data-badge-caption="${tugas.statusPengerjaan}"></span>
-                `;
+                header.innerHTML = `<b>${tugas.kodeHirarki}</b> - ${tugas.tingkatan4}`;
 
-                // Body Collapsible
+                // === Body Collapsible (Struktur Baru) ===
                 const body = document.createElement('div');
                 body.className = 'collapsible-body';
+                
+                // Buat dropdown nilai dinamis
+                const pilihanJawaban = tugas.pilihanJawaban.split('/').map(item => 
+                    `<option value="${item}" ${tugas.nilai === item ? 'selected' : ''}>${item}</option>`
+                ).join('');
+
                 body.innerHTML = `
-                    <p><strong>Deskripsi:</strong> ${tugas.deskripsi || 'Tidak ada deskripsi.'}</p>
-                    <p><strong>Deadline:</strong> ${tugas.deadline ? new Date(tugas.deadline).toLocaleDateString('id-ID') : 'Tidak ada deadline.'}</p>
-                    <button class="btn waves-effect waves-light" onclick="openTugasModal('${tugas.id}')">Lihat Detail & Upload</button>
+                    <div class="task-breadcrumb">
+                        <p>${tugas.tingkatan1}</p>
+                        <p>└─ ${tugas.tingkatan2}</p>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan3}</p>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan4}</p>
+                    </div>
+
+                    <h5>Panduan Pemberian Nilai:</h5>
+                    <p>${tugas.panduanPenilaian}</p>
+
+                    <h5>Referensi:</h5>
+                    <p><a href="${tugas.linkReferensi}" target="_blank">Berkas Referensi ZI</a></p>
+
+                    <div class="divider" style="margin: 20px 0;"></div>
+
+                    <a href="${tugas.linkGDrive}" target="_blank" class="btn blue waves-effect waves-light" style="width:100%; margin-bottom: 20px;">
+                        <i class="material-icons left">cloud_upload</i>
+                        Upload Bukti Dukung: ${tugas.tingkatan4}
+                    </a>
+
+                    <div class="row">
+                        <div class="input-field col s12 m6">
+                            <select id="nilai-${tugas.kodeHirarki}">
+                                <option value="" disabled ${!tugas.nilai ? 'selected' : ''}>Pilih Nilai</option>
+                                ${pilihanJawaban}
+                            </select>
+                            <label>Nilai</label>
+                        </div>
+                        <div class="input-field col s12 m6">
+                            <textarea id="rincian-${tugas.kodeHirarki}" class="materialize-textarea">${tugas.jenisBuktiDukung || ''}</textarea>
+                            <label for="rincian-${tugas.kodeHirarki}">Rincian Jenis Dokumen Bukti Dukung</label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn green waves-effect waves-light" onclick="simpanBuktiDukung('${tugas.kodeHirarki}')">
+                        <i class="material-icons left">save</i>
+                        Simpan Rincian Bukti Dukung
+                    </button>
                 `;
 
                 li.appendChild(header);
@@ -661,16 +700,48 @@ async function loadTugasSaya() {
                 container.appendChild(li);
             });
 
-            // Inisialisasi ulang collapsible Materialize
-            const collapsibleElems = document.querySelectorAll('.collapsible');
-            M.Collapsible.init(collapsibleElems);
+            // Inisialisasi ulang semua komponen Materialize di dalam view ini
+            M.Collapsible.init(container);
+            const selects = container.querySelectorAll('select');
+            M.FormSelect.init(selects);
 
         } else {
             throw new Error(response.message || 'Gagal mengambil data tugas.');
         }
     } catch (error) {
         console.error('Error in loadTugasSaya:', error);
-        container.innerHTML = `<p class="center-align red-text">Gagal memuat tugas: ${error.message}</p>`;
+        container.innerHTML = `<div class="center-align red-text"><i class="large material-icons">error_outline</i><p>Gagal memuat tugas: ${error.message}</p></div>`;
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Fungsi untuk menyimpan data bukti dukung
+async function simpanBuktiDukung(kodeHirarki) {
+    const nilai = document.getElementById(`nilai-${kodeHirarki}`).value;
+    const rincian = document.getElementById(`rincian-${kodeHirarki}`).value;
+
+    if (!nilai) {
+        M.toast({ html: 'Silakan pilih nilai terlebih dahulu.', classes: 'orange' });
+        return;
+    }
+
+    showLoading(true);
+    try {
+        const response = await callApi('saveBuktiDukung', 'POST', {
+            kodeHirarki: kodeHirarki,
+            nilai: nilai,
+            jenisBuktiDukung: rincian
+        });
+
+        if (response.success) {
+            M.toast({ html: 'Bukti dukung berhasil disimpan!', classes: 'green' });
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan data.');
+        }
+    } catch (error) {
+        console.error('Error saving bukti dukung:', error);
+        M.toast({ html: `Error: ${error.message}`, classes: 'red' });
     } finally {
         showLoading(false);
     }
