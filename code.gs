@@ -31,7 +31,7 @@ function doGet(e) {
         result = handleGetBuktiDukung(payload);
         break;
       case 'getLinkPendukung':
-        result = handleGetLinkPendukung();
+        result = handleGetLinkPendukung(payload);
         break;
       case 'getTugasSaya':
         result = handleGetTugasSaya(payload);
@@ -146,20 +146,20 @@ function handleGetDashboardTugasStatus(payload) {
 }
 
 function handleGetMappingTugasForUser(payload) {
-  var mappingSheet = ss.getSheetByName("MappingTugas");
-  var mapping = mappingSheet.getDataRange().getValues();
-  var headers = mapping[0];
-  var res = [];
-  for (var i = 1; i < mapping.length; i++) {
-    if (mapping[i][0] == payload.username) {
-      var row = {};
-      for (var j = 0; j < headers.length; j++) {
-        row[headers[j]] = mapping[i][j];
-      }
-      res.push(row);
+  const user = getUserInfo(payload.username);
+  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+
+  const tugasSheet = ss.getSheetByName("MappingTugas");
+  const tugasData = tugasSheet.getDataRange().getValues();
+  const hasil = [];
+
+  for (let i = 1; i < tugasData.length; i++) {
+    const row = tugasData[i];
+    if (row[0] === user.username) {
+      hasil.push({ pilar: row[1], kategori: row[2], subkategori: row[3], tugas: row[4], definisi: row[5], kode: row[6] });
     }
   }
-  return { success: true, data: res };
+  return { success: true, data: hasil };
 }
 
 function handleGetBuktiDukung(payload) {
@@ -183,19 +183,25 @@ function handleGetBuktiDukung(payload) {
   return { success: true, data: { nilai: "", jenis: "", statusKetua: "", catatanKetua: "", statusAdmin: "", catatanAdmin: "" } };
 }
 
-function handleGetLinkPendukung() {
-  var sheet = ss.getSheetByName("LinkPendukung");
+function handleGetLinkPendukung(payload) {
+  const user = getUserInfo(payload.username);
+  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+
+  const sheet = ss.getSheetByName("Link Pendukung");
   if (!sheet) return { success: true, data: [] };
-  var data = sheet.getDataRange().getValues();
-  var result = [];
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][1]) {
-      result.push({
-        deskripsi: data[i][0],
-        link: data[i][1]
-      });
-    }
-  }
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift(); // Ambil header untuk dijadikan key
+
+  const result = data.map(row => {
+    let obj = {};
+    headers.forEach((header, index) => {
+      // Mengubah header menjadi snake_case untuk konsistensi kunci JSON
+      const key = header.trim().toLowerCase().replace(/\s+/g, '_');
+      obj[key] = row[index];
+    });
+    return obj;
+  }).filter(item => Object.keys(item).length > 0 && item.judul_link && item.alamat_link); // Filter baris kosong
+
   return { success: true, data: result };
 }
 

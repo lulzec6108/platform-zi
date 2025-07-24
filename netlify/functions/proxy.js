@@ -20,9 +20,9 @@ exports.handler = async function (event, context) {
 
     if (method === 'POST') {
         options.headers = { 'Content-Type': 'application/json' };
-        // Ambil body dari frontend
+        // Ambil body dari frontend (cth: { action: 'login', payload: {...} })
         const frontendBody = JSON.parse(event.body || '{}');
-        // Tambahkan apiKey ke level atas body, sesuai harapan backend
+        // Tambahkan apiKey ke level atas body, sesuai harapan backend di doPost
         frontendBody.apiKey = GAS_API_KEY;
         // Kirim body yang sudah dimodifikasi
         options.body = JSON.stringify(frontendBody); 
