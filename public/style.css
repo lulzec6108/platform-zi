@@ -569,7 +569,7 @@ main {
 
 .page-content {
     /* Kunci: Padding responsif untuk mobile, lebih kecil di layar sempit */
-    padding: clamp(12px, 3vw, 24px);
+    padding: clamp(8px, 4vw, 24px);
 }
 
 .page-title {
