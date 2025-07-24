@@ -1273,55 +1273,53 @@ table tr:hover {
 /* PERBAIKAN V8: Tata letak Navbar dan Pusatkan Kartu */
 
 /* 1. Perbaikan Tata Letak Brand Logo di Navbar */
-.main-navbar .brand-logo {
-    display: flex;         /* Gunakan flexbox */
-    align-items: center;   /* Pusatkan item secara vertikal */
-    height: 100%;
-    width: max-content;    /* Pastikan container tidak pecah */
-    max-width: 80%;
-    color: var(--text-on-primary);
-    
-    /* Pusatkan di tengah untuk desktop */
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+.main-navbar .nav-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 0;
 }
 
-.brand-logo .logo-img {
-    height: 40px;
-    width: auto;
-    margin-right: 15px;  /* Beri jarak antara logo dan teks */
-    flex-shrink: 0;      /* Jangan biarkan logo menyusut */
+.main-navbar .brand-logo {
+    /* Kunci: Timpa style Materialize agar tidak lagi di tengah */
+    position: relative !important;
+    transform: none !important;
+    left: 0 !important;
+
+    display: flex;
+    align-items: center;
+    padding: 0 16px; /* Padding internal agar tidak menempel */
+    margin: 0; /* Hapus margin auto */
+}
+
+.sidenav-trigger {
+    flex-shrink: 0;
 }
 
 .brand-logo div {
     display: flex;
-    flex-direction: column; /* Teks brand di atas, tagline di bawah */
-    justify-content: center;
-    line-height: 1.2;
+    flex-direction: row; /* Kunci: Paksa teks untuk berdampingan */
+    align-items: baseline;
+    gap: 12px; /* Jarak antar teks diperbesar */
+    flex-wrap: nowrap; /* Mencegah teks turun baris */
+    white-space: nowrap; /* Mencegah teks itu sendiri terpotong */
 }
 
 .logo-main-text {
+    /* Ukuran font responsif, lebih besar dan tebal */
+    font-size: clamp(1.4rem, 4.2vw, 1.7rem);
     font-weight: 600;
-    font-size: 1.2rem;
-    white-space: nowrap; /* Jangan biarkan teks brand pecah baris */
+    letter-spacing: -0.5px;
 }
 
 .logo-tagline {
-    font-weight: 300;
-    font-size: 0.7rem;
+    /* Ukuran font responsif, disesuaikan */
+    font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+    font-weight: 400;
     opacity: 0.9;
-    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
+    margin-top: 2px; /* Sedikit ke bawah agar align */
 }
 
-/* 2. Pusatkan Kartu Link Pendukung */
-#link-pendukung-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center; /* Kunci: Pusatkan kartu secara horizontal */
-}
-
-main {
-    flex-grow: 1;
-    background-color: var(--background-color);
+/*
+==========================================================================
+   5. Page Content & Cards
+{{ ... */}
