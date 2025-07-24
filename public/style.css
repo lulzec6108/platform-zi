@@ -124,105 +124,53 @@ body {
 /*-------------------------------------------------------------------
     3. Header, Navbar, & Sidenav
 -------------------------------------------------- */
-header,
-main,
-footer {
-    padding-left: 250px; /* Lebar default sidenav */
+.sidenav {
+    z-index: 1001 !important; /* Naikkan z-index agar di atas navbar (1000) */
 }
 
-@media only screen and (max-width: 992px) {
+/* PERBAIKAN V3: Mengatur layout Header dan Main untuk Desktop */
+@media only screen and (min-width: 993px) {
     header,
     main,
     footer {
-        padding-left: 0;
+        padding-left: 250px; /* Beri ruang untuk sidenav */
+    }
+
+    .main-navbar {
+        /* Membuat sudut kiri atas navbar membulat agar serasi dengan sidebar */
+        border-top-left-radius: 20px;
     }
 }
 
 .main-navbar {
-    background-color: var(--primary-color-dark) !important; /* Pastikan warna biru diterapkan */
-    position: sticky; /* Gunakan sticky, lebih aman dari fixed */
+    background-color: var(--primary-color-dark) !important;
+    position: fixed; /* Gunakan fixed agar navbar benar-benar diam di atas */
     top: 0;
+    left: 250px; /* Posisikan navbar di sebelah kanan sidebar */
+    right: 0;
     z-index: 1000;
+}
+
+@media only screen and (max-width: 992px) {
+    .main-navbar {
+        left: 0; /* Di mobile, navbar memenuhi seluruh lebar */
+        border-top-left-radius: 0; /* Hapus radius di mobile */
+    }
 }
 
 .main-navbar .nav-wrapper {
     padding: 0 20px;
 }
 
-.main-navbar .brand-logo {
-    color: var(--text-on-primary);
-    font-weight: 600;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    position: relative; /* Pastikan posisi tidak absolut */
-    left: 0;
-    transform: none;
-}
-
-.logo-main-text {
-    font-size: 1.6rem;
-    font-weight: 600;
-}
-
-.logo-tagline {
-    font-size: 1rem;
-    font-weight: 300;
-    margin-left: 0.75rem;
-    opacity: 0.8;
-}
-
-/* Aturan khusus untuk layout mobile */
-@media only screen and (max-width: 992px) {
-    .main-navbar .brand-logo {
-        left: 50%;
-        transform: translateX(-50%);
-        /* PERUBAHAN BARU: Gunakan Flexbox untuk layout dinamis */
-        display: flex;
-        align-items: baseline; /* Agar teks sejajar rapi */
-        white-space: nowrap; /* Mencegah teks turun baris */
-        width: auto; /* Biarkan lebar menyesuaikan konten */
-    }
-
-    .logo-main-text {
-        /* Ukuran font dinamis: min 1rem, ideal 4vw, max 1.2rem */
-        font-size: clamp(1rem, 4vw, 1.2rem);
-    }
-
-    .logo-tagline {
-        display: inline; /* Pastikan tetap terlihat */
-        /* Ukuran font dinamis: min 0.4rem, ideal 2.5vw, max 0.6rem */
-        font-size: clamp(0.4rem, 2.5vw, 0.6rem);
-        margin-left: 8px;
-        opacity: 0.8;
-    }
-
-    .brand-logo .tagline {
-        display: inline; /* Tampilkan tagline */
-        font-size: 0.5rem; /* Perkecil font tagline */
-        margin-left: 8px;
-        opacity: 0.8;
-    }
-
-    .brand-logo .main-title {
-        font-size: 1.2rem; /* Sedikit perkecil judul utama jika perlu */
-    }
-}
-
-/* Aturan khusus untuk layout desktop */
-@media only screen and (min-width: 993px) {
-    .main-navbar .brand-logo {
-        left: 0; /* Logo rata kiri */
-        transform: none;
-    }
-}
-
-.main-navbar .sidenav-trigger {
-    color: var(--text-on-primary);
-}
-
-.sidenav {
-    z-index: 1001 !important; /* Naikkan z-index agar di atas navbar (1000) */
+main {
+    flex-grow: 1;
+    background-color: var(--background-color);
+    overflow-y: auto;
+    /* Beri padding atas seukuran tinggi navbar agar konten tidak tertutup */
+    padding-top: 64px; 
+    padding-right: 20px;
+    padding-bottom: 20px;
+    /* Padding kiri sudah diatur oleh media query di atas */
 }
 
 /*-------------------------------------------------------------------
