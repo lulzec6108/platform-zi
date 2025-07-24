@@ -351,8 +351,10 @@ main .view {
     background-color: var(--primary-color-light); /* Biru muda saat hover */
 }
 
-ul.sidenav-fixed li.active {
-    background-color: #1565c0 !important; /* Biru gelap dengan !important untuk memastikan anulasi */
+.sidenav-fixed .sidenav-menu li.active a {
+    background-color: #0D47A1 !important; /* Biru lebih gelap untuk kontras */
+    color: #FFFFFF !important; /* Pastikan ikon dan teks tetap putih */
+    font-weight: 500; /* Sedikit tebalkan font menu aktif */
 }
 
 .sidenav-fixed .sidenav-menu .divider {
@@ -893,12 +895,8 @@ body {
   background-color: var(--primary-color-light);
 }
 
-.sidebar-menu li.active {
-    background-color: #0D47A1; /* Biru lebih gelap untuk kontras */
-}
-
-.sidebar-menu li.active a,
-.sidebar-menu li.active a i.material-icons {
+.sidebar-menu li.active a {
+    background-color: #0D47A1 !important; /* Biru lebih gelap untuk kontras */
     color: #FFFFFF !important; /* Pastikan ikon dan teks tetap putih */
     font-weight: 500; /* Sedikit tebalkan font menu aktif */
 }
