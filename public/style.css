@@ -146,13 +146,13 @@ body {
     /* PERMINTAAN BARU: Pusatkan brand logo di desktop */
     .main-navbar .brand-logo {
         display: flex;
-        align-items: center; /* Kunci: Memastikan logo dan teks terpusat vertikal */
+        justify-content: center; /* Kunci: Pusatkan konten di dalam brand-logo */
+        align-items: center;
         height: 100%;
         color: var(--text-on-primary);
-        /* Kunci: Memusatkan brand logo di tengah navbar pada desktop */
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        flex-grow: 1; /* Kunci: Biarkan elemen ini mengisi ruang tengah */
+        position: static;
+        transform: none;
     }
 
     /* Atur lebar container agar card konten bisa melebar */
@@ -200,31 +200,38 @@ body {
 }
 
 .main-navbar .nav-wrapper {
+    display: flex;
+    align-items: center; /* Sejajarkan semua item secara vertikal */
     padding: 0 20px;
 }
 
 .logo-img {
-    height: 40px; /* Sesuaikan ukuran logo */
+    /* Kunci: Ukuran logo lebih kecil dan responsif */
+    height: clamp(30px, 5vw, 35px);
     width: auto;
-    margin-right: 12px;
-    opacity: 0.9;
+    margin-right: 15px;
+    flex-shrink: 0;
 }
 
 .brand-logo div {
     display: flex;
-    flex-direction: column;
-    line-height: 1.2;
+    /* Kunci: Membuat brand dan tagline sejajar */
+    flex-direction: row;
+    align-items: baseline; /* Sejajarkan berdasarkan baseline teks */
+    gap: 8px; /* Beri jarak antara brand dan tagline */
 }
 
 .logo-main-text {
     font-weight: 600; /* Nama brand lebih tebal */
     font-size: 1.2rem;
+    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
 }
 
 .logo-tagline {
     font-weight: 300; /* Tagline lebih tipis */
     font-size: 0.7rem;
     opacity: 0.9;
+    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
 }
 
 main {
@@ -513,43 +520,31 @@ ul.sidenav-fixed li.active {
     padding: 0 20px;
 }
 
-.main-navbar .brand-logo {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    color: var(--text-on-primary);
-
-    /* Kunci: Hapus posisi absolut dan biarkan flexbox bekerja */
-    position: static;
-    transform: none;
-
-    /* Kunci: Gunakan margin auto untuk mengisi ruang & memusatkan diri */
-    margin: 0 auto;
-}
-
 .sidenav-trigger {
-    /* Ditempatkan di awal oleh flexbox */
     order: -1; /* Pastikan trigger selalu di paling kiri */
+    flex-shrink: 0; /* Jangan biarkan trigger menyusut */
 }
 
 .brand-logo .logo-img {
-    height: 40px;
+    /* Kunci: Ukuran logo lebih kecil dan responsif */
+    height: clamp(30px, 5vw, 35px);
     width: auto;
-    margin-right: 15px;  /* Beri jarak antara logo dan teks */
-    flex-shrink: 0;      /* Jangan biarkan logo menyusut */
+    margin-right: 15px;
+    flex-shrink: 0;
 }
 
 .brand-logo div {
     display: flex;
-    flex-direction: column; /* Teks brand di atas, tagline di bawah */
-    justify-content: center;
-    line-height: 1.2;
+    /* Kunci: Membuat brand dan tagline sejajar */
+    flex-direction: row;
+    align-items: baseline; /* Sejajarkan berdasarkan baseline teks */
+    gap: 8px; /* Beri jarak antara brand dan tagline */
 }
 
 .logo-main-text {
     font-weight: 600;
     font-size: 1.2rem;
-    white-space: nowrap; /* Jangan biarkan teks brand pecah baris */
+    white-space: nowrap; /* Jangan biarkan tagline pecah baris */
 }
 
 .logo-tagline {
@@ -570,7 +565,8 @@ main {
 }
 
 .page-content {
-    padding: 24px;
+    /* Kunci: Padding responsif untuk mobile */
+    padding: clamp(15px, 4vw, 24px);
 }
 
 .page-title {
