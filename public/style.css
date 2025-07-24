@@ -159,9 +159,10 @@ body {
 
     /* Atur lebar container agar card konten bisa melebar */
     main .container {
-        width: auto;
-        max-width: none;
-        padding: 0;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 }
 
