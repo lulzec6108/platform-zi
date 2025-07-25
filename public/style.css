@@ -1641,7 +1641,7 @@ table tr:hover {
 .task-code {
     font-family: 'Poppins', sans-serif; /* Diubah ke Poppins */
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 400; /* FIX: Diubah dari 500 ke 400 (reguler) */
     color: #546e7a; /* Warna teks lebih netral */
     background-color: #eceff1; /* Highlight abu-abu lembut */
     padding: 3px 8px;

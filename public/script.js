@@ -665,9 +665,8 @@ function showTugasDetail(tugas) {
 
     if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
         btnReferensi.href = tugas.linkReferensi;
-        btnReferensi.style.display = 'block';
     } else {
-        btnReferensi.style.display = 'none';
+        btnReferensi.href = '#';
     }
 
     if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
@@ -792,3 +791,100 @@ function showTugasDetail(tugas) {
 
      return `<span class="status-badge ${className}"><i class="material-icons">${icon}</i> ${status}</span>`;
  }
+
+function showTugasDetail(tugas) {
+    // 1. Membuat dan mengisi Pohon Hirarki (Sesuai Referensi Baru)
+    const breadcrumbContainer = document.getElementById('modal-breadcrumb');
+    let breadcrumbHtml = '';
+    if (tugas.tingkatan1) breadcrumbHtml += `<div class="level-1">${tugas.tingkatan1}</div>`;
+    if (tugas.tingkatan2) breadcrumbHtml += `<div class="level-2">${tugas.tingkatan2}</div>`;
+    if (tugas.tingkatan3) breadcrumbHtml += `<div class="level-3">${tugas.tingkatan3}</div>`;
+    if (tugas.tingkatan4) breadcrumbHtml += `<div class="level-4">${tugas.tingkatan4}</div>`; // Tingkat 4 ditambahkan
+    breadcrumbContainer.innerHTML = breadcrumbHtml || 'Hirarki tidak tersedia.';
+
+    // 2. Mengisi konten utama modal
+    document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || '-';
+    
+    const formattedPanduan = (tugas.panduanPenilaian || 'Tidak ada panduan.').replace(/\n/g, '<br>');
+    document.getElementById('modal-deskripsi').innerHTML = formattedPanduan;
+
+    // 3. Mengisi status
+    const statusContainer = document.getElementById('modal-status');
+    if (statusContainer) {
+        statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+    }
+
+    // --- Mengelola Form Interaktif di Modal ---
+
+    // 4. Mengisi Opsi Jawaban
+    document.getElementById('modal-opsi-jawaban').textContent = tugas.pilihanJawaban || 'Tidak ada.';
+
+    // 5. Mengatur link tombol (FIX: Logika disesuaikan dengan HTML baru)
+    const referensiSection = document.getElementById('referensi-section');
+    const btnReferensi = document.getElementById('btn-referensi');
+    const btnUpload = document.getElementById('btn-upload');
+
+    // Logika untuk menampilkan/menyembunyikan section referensi
+    if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
+        referensiSection.style.display = 'block'; // Tampilkan section
+        btnReferensi.href = tugas.linkReferensi;
+    } else {
+        referensiSection.style.display = 'none'; // Sembunyikan section
+    }
+
+    // Logika untuk mengaktifkan/menonaktifkan tombol upload
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
+        btnUpload.href = tugas.linkGDriveBukti;
+        btnUpload.classList.remove('disabled');
+    } else {
+        btnUpload.href = '#';
+        btnUpload.classList.add('disabled');
+    }
+
+    // 6. Setup Form Penilaian
+    const nilaiSelect = document.getElementById('nilai-select');
+    const rincianContainer = document.getElementById('rincian-fields-container');
+    
+    nilaiSelect.innerHTML = `<option value="" disabled>Pilih Nilai</option>`;
+    const pilihanJawaban = tugas.pilihanJawaban.split('/');
+    pilihanJawaban.forEach(item => {
+        const [nilai, ...deskripsi] = item.split(' = ');
+        nilaiSelect.innerHTML += `<option value="${nilai.trim()}">${item.trim()}</option>`;
+    });
+    nilaiSelect.value = tugas.nilai || '';
+
+    // 7. Mengatur tombol simpan
+    const simpanButton = document.getElementById('btn-simpan-dukungan');
+    simpanButton.onclick = async () => {
+        showLoading(true);
+        try {
+            const rincianInputs = rincianContainer.querySelectorAll('input[type="text"]');
+            const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(value => value);
+            const rincianText = rincianValues.join('\n');
+
+            const dataToUpdate = {
+                kodeHirarki: tugas.kodeHirarki,
+                nilai: nilaiSelect.value,
+                jenisBuktiDukung: rincianText,
+            };
+
+            const response = await callApi('updateTugas', 'POST', dataToUpdate);
+
+            if (response.success) {
+                showSuccess('Penilaian berhasil disimpan!');
+                M.Modal.getInstance(document.getElementById('detailModal')).close();
+                loadTugasSaya(); // Muat ulang daftar tugas
+            } else {
+                throw new Error(response.message || 'Gagal menyimpan data');
+            }
+        } catch (error) {
+            showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan'));
+        } finally {
+            showLoading(false);
+        }
+    };
+
+    // Tampilkan modal
+    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
+    modal.open();
+}
