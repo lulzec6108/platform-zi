@@ -682,8 +682,21 @@ async function showTugasDetail(tugas) {
 
     // 2. Isi Info Detail (Label sudah diubah di HTML)
     document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || '-'; // Menggunakan panduan untuk Panduan Penilaian
+    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || 'Panduan tidak tersedia.';
     document.getElementById('modal-status').textContent = tugas.status || 'BELUM DIKERJAKAN';
+
+    // Setup Link Referensi
+    const referensiContainer = document.getElementById('modal-referensi-link');
+    referensiContainer.innerHTML = ''; // Kosongkan dulu
+    if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
+        const link = document.createElement('a');
+        link.href = tugas.linkReferensi;
+        link.textContent = 'Lihat Dokumen Referensi';
+        link.target = '_blank';
+        referensiContainer.appendChild(link);
+    } else {
+        referensiContainer.textContent = 'Tidak ada referensi.';
+    }
 
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
@@ -741,12 +754,14 @@ async function showTugasDetail(tugas) {
 
     // 6. Setup Tombol Upload Folder
     const uploadBtn = document.getElementById('btn-upload-folder');
-    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
-        uploadBtn.href = tugas.linkGDriveBukti;
+    if (tugas.linkGoogleDrive && tugas.linkGoogleDrive.trim() !== '') {
+        uploadBtn.href = tugas.linkGoogleDrive;
         uploadBtn.classList.remove('disabled');
+        uploadBtn.classList.replace('btn-flat', 'btn'); // Ubah jadi tombol solid
     } else {
         uploadBtn.href = '#!';
         uploadBtn.classList.add('disabled');
+        uploadBtn.classList.replace('btn', 'btn-flat'); // Kembalikan jika disabled
     }
 
     // 7. Buka Modal

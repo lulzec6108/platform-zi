@@ -1958,3 +1958,27 @@ table tr:hover {
 .modal-footer {
     background-color: #f5f5f5;
 }
+
+/* Beri background dan efek kartu pada kotak hirarki */
+.hierarchy-box {
+    background-color: #fffaf0; /* Warna krem/oranye muda */
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Ubah warna tombol Tambah Rincian menjadi hijau */
+#add-rincian-btn {
+    background-color: #4CAF50 !important; /* Warna hijau */
+}
+
+/* Ubah tombol Buka Folder menjadi kuning */
+#btn-upload-folder.btn-flat {
+    color: #212121;
+    background-color: #ffeb3b;
+}
+
+#btn-upload-folder.btn-flat:hover {
+    background-color: #fdd835;
+}
