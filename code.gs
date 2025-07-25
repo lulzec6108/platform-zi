@@ -218,16 +218,28 @@ function handleGetTugasSaya(payload) {
   if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
 
   const tugasSheet = ss.getSheetByName("MappingTugas");
-  const buktiSheet = ss.getSheetByName("BuktiDukung");
-
   const tugasData = tugasSheet.getDataRange().getValues();
-  const buktiData = buktiSheet.getDataRange().getValues();
+  const tugasHeaders = tugasData.shift(); // Ambil header untuk pencarian kolom dinamis
 
-  const tugasHeaders = tugasData.shift();
+  // Dapatkan indeks kolom dari header
+  const usernameIndex = tugasHeaders.indexOf('Username');
+  const tingkatan1Index = tugasHeaders.indexOf('Tingkatan 1');
+  const tingkatan2Index = tugasHeaders.indexOf('Tingkatan 2');
+  const tingkatan3Index = tugasHeaders.indexOf('Tingkatan 3');
+  const tingkatan4Index = tugasHeaders.indexOf('Tingkatan 4');
+  const panduanIndex = tugasHeaders.indexOf('Panduan Penilaian');
+  const kodeHirarkiIndex = tugasHeaders.indexOf('Kode Hirarki');
+  const pilihanJawabanIndex = tugasHeaders.indexOf('Pilihan Jawaban');
+  // === PENAMBAHAN BARU ===
+  const linkReferensiIndex = tugasHeaders.indexOf('Link Referensi Melawi');
+  const linkGDriveBuktiIndex = tugasHeaders.indexOf('Link GDrive Bukti');
+
+  const buktiSheet = ss.getSheetByName("BuktiDukung");
+  const buktiData = buktiSheet.getDataRange().getValues();
   const buktiHeaders = buktiData.shift();
 
   // Buat map dari bukti dukung untuk pencarian cepat (O(1) lookup)
-  const buktiMap = buktiData.reduce((map, row) => {
+  const buktiDukungMap = buktiData.reduce((map, row) => {
     const username = row[buktiHeaders.indexOf('Username')];
     const kodeHirarki = row[buktiHeaders.indexOf('Kode Hirarki')];
     if (username && kodeHirarki) {
@@ -242,23 +254,24 @@ function handleGetTugasSaya(payload) {
 
   const userTugas = [];
   tugasData.forEach(row => {
-    const tugasUsername = row[tugasHeaders.indexOf('Username')];
+    const tugasUsername = row[usernameIndex];
     if (tugasUsername === user.username) {
-      const kodeHirarki = row[tugasHeaders.indexOf('Kode Hirarki')];
-      const bukti = buktiMap[`${user.username}-${kodeHirarki}`] || {}; // Ambil bukti atau objek kosong
+      const kodeHirarki = row[kodeHirarkiIndex];
+      const bukti = buktiDukungMap[`${user.username}-${kodeHirarki}`] || {}; // Ambil bukti atau objek kosong
 
       userTugas.push({
         username: tugasUsername,
-        pilar: row[tugasHeaders.indexOf('Pilar')],
-        tingkatan1: row[tugasHeaders.indexOf('Tingkatan 1')],
-        tingkatan2: row[tugasHeaders.indexOf('Tingkatan 2')],
-        tingkatan3: row[tugasHeaders.indexOf('Tingkatan 3')],
-        tingkatan4: row[tugasHeaders.indexOf('Tingkatan 4')],
+        pilar: row[1],
+        tingkatan1: row[tingkatan1Index],
+        tingkatan2: row[tingkatan2Index],
+        tingkatan3: row[tingkatan3Index],
+        tingkatan4: row[tingkatan4Index],
         kodeHirarki: kodeHirarki,
-        panduanPenilaian: row[tugasHeaders.indexOf('Panduan Penilaian')],
-        pilihanJawaban: row[tugasHeaders.indexOf('Pilihan Jawaban')],
-        linkReferensi: row[tugasHeaders.indexOf('Link Referensi Melawi')],
-        linkGDrive: row[tugasHeaders.indexOf('Link GDrive Bukti')],
+        panduanPenilaian: row[panduanIndex],
+        pilihanJawaban: row[pilihanJawabanIndex],
+        // === PENAMBAHAN BARU ===
+        linkReferensi: linkReferensiIndex !== -1 ? row[linkReferensiIndex] : '',
+        linkGDriveBukti: linkGDriveBuktiIndex !== -1 ? row[linkGDriveBuktiIndex] : '',
         // Gabungkan dengan data dari bukti dukung
         nilai: bukti.nilai || '',
         jenisBuktiDukung: bukti.jenisBuktiDukung || ''

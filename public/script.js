@@ -613,182 +613,210 @@ async function openTugasModal(taskId) {
     }
 }
 
+// Helper function to add a single rincian field
+function addRincianField(container, value = '') {
+    const inputField = document.createElement('div');
+    inputField.className = 'input-field';
+    // Escape single quotes in the value to prevent breaking the HTML
+    const escapedValue = value.replace(/'/g, '&apos;');
+    inputField.innerHTML = `
+        <input type="text" value='${escapedValue}'>
+        <i class="material-icons remove-field-btn" title="Hapus">remove_circle_outline</i>
+    `;
+    container.appendChild(inputField);
+}
+
+// Helper function to set up the initial rincian fields
+function setupRincianFields(container, rincianText) {
+    container.innerHTML = ''; // Clear existing fields
+    const rincianList = rincianText ? rincianText.split('\n') : [];
+
+    if (rincianList.length > 0 && rincianList[0] !== '') {
+        rincianList.forEach(item => addRincianField(container, item));
+    } else {
+        // Add 3 default empty fields
+        for (let i = 0; i < 3; i++) {
+            addRincianField(container);
+        }
+    }
+}
+
 // Fungsi untuk membuka detail tugas
 function showTugasDetail(tugas) {
     // 1. Membuat dan mengisi Pohon Hirarki
     const breadcrumbContainer = document.getElementById('modal-breadcrumb');
     let breadcrumbHtml = '';
     if (tugas.tingkatan1) breadcrumbHtml += `<div>${tugas.tingkatan1}</div>`;
-    if (tugas.tingkatan2) breadcrumbHtml += `<div>&nbsp;&nbsp;└─ ${tugas.tingkatan2}</div>`;
-    if (tugas.tingkatan3) breadcrumbHtml += `<div>&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan3}</div>`;
-    breadcrumbContainer.innerHTML = breadcrumbHtml || 'Hirarki tidak tersedia.';
+    if (tugas.tingkatan2) breadcrumbHtml += `<div>${tugas.tingkatan2}</div>`;
+    if (tugas.tingkatan3) breadcrumbHtml += `<div>${tugas.tingkatan3}</div>`;
+    breadcrumbContainer.innerHTML = breadcrumbHtml.replace(/└─/g, '<span style="color: #9e9e9e;">└─</span>') || 'Hirarki tidak tersedia.';
 
     // 2. Mengisi konten utama modal
     document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || '-';
     
-    // KUNCI: Ganti newline character (\n) dengan tag <br> untuk membuat baris baru di HTML
     const formattedPanduan = (tugas.panduanPenilaian || 'Tidak ada panduan.').replace(/\n/g, '<br>');
     document.getElementById('modal-deskripsi').innerHTML = formattedPanduan;
 
-    // 3. Mengisi status dari badge yang sudah kita buat
+    // 3. Mengisi status
     const statusContainer = document.getElementById('modal-status');
     if (statusContainer) {
         statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
     }
 
-    // 4. Mengisi data untuk form (nilai, rincian, dll.)
+    // --- Mengelola Form Interaktif di Modal ---
+
+    // 4. Mengisi Dropdown Nilai
     const nilaiSelect = document.getElementById('modal-nilai');
-    const rincianTextarea = document.getElementById('modal-rincian');
-    const btnUpload = document.getElementById('btn-upload');
-    nilaiSelect.innerHTML = `<option value="" disabled>Pilih Nilai</option>`; // Opsi default
+    nilaiSelect.innerHTML = `<option value="" disabled>Pilih Nilai</option>`;
     const pilihanJawaban = tugas.pilihanJawaban.split('/');
     pilihanJawaban.forEach(item => {
-        const isSelected = tugas.nilai === item ? 'selected' : '';
-        nilaiSelect.innerHTML += `<option value="${item}" ${isSelected}>${item}</option>`;
+        const [nilai, ...deskripsi] = item.split(' = ');
+        nilaiSelect.innerHTML += `<option value="${nilai.trim()}">${item.trim()}</option>`;
     });
+    nilaiSelect.value = tugas.nilai || '';
 
-    // 2. Mengisi Rincian yang Sudah Ada
-    rincianTextarea.value = tugas.jenisBuktiDukung || '';
-    M.textareaAutoResize(rincianTextarea); // Memicu resize jika ada konten
+    // 5. Mengelola Field Rincian Dinamis
+    const rincianContainer = document.getElementById('rincian-container');
+    setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
 
-    // 3. Menghubungkan Tombol Simpan
-    const simpanButton = document.getElementById('btn-simpan-dukungan');
-    simpanButton.onclick = () => {
-        // Ambil nilai terbaru dari form di modal
-        const nilaiBaru = nilaiSelect.value;
-        const rincianBaru = rincianTextarea.value;
-        
-        // Panggil fungsi simpan yang sudah ada
-        simpanBuktiDukung(tugas.kodeHirarki, nilaiBaru, rincianBaru);
+    document.getElementById('add-rincian-btn').onclick = () => addRincianField(rincianContainer);
+
+    rincianContainer.onclick = function(event) {
+        if (event.target.classList.contains('remove-field-btn')) {
+            event.target.parentElement.remove();
+        }
     };
 
-    // 4. Inisialisasi ulang komponen Materialize di dalam modal
-    M.FormSelect.init(nilaiSelect); 
+    // 6. Mengatur tombol-tombol Aksi
+    const btnReferensi = document.getElementById('btn-referensi');
+    const btnUpload = document.getElementById('btn-upload');
 
-    // Mengatur tombol upload bukti dukung
-    if (tugas.linkGDrive) {
-        btnUpload.href = tugas.linkGDrive;
-        btnUpload.textContent = 'Buka GDrive';
+    if (tugas.linkReferensi && tugas.linkReferensi.startsWith('http')) {
+        btnReferensi.href = tugas.linkReferensi;
+        btnReferensi.style.display = 'block';
     } else {
-        btnUpload.href = '#';
-        btnUpload.textContent = 'Tidak ada';
-        btnUpload.onclick = (e) => e.preventDefault();
+        btnReferensi.style.display = 'none';
     }
 
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.startsWith('http')) {
+        btnUpload.href = tugas.linkGDriveBukti;
+        btnUpload.style.display = 'block';
+    } else {
+        btnUpload.style.display = 'none';
+    }
+
+    // Re-initialize form select & text area
+    M.FormSelect.init(nilaiSelect);
+
+    // 7. Mengatur tombol simpan
+    const simpanButton = document.getElementById('btn-simpan-dukungan');
+    simpanButton.onclick = async () => {
+        showLoading(true);
+        try {
+            const rincianInputs = rincianContainer.querySelectorAll('input[type="text"]');
+            const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(value => value);
+            const rincianText = rincianValues.join('\n');
+
+            const dataToUpdate = {
+                kodeHirarki: tugas.kodeHirarki,
+                nilai: nilaiSelect.value,
+                jenisBuktiDukung: rincianText,
+            };
+
+            const response = await callApi('updateTugas', dataToUpdate);
+            if (response.success) {
+                showSuccess('Penilaian berhasil disimpan!');
+                M.Modal.getInstance(document.getElementById('detailModal')).close();
+                loadTugasSaya(); // Muat ulang daftar tugas
+            } else {
+                throw new Error(response.message || 'Gagal menyimpan data');
+            }
+        } catch (error) {
+            showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan'));
+        } finally {
+            showLoading(false);
+        }
+    };
+
     // Tampilkan modal
-    const modal = M.Modal.getInstance(document.getElementById('detailModal')) || 
-                 M.Modal.init(document.getElementById('detailModal'));
+    const modal = M.Modal.getInstance(document.getElementById('detailModal'));
     modal.open();
 }
 
-// Fungsi untuk menyimpan data bukti dukung
-// Diubah untuk menerima nilai dan rincian sebagai argumen
-async function simpanBuktiDukung(kodeHirarki, nilai, rincian) {
-    if (!nilai) {
-        M.toast({ html: 'Silakan pilih nilai terlebih dahulu.', classes: 'orange' });
-        return;
-    }
+ // Fungsi untuk memuat dan merender data 'Tugas Saya'
+ async function loadTugasSaya() {
+     const container = document.getElementById('tugas-saya-container');
+     if (!container) return;
 
-    showLoading(true);
-    try {
-        const response = await callApi('saveBuktiDukung', 'POST', {
-            kodeHirarki: kodeHirarki,
-            nilai: nilai,
-            jenisBuktiDukung: rincian
-        });
+     showLoading(true);
+     container.innerHTML = '<p class="center-align">Memuat tugas ZI Anda...</p>';
 
-        if (response.success) {
-            M.toast({ html: 'Bukti dukung berhasil disimpan!', classes: 'green' });
-            // Muat ulang data tugas untuk menampilkan status terbaru
-            loadTugasSaya(); 
-            // Tutup modal setelah berhasil menyimpan
-            const modal = M.Modal.getInstance(document.getElementById('detailModal'));
-            modal.close();
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan data.');
-        }
-    } catch (error) {
-        console.error('Error saving bukti dukung:', error);
-        M.toast({ html: `Error: ${error.message}`, classes: 'red' });
-    } finally {
-        showLoading(false);
-    }
-}
+     try {
+         const result = await callApi('getTugasSaya');
 
-// Fungsi untuk memuat dan merender data 'Tugas Saya'
-async function loadTugasSaya() {
-    const container = document.getElementById('tugas-saya-container');
-    if (!container) return;
+         if (result.success && Array.isArray(result.data)) {
+             if (result.data.length === 0) {
+                 container.innerHTML = '<div class="center-align"><i class="large material-icons green-text">check_circle</i><p>Anda tidak memiliki tugas saat ini. Selamat bersantai!</p></div>';
+                 return;
+             }
 
-    showLoading(true);
-    container.innerHTML = '<p class="center-align">Memuat tugas ZI Anda...</p>';
+             container.innerHTML = ''; // Kosongkan kontainer
 
-    try {
-        const result = await callApi('getTugasSaya');
+             result.data.forEach(tugas => {
+                 const cardHtml = `
+                     <div class="col s12 m6 l4">
+                         <div class="card task-card hoverable">
+                             <div class="card-content">
+                                 ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
+                                 <span class="card-title">${tugas.tingkatan4}</span>
+                                 <p class="task-code">Kode: ${tugas.kodeHirarki}</p>
+                             </div>
+                             <div class="card-action">
+                                 <a href="#detailModal" class="btn-flat waves-effect waves-teal modal-trigger" onclick='showTugasDetail(${JSON.stringify(tugas)})'>
+                                     Detail & Upload
+                                 </a>
+                             </div>
+                         </div>
+                     </div>
+                 `;
+                 container.innerHTML += cardHtml;
+             });
 
-        if (result.success && Array.isArray(result.data)) {
-            if (result.data.length === 0) {
-                container.innerHTML = '<div class="center-align"><i class="large material-icons green-text">check_circle</i><p>Anda tidak memiliki tugas saat ini. Selamat bersantai!</p></div>';
-                return;
-            }
+         } else {
+             throw new Error(result.message || 'Gagal mengambil data tugas.');
+         }
+     } catch (error) {
+         console.error('Error in loadTugasSaya:', error);
+         container.innerHTML = `<div class="center-align red-text"><i class="large material-icons">error_outline</i><p>Gagal memuat tugas: ${error.message}</p></div>`;
+     } finally {
+         showLoading(false);
+     }
+ }
 
-            container.innerHTML = ''; // Kosongkan kontainer
+ function getStatusBadge(statusAdmin, statusKetua) {
+     let status, className, icon;
 
-            result.data.forEach(tugas => {
-                const cardHtml = `
-                    <div class="col s12 m6 l4">
-                        <div class="card task-card hoverable">
-                            <div class="card-content">
-                                ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
-                                <span class="card-title">${tugas.tingkatan4}</span>
-                                <p class="task-code">Kode: ${tugas.kodeHirarki}</p>
-                            </div>
-                            <div class="card-action">
-                                <a href="#detailModal" class="btn-flat waves-effect waves-teal modal-trigger" onclick='showTugasDetail(${JSON.stringify(tugas)})'>
-                                    Detail & Upload
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += cardHtml;
-            });
+     if (statusAdmin === 'diterima') {
+         status = 'Disetujui';
+         className = 'green';
+         icon = 'check_circle';
+     } else if (statusAdmin === 'ditolak') {
+         status = 'Revisi (Admin)';
+         className = 'red';
+         icon = 'cancel';
+     } else if (statusKetua === 'diterima') {
+         status = 'Menunggu Verifikasi Admin';
+         className = 'blue';
+         icon = 'hourglass_top';
+     } else if (statusKetua === 'ditolak') {
+         status = 'Revisi (Ketua Tim)';
+         className = 'orange';
+         icon = 'warning';
+     } else {
+         status = 'Belum Dikerjakan';
+         className = 'grey';
+         icon = 'pending';
+     }
 
-        } else {
-            throw new Error(result.message || 'Gagal mengambil data tugas.');
-        }
-    } catch (error) {
-        console.error('Error in loadTugasSaya:', error);
-        container.innerHTML = `<div class="center-align red-text"><i class="large material-icons">error_outline</i><p>Gagal memuat tugas: ${error.message}</p></div>`;
-    } finally {
-        showLoading(false);
-    }
-}
-
-function getStatusBadge(statusAdmin, statusKetua) {
-    let status, className, icon;
-
-    if (statusAdmin === 'diterima') {
-        status = 'Disetujui';
-        className = 'green';
-        icon = 'check_circle';
-    } else if (statusAdmin === 'ditolak') {
-        status = 'Revisi (Admin)';
-        className = 'red';
-        icon = 'cancel';
-    } else if (statusKetua === 'diterima') {
-        status = 'Menunggu Verifikasi Admin';
-        className = 'blue';
-        icon = 'hourglass_top';
-    } else if (statusKetua === 'ditolak') {
-        status = 'Revisi (Ketua Tim)';
-        className = 'orange';
-        icon = 'warning';
-    } else {
-        status = 'Belum Dikerjakan';
-        className = 'grey';
-        icon = 'pending';
-    }
-
-    return `<span class="status-badge ${className}"><i class="material-icons">${icon}</i> ${status}</span>`;
-}
+     return `<span class="status-badge ${className}"><i class="material-icons">${icon}</i> ${status}</span>`;
+ }

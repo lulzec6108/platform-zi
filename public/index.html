@@ -161,8 +161,9 @@
     </div>
 
     <!-- Detail Tugas Modal -->
-    <div id="detailModal" class="modal modal-fixed-footer">
+    <div id="detailModal" class="modal">
         <div class="modal-content">
+            <span class="modal-close-btn modal-close">&times;</span>
             <h4>Detail Tugas</h4>
 
             <!-- Elemen Baru: Pohon Hirarki -->
@@ -172,18 +173,17 @@
             <div id="modal-nama-tugas" class="modal-value">-</div>
 
             <p class="modal-label">Opsi Jawaban:</p>
-            <div id="modal-deskripsi" class="modal-value" style="font-style: italic;">-</div>
+            <div id="modal-deskripsi" class="modal-value">-</div>
 
             <p class="modal-label">Status:</p>
             <div id="modal-status" class="modal-value">-</div>
 
-            <!-- Konten Form dipindahkan ke sini -->
+            <!-- Form untuk melengkapi bukti dukung -->
             <div>
                 <div class="card">
                     <div class="card-content">
-                        <span class="card-title">Lengkapi Bukti Dukung</span>
+                        <span class="card-title">Form Penilaian Mandiri</span>
 
-                        <!-- Form untuk melengkapi bukti dukung -->
                         <div class="row" style="margin-top: 20px;">
                             <div class="input-field col s12">
                                 <select id="modal-nilai">
@@ -192,21 +192,25 @@
                                 <label for="modal-nilai">Nilai</label>
                             </div>
                             <div class="input-field col s12">
-                                <textarea id="modal-rincian" class="materialize-textarea"></textarea>
-                                <label for="modal-rincian">Rincian Jenis Dokumen Bukti Dukung</label>
+                                <label for="rincian-container">Rincian Jenis Dokumen Bukti Dukung</label>
+                                <div id="rincian-container" style="margin-top: 10px;">
+                                    <!-- Input fields dinamis akan ditambahkan di sini oleh JS -->
+                                </div>
+                                <button id="add-rincian-btn" class="btn-small waves-effect waves-light blue-grey lighten-1">
+                                    <i class="material-icons left">add</i>Tambah Bukti Dukung
+                                </button>
                             </div>
                         </div>
                         <button id="btn-simpan-dukungan" class="btn green waves-effect waves-light">
-                            <i class="material-icons left">save</i> Simpan Rincian
+                            <i class="material-icons left">save</i> Simpan Penilaian
                         </button>
 
                         <div class="divider" style="margin: 20px 0;"></div>
 
-                        <span class="card-title">Upload File</span>
-                        <p>Upload file Anda ke folder Google Drive yang sesuai melalui tombol di bawah ini.</p>
-                        <button id="btn-upload" class="btn blue" style="margin-top: 10px;">
-                            <i class="material-icons left">cloud_upload</i> Buka Folder Upload
-                        </button>
+                        <span class="card-title">Akses Cepat</span>
+                        <p>Gunakan tombol di bawah untuk mengakses referensi atau folder upload.</p>
+                        <a id="btn-referensi" class="btn waves-effect waves-light orange" target="_blank"><i class="material-icons left">description</i>Referensi Bukti Dukung</a>
+                        <a id="btn-upload" class="btn waves-effect waves-light blue" style="margin-top: 10px;" target="_blank"><i class="material-icons left">cloud_upload</i>Buka Folder Upload</a>
                     </div>
                 </div>
             </div>
