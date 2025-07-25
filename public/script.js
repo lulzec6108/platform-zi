@@ -781,12 +781,15 @@ async function loadTugasSaya() {
                 `;
                 const cardElement = document.createElement('div');
                 cardElement.innerHTML = cardHtml.trim();
-                container.appendChild(cardElement.firstChild);
+                const newCard = cardElement.firstChild;
 
-                // Tambahkan event listener ke tombol baru (INI BAGIAN PENTING YANG MEMPERBAIKI TOMBOL)
-                cardElement.querySelector('.btn-detail').addEventListener('click', () => {
+                // 1. CARI TOMBOL DAN TAMBAHKAN LISTENER PADA KARTU YANG BARU DIBUAT
+                newCard.querySelector('.btn-detail').addEventListener('click', () => {
                     showTugasDetail(tugas);
                 });
+
+                // 2. SETELAH LISTENER TERPASANG, BARU TAMBAHKAN KARTU KE HALAMAN
+                container.appendChild(newCard);
             });
 
         } else {
