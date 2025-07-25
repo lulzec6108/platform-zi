@@ -160,57 +160,58 @@
         </main>
     </div>
 
-    <!-- Modal Structure: Detail Tugas (Struktur Lama Dikembalikan) -->
-    <div id="detailModal" class="modal modal-fixed-footer">
+    <!-- Modal Structure: Detail Tugas (Struktur Sesuai Gambar) -->
+    <div id="detailModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h4 id="modal-nama-tugas">Nama Tugas</h4>
-                <p>Aspek yang dinilai:</p>
-                <div id="modal-breadcrumb" class="breadcrumb-container"></div>
+            <a href="#!" class="modal-close btn-flat right"><i class="material-icons">close</i></a>
+            <h4>Detail Tugas</h4>
+
+            <!-- Kotak Hirarki -->
+            <div id="modal-hierarchy-box" class="hierarchy-box">
+                <!-- Konten hirarki akan diisi oleh JS -->
+            </div>
+
+            <div class="info-section">
+                <p class="info-label">Detail Hirarki:</p>
+                <p id="modal-detail-hirarki" class="info-value">-</p>
+
+                <p class="info-label">Opsi Jawaban:</p>
+                <p id="modal-opsi-jawaban" class="info-value">-</p>
+
+                <p class="info-label">Status:</p>
+                <span id="modal-status" class="badge grey">-</span>
             </div>
 
             <div class="divider"></div>
 
-            <div class="modal-section">
-                <h5>Panduan Penilaian</h5>
-                <p id="modal-deskripsi">Deskripsi panduan penilaian akan muncul di sini.</p>
+            <h4>Form Penilaian Mandiri</h4>
+            <div class="input-field">
+                <select id="nilai-select">
+                    <option value="" disabled selected>Pilih Nilai</option>
+                </select>
+                <label>Nilai</label>
             </div>
 
-            <div class="modal-section">
-                <h5>Status</h5>
-                <div class="status-container">
-                    <div class="status-item">PIC: <span id="modal-status-pic" class="badge blue new"></span></div>
-                    <div class="status-item">Ketua Tim: <span id="modal-status-ketua" class="badge orange new"></span></div>
-                </div>
+            <label>Rincian/Jenis Dokumen Bukti Dukung</label>
+            <div id="rincian-fields-container">
+                <!-- Fields akan ditambahkan oleh JS -->
             </div>
+            <button id="add-rincian-btn" class="btn-small waves-effect waves-light grey" type="button">
+                <i class="material-icons left">add</i>Tambah Bukti Dukung
+            </button>
+
+            <button type="button" id="btn-simpan-penilaian" class="btn waves-effect waves-light green" style="width: 100%; margin-top: 20px;">
+                <i class="material-icons left">lock</i>Simpan Penilaian
+            </button>
 
             <div class="divider"></div>
 
-            <!-- Form Penilaian -->
-            <div class="modal-section">
-                <h5>Form Penilaian</h5>
-                <div class="input-field">
-                    <select id="nilai-select">
-                        <option value="" disabled selected>Pilih Nilai</option>
-                    </select>
-                    <label>Pilih Nilai</label>
-                </div>
-
-                <div id="rincian-section">
-                    <label>Rincian Bukti Dukung (Link atau Keterangan)</label>
-                    <div id="rincian-fields-container">
-                        <!-- Fields akan ditambahkan oleh JS -->
-                    </div>
-                    <button id="add-rincian-btn" class="btn-small waves-effect waves-light blue-grey lighten-1" type="button">
-                        <i class="material-icons left">add</i>Tambah Rincian
-                    </button>
-                </div>
+            <div class="upload-section">
+                <p class="info-label">Upload bukti dukung</p>
+                <a id="btn-upload-folder" class="btn waves-effect waves-light blue disabled" style="width: 100%;">
+                    <i class="material-icons left">cloud_upload</i>Buka Folder Upload
+                </a>
             </div>
-
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="modal-close waves-effect waves-green btn-flat">Tutup</button>
-            <button type="button" id="btn-simpan-dukungan" class="btn waves-effect waves-light blue">Simpan Penilaian</button>
         </div>
     </div>
 

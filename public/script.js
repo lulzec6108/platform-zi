@@ -642,31 +642,38 @@ function setupRincianFields(container, rincianText) {
 
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
-    // 1. Dapatkan elemen modal dan kontennya
     const modal = document.getElementById('detailModal');
     if (!modal) return;
 
-    document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || 'Nama Tugas Tidak Tersedia';
-    document.getElementById('modal-deskripsi').textContent = tugas.panduan || 'Panduan tidak tersedia.';
+    // 1. Setup Kotak Hirarki Dinamis
+    const hierarchyBox = document.getElementById('modal-hierarchy-box');
+    hierarchyBox.innerHTML = ''; // Kosongkan dulu
+    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
+    const levelPrefixes = ['I. ', '1. ', 'i. ', 'a. '];
 
-    // 2. Setup Breadcrumb Hirarki
-    const breadcrumbContainer = document.getElementById('modal-breadcrumb');
-    breadcrumbContainer.innerHTML = ''; // Kosongkan dulu
-    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3']; // Hanya tampilkan 3 level di breadcrumb
-    levels.forEach((level, index) => {
-        if (tugas[level]) {
+    levels.forEach((levelKey, index) => {
+        if (tugas[levelKey]) {
             const div = document.createElement('div');
-            div.className = `level-${index + 1}`;
-            div.textContent = tugas[level];
-            breadcrumbContainer.appendChild(div);
+            div.className = `hierarchy-level level-${index + 1}`;
+            div.style.paddingLeft = `${10 + index * 20}px`; // Indentasi dinamis
+            div.textContent = `${levelPrefixes[index]}${tugas[levelKey]}`;
+
+            if (levelKey === 'tingkatan4') {
+                div.classList.add('active'); // Highlight item terakhir
+            }
+            hierarchyBox.appendChild(div);
         }
     });
 
-    // 3. Setup Status Badges
-    document.getElementById('modal-status-pic').textContent = tugas.status || 'Belum Dikerjakan';
-    document.getElementById('modal-status-ketua').textContent = tugas.statusKetua || 'Belum Diverifikasi';
+    // 2. Isi Info Detail di bawah kotak
+    document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
+    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || '-'; // Menggunakan panduan sebagai Opsi Jawaban
+    
+    const statusBadge = document.getElementById('modal-status');
+    statusBadge.textContent = tugas.status || 'BELUM DIKERJAKAN';
+    // (Logika untuk mengganti warna badge bisa ditambahkan di sini jika perlu)
 
-    // 4. Setup Dropdown Nilai (BAGIAN KRITIS)
+    // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
     nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>'; // Reset
     if (tugas.opsiJawaban) {
@@ -678,17 +685,16 @@ async function showTugasDetail(tugas) {
         });
     }
     nilaiSelect.value = tugas.nilai || '';
-    M.FormSelect.init(nilaiSelect); // Inisialisasi ulang SETELAH opsi ditambahkan
+    M.FormSelect.init(nilaiSelect); // Inisialisasi ulang
 
-    // 5. Setup Rincian Bukti Dukung (BAGIAN KRITIS)
+    // 4. Setup Rincian Bukti Dukung
     const rincianContainer = document.getElementById('rincian-fields-container');
     setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
 
-    // 6. Setup Event Listener untuk tombol form (dengan proteksi listener ganda)
+    // 5. Setup Event Listener (dengan proteksi listener ganda)
     const addRincianBtn = document.getElementById('add-rincian-btn');
-    const simpanBtn = document.getElementById('btn-simpan-dukungan');
+    const simpanBtn = document.getElementById('btn-simpan-penilaian');
 
-    // Hapus listener lama untuk menghindari duplikasi
     const newAddBtn = addRincianBtn.cloneNode(true);
     addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
     newAddBtn.addEventListener('click', () => addRincianField(rincianContainer));
@@ -701,15 +707,12 @@ async function showTugasDetail(tugas) {
             const rincianInputs = rincianContainer.querySelectorAll('input');
             const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
             const rincianText = rincianValues.join('|');
-
             const dataToUpdate = {
                 kodeHirarki: tugas.kodeHirarki,
                 nilai: nilaiSelect.value,
                 jenisBuktiDukung: rincianText,
             };
-
             const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
-
             if (response.success) {
                 showError('Penilaian berhasil disimpan!', 'success');
                 M.Modal.getInstance(modal).close();
@@ -723,6 +726,16 @@ async function showTugasDetail(tugas) {
             showLoading(false);
         }
     });
+
+    // 6. Setup Tombol Upload Folder
+    const uploadBtn = document.getElementById('btn-upload-folder');
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
+        uploadBtn.href = tugas.linkGDriveBukti;
+        uploadBtn.classList.remove('disabled');
+    } else {
+        uploadBtn.href = '#!';
+        uploadBtn.classList.add('disabled');
+    }
 
     // 7. Buka Modal
     M.Modal.getInstance(modal).open();

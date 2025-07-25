@@ -1677,3 +1677,65 @@ table tr:hover {
     margin-top: 20px;
     margin-bottom: 10px;
 }
+
+/* === Gaya Modal Detail Tugas (Sesuai Gambar) === */
+#detailModal .modal-content {
+    padding: 24px 32px;
+}
+
+.hierarchy-box {
+    background-color: #fff3e0; /* Oranye sangat muda */
+    border: 1px solid #ffe0b2;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.hierarchy-level {
+    position: relative;
+    padding-left: 25px; /* Indentasi untuk garis */
+    margin-bottom: 8px;
+}
+
+.hierarchy-level::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed #c5c5c5;
+}
+
+.hierarchy-level:last-child::before {
+    height: 10px; /* Garis putus-putus tidak sampai bawah untuk item terakhir */
+}
+
+.hierarchy-level.level-4.active {
+    color: #d32f2f; /* Warna merah untuk item aktif */
+    font-weight: 500;
+}
+
+.info-section {
+    margin-bottom: 24px;
+}
+
+.info-label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+#modal-status {
+    font-weight: 500;
+}
+
+.upload-section {
+    margin-top: 24px;
+}
