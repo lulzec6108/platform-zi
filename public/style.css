@@ -1606,7 +1606,6 @@ table tr:hover {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 0;
     border-left: 1.5px dashed #e0e0e0;
 }
 
@@ -1906,9 +1905,9 @@ table tr:hover {
     content: '';
     position: absolute;
     left: 8px;
-    top: 12px; /* Posisi vertikal di tengah */
-    width: 12px;
-    border-bottom: 1.5px dashed #bdbdbd;
+    top: 12px; /* Sejajar dengan tengah teks */
+    border-top: 1.5px dashed #bdbdbd;
+    width: 10px;
 }
 
 /* Atur garis untuk item terakhir agar tidak terlalu panjang */
@@ -2043,4 +2042,22 @@ table tr:hover {
 
 .status-badge.sudah-dikerjakan {
     background-color: #4CAF50; /* Hijau */
+}
+
+.hierarchy-level {
+    position: relative;
+    padding-left: 25px; /* Beri ruang untuk garis */
+    margin-bottom: 8px;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+/* Menambahkan padding tambahan untuk setiap level, menciptakan indentasi */
+.hierarchy-level:nth-child(2) { padding-left: 45px; }
+.hierarchy-level:nth-child(3) { padding-left: 65px; }
+.hierarchy-level:nth-child(4) { padding-left: 85px; }
+
+.hierarchy-level span {
+    background-color: #fff;
+    padding: 0 4px;
 }

@@ -198,7 +198,11 @@ async function callApi(action, method = 'GET', body = null) {
   };
 
   if (method === 'POST' && body) {
-    // Untuk POST, kirim payload lengkap di body. Proxy akan menambahkan apiKey.
+    // PERBAIKAN: Sisipkan username ke dalam body untuk POST jika user login
+    if (user && user.username) {
+      body.username = user.username;
+    }
+    // Kirim payload lengkap di body. Proxy akan menambahkan apiKey.
     options.body = JSON.stringify({ action, payload: body });
   }
 
@@ -783,26 +787,38 @@ async function showTugasDetail(tugas) {
 
 // Fungsi untuk menyimpan data penilaian
 async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
+    // Validasi sederhana: pastikan nilai sudah dipilih
+    if (!nilaiSelect.value) {
+        showError('Silakan pilih nilai terlebih dahulu.');
+        return;
+    }
+
     showLoading(true);
     try {
         const rincianInputs = rincianContainer.querySelectorAll('input');
+        // Gabungkan semua rincian menjadi satu string dengan pemisah '|'
         const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
         const rincianText = rincianValues.join('|');
+
+        // Siapkan data untuk dikirim. Username & Timestamp akan di-handle backend.
         const dataToUpdate = {
-            kodeHirarki: tugas.kodeHirarki,
+            kodeHirarki: tugas.kodeHirarki, // Ini adalah 'primary key' kita
             nilai: nilaiSelect.value,
             jenisBuktiDukung: rincianText,
         };
+
+        // Panggil API untuk menyimpan/memperbarui data
         const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
+
         if (response.success) {
             showError('Penilaian berhasil disimpan!', 'success');
             M.Modal.getInstance(document.getElementById('detailModal')).close();
-            loadTugasSaya();
+            loadTugasSaya(); // Muat ulang data untuk menampilkan status terbaru
         } else {
-            throw new Error(response.message || 'Gagal menyimpan data');
+            throw new Error(response.message || 'Gagal menyimpan data ke backend');
         }
     } catch (error) {
-        showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan'));
+        showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan koneksi'));
     } finally {
         showLoading(false);
     }
