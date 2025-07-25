@@ -160,63 +160,57 @@
         </main>
     </div>
 
-    <!-- Detail Tugas Modal (STRUKTUR BARU & BENAR) -->
+    <!-- Modal Structure: Detail Tugas (Struktur Lama Dikembalikan) -->
     <div id="detailModal" class="modal modal-fixed-footer">
         <div class="modal-content">
-            <h5 class="task-title-modal">Detail Tugas</h5>
-            <div id="modal-breadcrumb" class="breadcrumb-container"></div>
-            <h4 id="modal-nama-tugas"></h4>
-
-            <div class="divider" style="margin: 20px 0;"></div>
-
-            <p class="modal-label">Panduan Penilaian:</p>
-            <div id="modal-deskripsi" class="modal-value">-</div>
-
-            <div id="referensi-section" class="referensi-container" style="display: none;">
-                <span class="modal-label">Referensi:</span>
-                <a id="btn-referensi" class="btn-small waves-effect waves-light orange" target="_blank"><i class="material-icons left">description</i>Lihat Referensi</a>
+            <div class="modal-header">
+                <h4 id="modal-nama-tugas">Nama Tugas</h4>
+                <p>Aspek yang dinilai:</p>
+                <div id="modal-breadcrumb" class="breadcrumb-container"></div>
             </div>
 
-            <div class="divider" style="margin: 20px 0;"></div>
+            <div class="divider"></div>
 
-            <div class="row">
-                <div class="col s6">
-                    <p class="modal-label">Status PIC:</p>
-                    <span id="modal-status-pic" class="status-badge"></span>
-                </div>
-                <div class="col s6">
-                    <p class="modal-label">Status Ketua Tim:</p>
-                    <span id="modal-status-ketua" class="status-badge"></span>
+            <div class="modal-section">
+                <h5>Panduan Penilaian</h5>
+                <p id="modal-deskripsi">Deskripsi panduan penilaian akan muncul di sini.</p>
+            </div>
+
+            <div class="modal-section">
+                <h5>Status</h5>
+                <div class="status-container">
+                    <div class="status-item">PIC: <span id="modal-status-pic" class="badge blue new"></span></div>
+                    <div class="status-item">Ketua Tim: <span id="modal-status-ketua" class="badge orange new"></span></div>
                 </div>
             </div>
 
-            <div class="divider" style="margin: 20px 0;"></div>
+            <div class="divider"></div>
 
             <!-- Form Penilaian -->
-            <div id="form-penilaian" style="margin-top: 20px;">
-                <div class="row">
-                    <div class="input-field col s12">
-                        <select id="nilai-select">
-                            <option value="" disabled selected>Pilih Nilai</option>
-                        </select>
-                        <label>Pilih Nilai Sesuai Bukti Dukung</label>
-                    </div>
+            <div class="modal-section">
+                <h5>Form Penilaian</h5>
+                <div class="input-field">
+                    <select id="nilai-select">
+                        <option value="" disabled selected>Pilih Nilai</option>
+                    </select>
+                    <label>Pilih Nilai</label>
+                </div>
 
-                    <div class="col s12">
-                        <label style="font-size: 1rem;">Rincian Bukti Dukung (Link/Dokumen):</label>
-                        <div id="rincian-fields-container" style="margin-top: 10px;">
-                            <!-- Fields akan ditambahkan oleh JS -->
-                        </div>
-                        <button id="add-rincian-btn" class="btn-small waves-effect waves-light green" style="margin-top: 10px;">
-                            <i class="material-icons left">add</i>Tambah Rincian
-                        </button>
+                <div id="rincian-section">
+                    <label>Rincian Bukti Dukung (Link atau Keterangan)</label>
+                    <div id="rincian-fields-container">
+                        <!-- Fields akan ditambahkan oleh JS -->
                     </div>
+                    <button id="add-rincian-btn" class="btn-small waves-effect waves-light blue-grey lighten-1" type="button">
+                        <i class="material-icons left">add</i>Tambah Rincian
+                    </button>
                 </div>
             </div>
+
         </div>
         <div class="modal-footer">
-            <a href="#!" id="btn-simpan-dukungan" class="btn waves-effect waves-light blue"><i class="material-icons left">save</i>Simpan Penilaian</a>
-            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Tutup</a>
+            <button type="button" class="modal-close waves-effect waves-green btn-flat">Tutup</button>
+            <button type="button" id="btn-simpan-dukungan" class="btn waves-effect waves-light blue">Simpan Penilaian</button>
         </div>
     </div>
 

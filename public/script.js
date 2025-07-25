@@ -642,19 +642,17 @@ function setupRincianFields(container, rincianText) {
 
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
-    // 1. Dapatkan elemen modal
+    // 1. Dapatkan elemen modal dan kontennya
     const modal = document.getElementById('detailModal');
     if (!modal) return;
 
-    // 2. Isi data dasar
-    modal.querySelector('#modal-nama-tugas').textContent = tugas.tingkatan4 || 'Nama Tugas Tidak Tersedia';
-    const formattedPanduan = (tugas.panduanPenilaian || 'Panduan tidak tersedia.').replace(/\n/g, '<br>');
-    modal.querySelector('#modal-deskripsi').innerHTML = formattedPanduan;
+    document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || 'Nama Tugas Tidak Tersedia';
+    document.getElementById('modal-deskripsi').textContent = tugas.panduan || 'Panduan tidak tersedia.';
 
-    // 3. Setup Breadcrumb Hirarki
-    const breadcrumbContainer = modal.querySelector('#modal-breadcrumb');
+    // 2. Setup Breadcrumb Hirarki
+    const breadcrumbContainer = document.getElementById('modal-breadcrumb');
     breadcrumbContainer.innerHTML = ''; // Kosongkan dulu
-    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
+    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3']; // Hanya tampilkan 3 level di breadcrumb
     levels.forEach((level, index) => {
         if (tugas[level]) {
             const div = document.createElement('div');
@@ -664,15 +662,12 @@ async function showTugasDetail(tugas) {
         }
     });
 
-    // 4. Setup Status Badges
-    const statusPicBadge = modal.querySelector('#modal-status-pic');
-    const statusKetuaBadge = modal.querySelector('#modal-status-ketua');
-    // (Anda bisa menambahkan logika badge yang lebih kompleks di sini jika perlu)
-    statusPicBadge.textContent = tugas.status || 'Belum Dikerjakan';
-    statusKetuaBadge.textContent = tugas.statusKetua || 'Belum Diverifikasi';
+    // 3. Setup Status Badges
+    document.getElementById('modal-status-pic').textContent = tugas.status || 'Belum Dikerjakan';
+    document.getElementById('modal-status-ketua').textContent = tugas.statusKetua || 'Belum Diverifikasi';
 
-    // 5. Setup Dropdown Nilai (BAGIAN KRITIS)
-    const nilaiSelect = modal.querySelector('#nilai-select');
+    // 4. Setup Dropdown Nilai (BAGIAN KRITIS)
+    const nilaiSelect = document.getElementById('nilai-select');
     nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>'; // Reset
     if (tugas.opsiJawaban) {
         tugas.opsiJawaban.split('|').forEach(opsi => {
@@ -682,20 +677,18 @@ async function showTugasDetail(tugas) {
             nilaiSelect.appendChild(option);
         });
     }
-    // Pilih nilai yang sudah ada
     nilaiSelect.value = tugas.nilai || '';
-    // Inisialisasi ulang FormSelect SETELAH opsi ditambahkan
-    M.FormSelect.init(nilaiSelect);
+    M.FormSelect.init(nilaiSelect); // Inisialisasi ulang SETELAH opsi ditambahkan
 
-    // 6. Setup Rincian Bukti Dukung (BAGIAN KRITIS)
-    const rincianContainer = modal.querySelector('#rincian-fields-container');
+    // 5. Setup Rincian Bukti Dukung (BAGIAN KRITIS)
+    const rincianContainer = document.getElementById('rincian-fields-container');
     setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
 
-    // 7. Setup Event Listener untuk tombol form
-    const addRincianBtn = modal.querySelector('#add-rincian-btn');
-    const simpanBtn = modal.querySelector('#btn-simpan-dukungan');
+    // 6. Setup Event Listener untuk tombol form (dengan proteksi listener ganda)
+    const addRincianBtn = document.getElementById('add-rincian-btn');
+    const simpanBtn = document.getElementById('btn-simpan-dukungan');
 
-    // Hapus listener lama untuk menghindari duplikasi (penting!)
+    // Hapus listener lama untuk menghindari duplikasi
     const newAddBtn = addRincianBtn.cloneNode(true);
     addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
     newAddBtn.addEventListener('click', () => addRincianField(rincianContainer));
@@ -715,13 +708,12 @@ async function showTugasDetail(tugas) {
                 jenisBuktiDukung: rincianText,
             };
 
-            // FIX: Menggunakan action 'saveBuktiDukung' yang benar sesuai backend
             const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
 
             if (response.success) {
                 showError('Penilaian berhasil disimpan!', 'success');
                 M.Modal.getInstance(modal).close();
-                loadTugasSaya(); // Muat ulang data untuk merefleksikan perubahan
+                loadTugasSaya();
             } else {
                 throw new Error(response.message || 'Gagal menyimpan data');
             }
@@ -732,7 +724,7 @@ async function showTugasDetail(tugas) {
         }
     });
 
-    // 8. Buka Modal
+    // 7. Buka Modal
     M.Modal.getInstance(modal).open();
 }
 
