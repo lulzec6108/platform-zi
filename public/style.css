@@ -1440,4 +1440,50 @@ table tr:hover {
 #detailModal .modal-content {
     max-height: 75vh; /* Batasi tinggi modal, misal 75% dari tinggi viewport */
     overflow-y: auto; /* Tambahkan scrollbar vertikal jika konten meluap */
+    padding: 24px 32px !important; /* Tambah padding horizontal dan vertikal */
+}
+
+/* === PERBAIKAN: Layout Modal Dialog Baru (Lebar, Padding, Tombol) === */
+#detailModal {
+    width: 85% !important; /* Lebar modal lebih besar */
+    max-width: 900px !important; /* Batas lebar maksimum di layar besar */
+    max-height: 90vh !important; /* Sedikit lebih tinggi dari sebelumnya */
+}
+
+#detailModal h4 {
+    margin-bottom: 24px; /* Beri jarak bawah pada judul */
+    font-weight: 500;
+}
+
+.task-breadcrumb {
+    background-color: #f9f9f9; /* Warna latar sedikit abu-abu */
+    border-left: 4px solid #2196F3; /* Aksen biru */
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace; /* Font monospace untuk tampilan hirarki */
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.modal-label {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    display: block; /* Pastikan label adalah block-level */
+}
+
+.modal-value {
+    padding-left: 15px;
+    margin-top: -5px; /* Tarik sedikit ke atas agar lebih dekat dengan label */
+    margin-bottom: 20px;
+    display: block;
+    color: #546e7a;
+}
+
+#btn-simpan-dukungan, #btn-upload {
+    width: 100%;
+    margin-bottom: 12px; /* Jarak antar tombol */
 }

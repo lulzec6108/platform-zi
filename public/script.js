@@ -615,20 +615,31 @@ async function openTugasModal(taskId) {
 
 // Fungsi untuk membuka detail tugas
 function showTugasDetail(tugas) {
-    // Update modal content
+    // 1. Membuat dan mengisi Pohon Hirarki
+    const breadcrumbContainer = document.getElementById('modal-breadcrumb');
+    let breadcrumbHtml = '';
+    if (tugas.tingkatan1) breadcrumbHtml += `<div>${tugas.tingkatan1}</div>`;
+    if (tugas.tingkatan2) breadcrumbHtml += `<div>&nbsp;&nbsp;└─ ${tugas.tingkatan2}</div>`;
+    if (tugas.tingkatan3) breadcrumbHtml += `<div>&nbsp;&nbsp;&nbsp;&nbsp;└─ ${tugas.tingkatan3}</div>`;
+    breadcrumbContainer.innerHTML = breadcrumbHtml || 'Hirarki tidak tersedia.';
+
+    // 2. Mengisi konten utama modal
     document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || '-';
+    
     // KUNCI: Ganti newline character (\n) dengan tag <br> untuk membuat baris baru di HTML
     const formattedPanduan = (tugas.panduanPenilaian || 'Tidak ada panduan.').replace(/\n/g, '<br>');
     document.getElementById('modal-deskripsi').innerHTML = formattedPanduan;
 
-    // Update status dari badge yang sudah kita buat
+    // 3. Mengisi status dari badge yang sudah kita buat
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+    if (statusContainer) {
+        statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+    }
 
-    // --- Mengelola Form Interaktif di Modal ---
-
-    // 1. Mengisi Dropdown Nilai
+    // 4. Mengisi data untuk form (nilai, rincian, dll.)
     const nilaiSelect = document.getElementById('modal-nilai');
+    const rincianTextarea = document.getElementById('modal-rincian');
+    const btnUpload = document.getElementById('btn-upload');
     nilaiSelect.innerHTML = `<option value="" disabled>Pilih Nilai</option>`; // Opsi default
     const pilihanJawaban = tugas.pilihanJawaban.split('/');
     pilihanJawaban.forEach(item => {
@@ -637,7 +648,6 @@ function showTugasDetail(tugas) {
     });
 
     // 2. Mengisi Rincian yang Sudah Ada
-    const rincianTextarea = document.getElementById('modal-rincian');
     rincianTextarea.value = tugas.jenisBuktiDukung || '';
     M.textareaAutoResize(rincianTextarea); // Memicu resize jika ada konten
 
@@ -656,14 +666,13 @@ function showTugasDetail(tugas) {
     M.FormSelect.init(nilaiSelect); 
 
     // Mengatur tombol upload bukti dukung
-    const uploadButton = document.getElementById('btn-upload');
     if (tugas.linkGDrive) {
-        uploadButton.href = tugas.linkGDrive;
-        uploadButton.textContent = 'Buka GDrive';
+        btnUpload.href = tugas.linkGDrive;
+        btnUpload.textContent = 'Buka GDrive';
     } else {
-        uploadButton.href = '#';
-        uploadButton.textContent = 'Tidak ada';
-        uploadButton.onclick = (e) => e.preventDefault();
+        btnUpload.href = '#';
+        btnUpload.textContent = 'Tidak ada';
+        btnUpload.onclick = (e) => e.preventDefault();
     }
 
     // Tampilkan modal
