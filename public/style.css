@@ -1362,6 +1362,11 @@ table tr:hover {
 /* === Gaya Khusus untuk Kartu Tugas Cerdas (Smart Task Cards) === */
 
 /* --- Gaya untuk Kartu Tugas Cerdas (Smart Task Cards) --- */
+#tugas-saya-cards .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .task-card {
     display: flex;
     flex-direction: column;
@@ -1380,29 +1385,23 @@ table tr:hover {
 }
 
 .task-card .card-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    line-height: 1.4;
-    margin-top: 12px; /* Jarak dari badge status */
+    font-size: 1.1rem; /* Sedikit lebih kecil agar tidak terlalu dominan */
+    font-weight: 500; /* Medium weight, lebih mudah dibaca */
+    line-height: 1.5;
+    margin-top: 16px; /* Jarak dari badge status */
+    color: #37474f; /* Warna biru keabu-abuan gelap, lebih lembut dari hitam */
+    flex-grow: 1; /* KUNCI: Memaksa konten ini untuk tumbuh & mendorong action ke bawah */
 }
 
 .task-card .task-code {
-    font-size: 0.85rem;
-    color: #9e9e9e; /* Abu-abu */
-    margin-top: 5px;
+    font-size: 0.8rem; /* Lebih kecil */
+    color: #78909c; /* Warna abu-abu kebiruan yang lebih terang */
+    margin-top: 8px;
+    font-family: 'Courier New', Courier, monospace; /* Font monospace untuk kode */
 }
 
 .task-card .card-action {
-    padding: 8px 16px !important; /* Timpa padding default Materialize */
-    border-top: 1px solid #eee;
-    background-color: #fafafa;
-}
-
-.task-card .card-action a {
-    color: var(--primary-color) !important;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.9rem;
+    padding: 12px 24px !important; /* Padding lebih besar */
 }
 
 /* --- Gaya untuk Badge Status --- */
