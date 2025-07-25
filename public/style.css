@@ -1850,3 +1850,111 @@ table tr:hover {
 .task-card.status-belum-dikerjakan .task-status-badge {
     background-color: #607D8B;
 }
+
+/* === Gaya Modal Detail Tugas (Desain Pohon Baru) === */
+
+/* Nonaktifkan animasi modal agar instan */
+.modal {
+    transition: none !important;
+    animation: none !important;
+}
+
+.modal.open {
+    transform: none !important;
+}
+
+.modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h5 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Hapus background oranye dan border lama */
+.hierarchy-box {
+    background-color: transparent;
+    border: none;
+    padding: 16px 0;
+}
+
+/* Gaya diagram pohon */
+.hierarchy-level {
+    position: relative;
+    padding-left: 25px; /* Ruang untuk garis */
+    margin-bottom: 4px;
+    font-size: 1rem;
+}
+
+/* Garis vertikal putus-putus */
+.hierarchy-level::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    border-left: 1.5px dashed #bdbdbd;
+}
+
+/* Garis horizontal putus-putus */
+.hierarchy-level::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 12px; /* Posisi vertikal di tengah */
+    width: 12px;
+    border-bottom: 1.5px dashed #bdbdbd;
+}
+
+/* Atur garis untuk item terakhir agar tidak terlalu panjang */
+.hierarchy-level:last-child::before {
+    height: 12px;
+}
+
+/* Item aktif (paling bawah) dibuat lebih menonjol */
+.hierarchy-level.active {
+    font-weight: 500;
+    color: #333;
+}
+
+.info-section {
+    margin-top: 16px;
+}
+
+.info-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Kelas untuk menjaga format newline dari spreadsheet */
+.preserve-whitespace {
+    white-space: pre-wrap;
+}
+
+.form-section {
+    margin-top: 24px;
+    padding-top: 16px;
+}
+
+.form-title {
+    font-size: 1.2rem; /* Ukuran judul form dikecilkan */
+    font-weight: 500;
+    margin-bottom: 24px;
+}
+
+.modal-footer {
+    background-color: #f5f5f5;
+}

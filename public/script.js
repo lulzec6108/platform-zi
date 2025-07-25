@@ -68,6 +68,22 @@ document.addEventListener('DOMContentLoaded', function () {
             switchView(viewId);
         });
     });
+
+    // Inisialisasi Sidenav
+    const sidenavs = document.querySelectorAll('.sidenav');
+    M.Sidenav.init(sidenavs);
+
+    // Inisialisasi Modals (DENGAN OPSI BARU UNTUK NONAKTIFKAN ANIMASI)
+    const modals = document.querySelectorAll('.modal');
+    M.Modal.init(modals, {
+        inDuration: 0, // Durasi masuk animasi (0 untuk instan)
+        outDuration: 0, // Durasi keluar animasi (0 untuk instan)
+        startingTop: '4%', // Posisi awal default Materialize
+        endingTop: '10%' // Posisi akhir default Materialize
+    });
+
+    // Tampilkan view default (Dashboard)
+    switchView('dashboard');
 });
 
 // Fungsi untuk beralih antar view (Dashboard, Tugas Saya, dll.)
@@ -645,33 +661,29 @@ async function showTugasDetail(tugas) {
     const modal = document.getElementById('detailModal');
     if (!modal) return;
 
-    // 1. Setup Kotak Hirarki Dinamis
+    // 1. Setup Diagram Pohon Hirarki (TANPA PREFIKS)
     const hierarchyBox = document.getElementById('modal-hierarchy-box');
     hierarchyBox.innerHTML = ''; // Kosongkan dulu
     const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
-    const levelPrefixes = ['I. ', '1. ', 'i. ', 'a. '];
 
     levels.forEach((levelKey, index) => {
         if (tugas[levelKey]) {
             const div = document.createElement('div');
-            div.className = `hierarchy-level level-${index + 1}`;
+            div.className = `hierarchy-level`;
             div.style.paddingLeft = `${10 + index * 20}px`; // Indentasi dinamis
-            div.textContent = `${levelPrefixes[index]}${tugas[levelKey]}`;
+            div.textContent = tugas[levelKey]; // Tampilkan data mentah tanpa prefiks
 
-            if (levelKey === 'tingkatan4') {
-                div.classList.add('active'); // Highlight item terakhir
+            if (index === levels.length - 1) { // Tandai item terakhir sebagai aktif
+                div.classList.add('active');
             }
             hierarchyBox.appendChild(div);
         }
     });
 
-    // 2. Isi Info Detail di bawah kotak
+    // 2. Isi Info Detail (Label sudah diubah di HTML)
     document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || '-'; // Menggunakan panduan sebagai Opsi Jawaban
-    
-    const statusBadge = document.getElementById('modal-status');
-    statusBadge.textContent = tugas.status || 'BELUM DIKERJAKAN';
-    // (Logika untuk mengganti warna badge bisa ditambahkan di sini jika perlu)
+    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || '-'; // Menggunakan panduan untuk Panduan Penilaian
+    document.getElementById('modal-status').textContent = tugas.status || 'BELUM DIKERJAKAN';
 
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
