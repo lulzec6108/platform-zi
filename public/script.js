@@ -571,11 +571,10 @@ async function openTugasModal(taskId) {
             
             if (task.linkGDriveBukti) {
                 linkGDrive.href = task.linkGDriveBukti;
-                linkGDrive.textContent = 'Buka GDrive';
+                linkGDrive.style.display = 'block';
             } else {
                 linkGDrive.href = '#';
-                linkGDrive.textContent = 'Tidak ada';
-                linkGDrive.onclick = (e) => e.preventDefault();
+                linkGDrive.style.display = 'none';
             }
             
             // Tampilkan/sembunyikan section berdasarkan role
@@ -610,34 +609,6 @@ async function openTugasModal(taskId) {
         showError('Gagal memuat detail tugas: ' + (error.message || 'Terjadi kesalahan'));
     } finally {
         showLoading(false);
-    }
-}
-
-// Helper function to add a single rincian field
-function addRincianField(container, value = '') {
-    const inputField = document.createElement('div');
-    inputField.className = 'input-field';
-    // Escape single quotes in the value to prevent breaking the HTML
-    const escapedValue = value.replace(/'/g, '&apos;');
-    inputField.innerHTML = `
-        <input type="text" value='${escapedValue}'>
-        <i class="material-icons remove-field-btn" title="Hapus">remove_circle_outline</i>
-    `;
-    container.appendChild(inputField);
-}
-
-// Helper function to set up the initial rincian fields
-function setupRincianFields(container, rincianText) {
-    container.innerHTML = ''; // Clear existing fields
-    const rincianList = rincianText ? rincianText.split('\n') : [];
-
-    if (rincianList.length > 0 && rincianList[0] !== '') {
-        rincianList.forEach(item => addRincianField(container, item));
-    } else {
-        // Add 3 default empty fields
-        for (let i = 0; i < 3; i++) {
-            addRincianField(container);
-        }
     }
 }
 
@@ -692,22 +663,20 @@ function showTugasDetail(tugas) {
     const btnReferensi = document.getElementById('btn-referensi');
     const btnUpload = document.getElementById('btn-upload');
 
-    if (tugas.linkReferensi && tugas.linkReferensi.startsWith('http')) {
+    if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
         btnReferensi.href = tugas.linkReferensi;
         btnReferensi.style.display = 'block';
     } else {
         btnReferensi.style.display = 'none';
     }
 
-    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.startsWith('http')) {
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
         btnUpload.href = tugas.linkGDriveBukti;
-        btnUpload.style.display = 'block';
+        btnUpload.classList.remove('disabled');
     } else {
-        btnUpload.style.display = 'none';
+        btnUpload.href = '#';
+        btnUpload.classList.add('disabled');
     }
-
-    // Re-initialize form select & text area
-    M.FormSelect.init(nilaiSelect);
 
     // 7. Mengatur tombol simpan
     const simpanButton = document.getElementById('btn-simpan-dukungan');

@@ -49,41 +49,35 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  let requestData;
+  let response;
   try {
-    requestData = JSON.parse(e.postData.contents);
-  } catch (err) {
-    return sendJSON({ success: false, message: 'Gagal mem-parsing data request.' });
-  }
+    // FIX: Ekstrak action dan payload dari body request
+    const request = JSON.parse(e.postData.contents);
+    const action = request.action;
+    const payload = request; // Seluruh body adalah payload
 
-  // Validasi untuk POST: API Key harus ada di body request
-  if (!requestData.apiKey || requestData.apiKey !== SCRIPT_API_KEY) {
-    return sendJSON({ success: false, message: 'Akses Ditolak: API Key tidak valid atau tidak ada.' });
-  }
+    if (!action) {
+      throw new Error("Aksi POST tidak valid.");
+    }
 
-  const action = requestData.action;
-  const payload = requestData.payload;
-  let result;
-
-  try {
     switch (action) {
       case 'login':
-        result = handleLogin(payload);
+        response = handleLogin(payload);
         break;
       case 'saveBuktiDukung':
-        result = handleSaveBuktiDukung(payload);
+        response = handleSaveBuktiDukung(payload);
         break;
       case 'setStatusPenilaian':
-        result = handleSetStatusPenilaian(payload);
+        response = handleSetStatusPenilaian(payload);
         break;
       default:
-        result = { success: false, message: 'Aksi POST tidak valid.' };
+        response = { success: false, message: 'Aksi POST tidak valid.' };
+        break;
     }
-  } catch (err) {
-    Logger.log(`Error in doPost action '${action}': ${err.toString()}`);
-    result = { success: false, message: `Terjadi kesalahan server pada aksi: ${action}` };
+  } catch (error) {
+    response = { success: false, message: 'Gagal memproses permintaan POST: ' + error.message };
   }
-  return sendJSON(result);
+  return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
 
 // --- FUNGSI-FUNGSI LOGIKA BISNIS ANDA ---
