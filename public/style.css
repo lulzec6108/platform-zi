@@ -1625,8 +1625,9 @@ table tr:hover {
     top: 12px;
 }
 .task-breadcrumb div:last-child::before {
-    height: 12px;
+    height: 12px; /* Garis putus-putus tidak sampai bawah untuk item terakhir */
 }
+
 .task-breadcrumb div:first-child::after {
     display: none;
 }
@@ -1830,4 +1831,22 @@ table tr:hover {
 .task-card .btn-detail i {
     margin-right: 8px;
     font-size: 1.2rem;
+}
+
+/* Menyempurnakan desain kartu dengan mempertebal font kode dan menyelaraskan warna badge status dengan warna border kartu untuk tampilan yang lebih modern dan informatif. */
+.task-card .task-code {
+    font-weight: 600;
+}
+
+.task-card.status-selesai .task-status-badge {
+    background-color: #4CAF50;
+}
+.task-card.status-menunggu-verifikasi .task-status-badge {
+    background-color: #FF9800;
+}
+.task-card.status-revisi .task-status-badge {
+    background-color: #f44336;
+}
+.task-card.status-belum-dikerjakan .task-status-badge {
+    background-color: #607D8B;
 }

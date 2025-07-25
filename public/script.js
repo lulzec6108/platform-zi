@@ -765,9 +765,9 @@ async function loadTugasSaya() {
                 const cardHtml = `
                     <div class="col s12 m6 l4">
                         <div class="card task-card hoverable ${colorClass}">
-                            <div class="card-content white-text">
+                            <div class="card-content">
                                 ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
-                                <span class="card-title truncate">${tugas.tingkatan4}</span>
+                                <span class="card-title">${tugas.tingkatan4}</span>
                                 <span class="task-code">Kode: <span>${tugas.kodeHirarki}</span></span>
                             </div>
                             <div class="card-action">
@@ -779,7 +779,14 @@ async function loadTugasSaya() {
                         </div>
                     </div>
                 `;
-                container.innerHTML += cardHtml;
+                const cardElement = document.createElement('div');
+                cardElement.innerHTML = cardHtml.trim();
+                container.appendChild(cardElement.firstChild);
+
+                // Tambahkan event listener ke tombol baru (INI BAGIAN PENTING YANG MEMPERBAIKI TOMBOL)
+                cardElement.querySelector('.btn-detail').addEventListener('click', () => {
+                    showTugasDetail(tugas);
+                });
             });
 
         } else {
