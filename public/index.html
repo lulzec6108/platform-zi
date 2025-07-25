@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Si Paling ZI</title>
+    <title>Si Paling ZI - BPS</title>
     
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css?v=1.0.0">
@@ -17,6 +17,37 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.imgur.com/ivaX19X.png">
 
+    <!-- CSS Kustom untuk Kartu Tugas (Workaround) -->
+    <style>
+      /* Memberi warna latar pada area bawah kartu */
+      .task-card .card-action {
+        background-color: #f8f9fa; /* Warna abu-abu yang sangat lembut */
+        border-top: 1px solid #e9ecef; /* Garis pemisah halus */
+        padding: 16px 24px;
+        text-align: center; /* Pusatkan tombol */
+      }
+
+      /* Mengubah tombol "Detail & Upload" */
+      .task-card .card-action .btn-detail {
+        color: #1565C0 !important; /* Warna biru sesuai tema dashboard */
+        font-weight: 600; /* Teks lebih tebal */
+        text-transform: none; /* Agar tidak kapital semua */
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+      }
+
+      /* Mengubah ikon di dalam tombol */
+      .task-card .card-action .btn-detail i {
+        color: #1565C0 !important; /* Pastikan ikon juga berwarna biru */
+        margin-right: 8px; /* Jarak antara ikon dan teks */
+      }
+
+      /* Menghilangkan efek latar saat hover agar lebih bersih */
+      .task-card .card-action .btn-detail:hover {
+        background-color: transparent !important;
+      }
+    </style>
 </head>
 <body>
     <!-- Loading Overlay -->
