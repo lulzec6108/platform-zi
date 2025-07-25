@@ -1394,10 +1394,11 @@ table tr:hover {
 }
 
 .task-card .task-code {
-    font-size: 0.8rem; /* Lebih kecil */
-    color: #78909c; /* Warna abu-abu kebiruan yang lebih terang */
+    font-size: 0.9rem; /* Lebih kecil */
+    color: #546e7a; /* Warna abu-abu kebiruan yang lebih terang */
     margin-top: 8px;
     font-family: 'Courier New', Courier, monospace; /* Font monospace untuk kode */
+    font-weight: 500; /* FIX: Ditegaskan dari 400 ke 500 */
 }
 
 .task-card .card-action {
@@ -1641,7 +1642,7 @@ table tr:hover {
 .task-code {
     font-family: 'Poppins', sans-serif; /* Diubah ke Poppins */
     font-size: 0.9rem;
-    font-weight: 400; /* FIX: Diubah dari 500 ke 400 (reguler) */
+    font-weight: 500; /* Medium weight, lebih mudah dibaca */
     color: #546e7a; /* Warna teks lebih netral */
     background-color: #eceff1; /* Highlight abu-abu lembut */
     padding: 3px 8px;
