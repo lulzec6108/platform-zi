@@ -1577,3 +1577,99 @@ table tr:hover {
 .task-breadcrumb div:first-child::after {
     content: ''; /* Hilangkan simbol untuk root */
 }
+
+/* === PERBAIKAN: Pohon Hirarki (Sesuai Referensi) === */
+.task-breadcrumb {
+    background-color: #fffaf2; /* Warna semi-oranye yang sangat lembut */
+    border: 1px solid #ffeacc;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-family: 'Poppins', sans-serif; /* Menggunakan Poppins */
+}
+
+.task-breadcrumb div {
+    position: relative;
+    padding-left: 25px; /* Ruang untuk garis */
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.task-breadcrumb div:not(:last-child) {
+    margin-bottom: 8px;
+}
+
+/* Garis vertikal putus-putus */
+.task-breadcrumb div::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    border-left: 1.5px dashed #e0e0e0;
+}
+
+/* Garis horizontal cabang */
+.task-breadcrumb div::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 12px; /* Posisikan di tengah tinggi baris */
+    width: 12px;
+    border-bottom: 1.5px dashed #e0e0e0;
+}
+
+/* Sembunyikan garis untuk elemen pertama (root) dan setelah elemen terakhir */
+.task-breadcrumb div:first-child::before {
+    top: 12px;
+}
+.task-breadcrumb div:last-child::before {
+    height: 12px;
+}
+.task-breadcrumb div:first-child::after {
+    display: none;
+}
+
+/* Indentasi untuk setiap tingkatan */
+.task-breadcrumb .level-2 { margin-left: 20px; }
+.task-breadcrumb .level-3 { margin-left: 40px; }
+.task-breadcrumb .level-4 { margin-left: 60px; font-weight: 500; color: #bf360c; } /* Tingkat 4 lebih menonjol */
+
+/* === PERBAIKAN: Kartu Tugas & Tombol === */
+
+/* Font baru untuk kode tugas */
+.task-code {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    color: #757575;
+    background-color: #eceff1;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Warna-warni lembut untuk kartu tugas */
+.card-color-1 { background-color: #e3f2fd; } /* Biru */
+.card-color-2 { background-color: #e8f5e9; } /* Hijau */
+.card-color-3 { background-color: #fffde7; } /* Kuning */
+.card-color-4 { background-color: #f3e5f5; } /* Ungu */
+.card-color-5 { background-color: #fbe9e7; } /* Oranye */
+
+/* Perbaikan alignment vertikal untuk semua tombol dengan ikon */
+.btn, .btn-flat, .btn-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn .material-icons, .btn-flat .material-icons, .btn-small .material-icons {
+    line-height: inherit; /* Pastikan ikon mengikuti line-height tombol */
+}
+
+/* Layout baru untuk tombol referensi */
+.referensi-container {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Jarak antara label dan tombol */
+    margin-top: 20px;
+    margin-bottom: 10px;
+}

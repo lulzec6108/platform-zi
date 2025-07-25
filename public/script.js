@@ -569,8 +569,8 @@ async function openTugasModal(taskId) {
                 linkReferensi.onclick = (e) => e.preventDefault();
             }
             
-            if (task.linkGDrive) {
-                linkGDrive.href = task.linkGDrive;
+            if (task.linkGDriveBukti) {
+                linkGDrive.href = task.linkGDriveBukti;
                 linkGDrive.textContent = 'Buka GDrive';
             } else {
                 linkGDrive.href = '#';
@@ -643,13 +643,14 @@ function setupRincianFields(container, rincianText) {
 
 // Fungsi untuk membuka detail tugas
 function showTugasDetail(tugas) {
-    // 1. Membuat dan mengisi Pohon Hirarki
+    // 1. Membuat dan mengisi Pohon Hirarki (Sesuai Referensi Baru)
     const breadcrumbContainer = document.getElementById('modal-breadcrumb');
     let breadcrumbHtml = '';
-    if (tugas.tingkatan1) breadcrumbHtml += `<div>${tugas.tingkatan1}</div>`;
-    if (tugas.tingkatan2) breadcrumbHtml += `<div>${tugas.tingkatan2}</div>`;
-    if (tugas.tingkatan3) breadcrumbHtml += `<div>${tugas.tingkatan3}</div>`;
-    breadcrumbContainer.innerHTML = breadcrumbHtml.replace(/└─/g, '<span style="color: #9e9e9e;">└─</span>') || 'Hirarki tidak tersedia.';
+    if (tugas.tingkatan1) breadcrumbHtml += `<div class="level-1">${tugas.tingkatan1}</div>`;
+    if (tugas.tingkatan2) breadcrumbHtml += `<div class="level-2">${tugas.tingkatan2}</div>`;
+    if (tugas.tingkatan3) breadcrumbHtml += `<div class="level-3">${tugas.tingkatan3}</div>`;
+    if (tugas.tingkatan4) breadcrumbHtml += `<div class="level-4">${tugas.tingkatan4}</div>`; // Tingkat 4 ditambahkan
+    breadcrumbContainer.innerHTML = breadcrumbHtml || 'Hirarki tidak tersedia.';
 
     // 2. Mengisi konten utama modal
     document.getElementById('modal-nama-tugas').textContent = tugas.tingkatan4 || '-';
@@ -723,7 +724,8 @@ function showTugasDetail(tugas) {
                 jenisBuktiDukung: rincianText,
             };
 
-            const response = await callApi('updateTugas', dataToUpdate);
+            const response = await callApi('updateTugas', 'POST', dataToUpdate);
+
             if (response.success) {
                 showSuccess('Penilaian berhasil disimpan!');
                 M.Modal.getInstance(document.getElementById('detailModal')).close();
@@ -762,10 +764,11 @@ function showTugasDetail(tugas) {
 
              container.innerHTML = ''; // Kosongkan kontainer
 
-             result.data.forEach(tugas => {
+             result.data.forEach((tugas, index) => {
+                 const colorClass = `card-color-${(index % 5) + 1}`; // Siklus 5 warna
                  const cardHtml = `
                      <div class="col s12 m6 l4">
-                         <div class="card task-card hoverable">
+                         <div class="card task-card hoverable ${colorClass}">
                              <div class="card-content">
                                  ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
                                  <span class="card-title">${tugas.tingkatan4}</span>
