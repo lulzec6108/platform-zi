@@ -336,7 +336,7 @@ async function loadLinkPendukung() {
                             // Kategori Data & Grafik (Oranye & Kuning)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#FFCA28"/></svg>`, // Grafik Naik Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFEE58"/></svg>`, // Database Kuning
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="#FFEE58"/></svg>`, // Database Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FF7043"/></svg>`, // Info Oranye Tua
 
                             // Kategori Web & Jaringan (Hijau & Teal)
@@ -578,7 +578,7 @@ async function openTugasModal(taskId) {
             
             if (task.linkReferensi) {
                 linkReferensi.href = task.linkReferensi;
-                linkReferensi.textContent = 'Buka Referensi';
+                linkReferensi.textContent = 'Lihat Dokumen Referensi';
             } else {
                 linkReferensi.href = '#';
                 linkReferensi.textContent = 'Tidak ada';
@@ -674,33 +674,44 @@ async function showTugasDetail(tugas) {
     const modal = document.getElementById('detailModal');
     if (!modal) return;
 
-    // 1. Setup Diagram Pohon Hirarki (TANPA PREFIKS)
+    // 1. Setup Diagram Pohon Hirarki
     const hierarchyBox = document.getElementById('modal-hierarchy-box');
-    hierarchyBox.innerHTML = ''; // Kosongkan dulu
+    hierarchyBox.innerHTML = '';
     const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
-
     levels.forEach((levelKey, index) => {
         if (tugas[levelKey]) {
             const div = document.createElement('div');
-            div.className = `hierarchy-level`;
-            div.style.paddingLeft = `${10 + index * 20}px`; // Indentasi dinamis
-            div.textContent = tugas[levelKey]; // Tampilkan data mentah tanpa prefiks
-
-            if (index === levels.length - 1) { // Tandai item terakhir sebagai aktif
-                div.classList.add('active');
-            }
+            div.className = 'hierarchy-level';
             hierarchyBox.appendChild(div);
+            // Tambahkan span di dalam div untuk teks agar tidak terpengaruh oleh pseudo-element
+            const textSpan = document.createElement('span');
+            textSpan.textContent = tugas[levelKey];
+            div.appendChild(textSpan);
         }
     });
 
-    // 2. Isi Info Detail (Label sudah diubah di HTML)
+    // 2. Isi Info Detail
     document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduan || 'Panduan tidak tersedia.';
-    document.getElementById('modal-status').textContent = tugas.status || 'BELUM DIKERJAKAN';
+    // PERBAIKAN: Menggunakan 'panduanPenilaian' dari backend
+    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
+
+    // PERBAIKAN: Mengubah status menjadi badge
+    const statusContainer = document.getElementById('modal-status');
+    statusContainer.innerHTML = '';
+    const statusText = tugas.status || 'BELUM DIKERJAKAN';
+    const statusBadge = document.createElement('span');
+    statusBadge.textContent = statusText;
+    statusBadge.className = 'status-badge';
+    if (statusText.toUpperCase().includes('SUDAH')) {
+        statusBadge.classList.add('sudah-dikerjakan');
+    } else {
+        statusBadge.classList.add('belum-dikerjakan');
+    }
+    statusContainer.appendChild(statusBadge);
 
     // Setup Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
-    referensiContainer.innerHTML = ''; // Kosongkan dulu
+    referensiContainer.innerHTML = '';
     if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
         const link = document.createElement('a');
         link.href = tugas.linkReferensi;
@@ -713,8 +724,8 @@ async function showTugasDetail(tugas) {
 
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
-    nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>'; // Reset
-    if (tugas.pilihanJawaban) { // Menggunakan 'pilihanJawaban' dan memisahkan dengan '/'
+    nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>';
+    if (tugas.pilihanJawaban) {
         tugas.pilihanJawaban.split('/').forEach(opsi => {
             const option = document.createElement('option');
             option.value = opsi.trim();
@@ -723,48 +734,50 @@ async function showTugasDetail(tugas) {
         });
     }
     nilaiSelect.value = tugas.nilai || '';
-    M.FormSelect.init(nilaiSelect); // Re-inisialisasi dropdown
+    M.FormSelect.init(nilaiSelect);
 
     // 4. Setup Rincian Bukti Dukung
     const rincianContainer = document.getElementById('rincian-fields-container');
     setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
 
-    // 5. Setup Event Listener (dengan proteksi listener ganda)
+    // 5. PERBAIKAN FINAL: Logika Tombol Footer
     const addRincianBtn = document.getElementById('add-rincian-btn');
     const simpanBtn = document.getElementById('btn-simpan-penilaian');
     const uploadBtn = document.getElementById('btn-upload-folder');
 
-    // Atur ulang tombol Simpan dan Gdrive setiap kali modal dibuka
-    simpanBtn.classList.add('disabled'); // Nonaktifkan tombol simpan secara default
-
+    // Kloning tombol untuk menghapus listener lama
+    const newSimpanBtn = simpanBtn.cloneNode(true);
     const newUploadBtn = uploadBtn.cloneNode(true);
+    const newAddBtn = addRincianBtn.cloneNode(true);
+
+    // Ganti tombol di DOM
+    simpanBtn.parentNode.replaceChild(newSimpanBtn, simpanBtn);
     uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
+    addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
+
+    // Terapkan logika pada tombol baru
+    newSimpanBtn.classList.add('disabled'); // Selalu nonaktifkan di awal
 
     if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
         newUploadBtn.href = tugas.linkGDriveBukti;
         newUploadBtn.classList.remove('disabled');
         newUploadBtn.classList.replace('btn-flat', 'btn');
-
-        // Tambahkan listener untuk mengaktifkan tombol Simpan setelah Gdrive diklik
+        
+        // Listener untuk mengaktifkan tombol simpan
         newUploadBtn.addEventListener('click', () => {
-            simpanBtn.classList.remove('disabled');
-        }, { once: true }); // Opsi {once: true} memastikan listener hanya berjalan sekali
-
+            newSimpanBtn.classList.remove('disabled');
+        }, { once: true });
     } else {
         newUploadBtn.href = '#!';
         newUploadBtn.classList.add('disabled');
         newUploadBtn.classList.replace('btn', 'btn-flat');
     }
 
-    const newAddBtn = addRincianBtn.cloneNode(true);
-    addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
+    // Tambahkan listener lain ke tombol baru
     newAddBtn.addEventListener('click', () => addRincianField(rincianContainer));
-
-    const newSimpanBtn = simpanBtn.cloneNode(true);
-    simpanBtn.parentNode.replaceChild(newSimpanBtn, simpanBtn);
     newSimpanBtn.addEventListener('click', () => savePenilaian(tugas, nilaiSelect, rincianContainer));
 
-    // 7. Buka Modal
+    // 6. Buka Modal
     M.Modal.getInstance(modal).open();
 }
 
@@ -783,7 +796,7 @@ async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
         const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
         if (response.success) {
             showError('Penilaian berhasil disimpan!', 'success');
-            M.Modal.getInstance(modal).close();
+            M.Modal.getInstance(document.getElementById('detailModal')).close();
             loadTugasSaya();
         } else {
             throw new Error(response.message || 'Gagal menyimpan data');
