@@ -765,14 +765,15 @@ async function loadTugasSaya() {
                 const cardHtml = `
                     <div class="col s12 m6 l4">
                         <div class="card task-card hoverable ${colorClass}">
-                            <div class="card-content">
+                            <div class="card-content white-text">
                                 ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
-                                <span class="card-title">${tugas.tingkatan4}</span>
-                                <p class="task-code">Kode: ${tugas.kodeHirarki}</p>
+                                <span class="card-title truncate">${tugas.tingkatan4}</span>
+                                <span class="task-code">Kode: <span>${tugas.kodeHirarki}</span></span>
                             </div>
                             <div class="card-action">
-                                <a href="#detailModal" class="btn-flat waves-effect waves-teal modal-trigger" onclick='showTugasDetail(${JSON.stringify(tugas)})'>
-                                    Detail & Upload
+                                <a href="#!" class="btn-detail waves-effect waves-light">
+                                    <i class="material-icons">assignment</i>
+                                    <span>Detail & Upload</span>
                                 </a>
                             </div>
                         </div>
