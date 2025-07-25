@@ -701,16 +701,16 @@ async function showTugasDetail(tugas) {
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
     nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>'; // Reset
-    if (tugas.opsiJawaban) {
-        tugas.opsiJawaban.split('|').forEach(opsi => {
+    if (tugas.pilihanJawaban) { // Menggunakan 'pilihanJawaban' dan memisahkan dengan '/'
+        tugas.pilihanJawaban.split('/').forEach(opsi => {
             const option = document.createElement('option');
-            option.value = opsi;
-            option.textContent = opsi;
+            option.value = opsi.trim();
+            option.textContent = opsi.trim();
             nilaiSelect.appendChild(option);
         });
     }
     nilaiSelect.value = tugas.nilai || '';
-    M.FormSelect.init(nilaiSelect); // Inisialisasi ulang
+    M.FormSelect.init(nilaiSelect); // Re-inisialisasi dropdown
 
     // 4. Setup Rincian Bukti Dukung
     const rincianContainer = document.getElementById('rincian-fields-container');
@@ -726,46 +726,49 @@ async function showTugasDetail(tugas) {
 
     const newSimpanBtn = simpanBtn.cloneNode(true);
     simpanBtn.parentNode.replaceChild(newSimpanBtn, simpanBtn);
-    newSimpanBtn.addEventListener('click', async () => {
-        showLoading(true);
-        try {
-            const rincianInputs = rincianContainer.querySelectorAll('input');
-            const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
-            const rincianText = rincianValues.join('|');
-            const dataToUpdate = {
-                kodeHirarki: tugas.kodeHirarki,
-                nilai: nilaiSelect.value,
-                jenisBuktiDukung: rincianText,
-            };
-            const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
-            if (response.success) {
-                showError('Penilaian berhasil disimpan!', 'success');
-                M.Modal.getInstance(modal).close();
-                loadTugasSaya();
-            } else {
-                throw new Error(response.message || 'Gagal menyimpan data');
-            }
-        } catch (error) {
-            showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan'));
-        } finally {
-            showLoading(false);
-        }
-    });
+    newSimpanBtn.addEventListener('click', () => savePenilaian(tugas, nilaiSelect, rincianContainer));
 
-    // 6. Setup Tombol Upload Folder
+    // 6. Setup Tombol Upload Folder (MENGGUNAKAN VARIABEL YANG BENAR)
     const uploadBtn = document.getElementById('btn-upload-folder');
-    if (tugas.linkGoogleDrive && tugas.linkGoogleDrive.trim() !== '') {
-        uploadBtn.href = tugas.linkGoogleDrive;
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
+        uploadBtn.href = tugas.linkGDriveBukti;
         uploadBtn.classList.remove('disabled');
-        uploadBtn.classList.replace('btn-flat', 'btn'); // Ubah jadi tombol solid
+        uploadBtn.classList.replace('btn-flat', 'btn');
     } else {
         uploadBtn.href = '#!';
         uploadBtn.classList.add('disabled');
-        uploadBtn.classList.replace('btn', 'btn-flat'); // Kembalikan jika disabled
+        uploadBtn.classList.replace('btn', 'btn-flat');
     }
 
     // 7. Buka Modal
     M.Modal.getInstance(modal).open();
+}
+
+// Fungsi untuk menyimpan data penilaian
+async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
+    showLoading(true);
+    try {
+        const rincianInputs = rincianContainer.querySelectorAll('input');
+        const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
+        const rincianText = rincianValues.join('|');
+        const dataToUpdate = {
+            kodeHirarki: tugas.kodeHirarki,
+            nilai: nilaiSelect.value,
+            jenisBuktiDukung: rincianText,
+        };
+        const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
+        if (response.success) {
+            showError('Penilaian berhasil disimpan!', 'success');
+            M.Modal.getInstance(modal).close();
+            loadTugasSaya();
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan data');
+        }
+    } catch (error) {
+        showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        showLoading(false);
+    }
 }
 
 // Fungsi untuk memuat dan merender data 'Tugas Saya'
