@@ -167,63 +167,65 @@
             <div class="divider"></div>
             
             <div>
-                <p><strong>Nama Tugas:</strong> <span id="modal-nama-tugas">-</span></p>
-                <p><strong>Deskripsi:</strong> <span id="modal-deskripsi">-</span></p>
-                <p><strong>Tanggal Mulai:</strong> <span id="modal-tgl-mulai">-</span></p>
-                <p><strong>Deadline:</strong> <span id="modal-deadline">-</span></p>
+                <p><strong>Detail Hirarki:</strong> <span id="modal-nama-tugas">-</span></p>
+                <p><strong>Opsi Jawaban:</strong></p>
+                <div id="modal-deskripsi" style="padding-left: 15px; margin-top: -10px; margin-bottom: 15px; font-style: italic; color: #546e7a;">-</div>
+
                 <p><strong>Status:</strong> <span id="modal-status">-</span></p>
-            </div>
-            <div>
-                <div class="card">
-                    <div class="card-content">
-                        <span class="card-title">Lengkapi Bukti Dukung</span>
 
-                        <!-- Form untuk melengkapi bukti dukung -->
-                        <div class="row" style="margin-top: 20px;">
-                            <div class="input-field col s12">
-                                <select id="modal-nilai">
-                                    <!-- Opsi akan diisi oleh JavaScript -->
-                                </select>
-                                <label for="modal-nilai">Nilai</label>
+                <!-- Konten Form dipindahkan ke sini -->
+                <div>
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">Lengkapi Bukti Dukung</span>
+
+                            <!-- Form untuk melengkapi bukti dukung -->
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="input-field col s12">
+                                    <select id="modal-nilai">
+                                        <!-- Opsi akan diisi oleh JavaScript -->
+                                    </select>
+                                    <label for="modal-nilai">Nilai</label>
+                                </div>
+                                <div class="input-field col s12">
+                                    <textarea id="modal-rincian" class="materialize-textarea"></textarea>
+                                    <label for="modal-rincian">Rincian Jenis Dokumen Bukti Dukung</label>
+                                </div>
                             </div>
-                            <div class="input-field col s12">
-                                <textarea id="modal-rincian" class="materialize-textarea"></textarea>
-                                <label for="modal-rincian">Rincian Jenis Dokumen Bukti Dukung</label>
-                            </div>
+                            <button id="btn-simpan-dukungan" class="btn green waves-effect waves-light">
+                                <i class="material-icons left">save</i> Simpan Rincian
+                            </button>
+
+                            <div class="divider" style="margin: 20px 0;"></div>
+
+                            <span class="card-title">Upload File</span>
+                            <p>Upload file Anda ke folder Google Drive yang sesuai melalui tombol di bawah ini.</p>
+                            <button id="btn-upload" class="btn blue" style="margin-top: 10px;">
+                                <i class="material-icons left">cloud_upload</i> Buka Folder Upload
+                            </button>
                         </div>
-                        <button id="btn-simpan-dukungan" class="btn green waves-effect waves-light">
-                            <i class="material-icons left">save</i> Simpan Rincian
-                        </button>
-
-                        <div class="divider" style="margin: 20px 0;"></div>
-
-                        <span class="card-title">Upload File</span>
-                        <p>Upload file Anda ke folder Google Drive yang sesuai melalui tombol di bawah ini.</p>
-                        <button id="btn-upload" class="btn blue" style="margin-top: 10px;">
-                            <i class="material-icons left">cloud_upload</i> Buka Folder Upload
-                        </button>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Form Verifikasi (hanya untuk admin) -->
-            <div id="form-verifikasi" style="display: none;">
-                <div class="divider"></div>
-                <h5>Verifikasi Admin</h5>
-                <div>
-                    <div class="input-field">
-                        <input id="catatan-verifikasi" type="text" class="validate">
-                        <label for="catatan-verifikasi">Catatan Verifikasi</label>
+                
+                <!-- Form Verifikasi (hanya untuk admin) -->
+                <div id="form-verifikasi" style="display: none;">
+                    <div class="divider"></div>
+                    <h5>Verifikasi Admin</h5>
+                    <div>
+                        <div class="input-field">
+                            <input id="catatan-verifikasi" type="text" class="validate">
+                            <label for="catatan-verifikasi">Catatan Verifikasi</label>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="input-field">
-                        <select id="status-verifikasi">
-                            <option value="" disabled selected>Pilih Status Verifikasi</option>
-                            <option value="diterima">Diterima</option>
-                            <option value="ditolak">Ditolak</option>
-                        </select>
-                        <label>Status Verifikasi</label>
+                    <div>
+                        <div class="input-field">
+                            <select id="status-verifikasi">
+                                <option value="" disabled selected>Pilih Status Verifikasi</option>
+                                <option value="diterima">Diterima</option>
+                                <option value="ditolak">Ditolak</option>
+                            </select>
+                            <label>Status Verifikasi</label>
+                        </div>
                     </div>
                 </div>
             </div>

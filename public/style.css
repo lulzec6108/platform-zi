@@ -1433,3 +1433,11 @@ table tr:hover {
 .task-breadcrumb {
     background-color: #fffaf0; /* Warna krem lembut */
     border-left: 3px solid #ffab40; /* Aksen oranye */
+
+}
+
+/* === PERBAIKAN: Membuat Modal Dialog Bisa di-scroll === */
+#detailModal .modal-content {
+    max-height: 75vh; /* Batasi tinggi modal, misal 75% dari tinggi viewport */
+    overflow-y: auto; /* Tambahkan scrollbar vertikal jika konten meluap */
+}
