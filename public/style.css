@@ -1973,12 +1973,15 @@ table tr:hover {
     background-color: #4CAF50 !important; /* Warna hijau */
 }
 
-/* Ubah tombol Buka Folder menjadi kuning */
+/* Ubah tombol Buka Folder menjadi kuning dan beri jarak */
+#btn-upload-folder.btn,
 #btn-upload-folder.btn-flat {
     color: #212121;
     background-color: #ffeb3b;
+    margin-right: 8px; /* Jarak antara tombol */
 }
 
+#btn-upload-folder.btn:hover,
 #btn-upload-folder.btn-flat:hover {
     background-color: #fdd835;
 }

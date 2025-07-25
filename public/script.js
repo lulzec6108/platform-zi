@@ -631,17 +631,30 @@ async function openTugasModal(taskId) {
 // === FIX: Helper functions dikembalikan ===
 // Helper untuk menambahkan satu field rincian
 function addRincianField(container, value = '') {
-    const inputField = document.createElement('div');
-    inputField.className = 'input-field';
-    const escapedValue = value.replace(/'/g, "&apos;");
-    inputField.innerHTML = `
-        <input type="text" value='${escapedValue}'>
-        <i class="material-icons remove-field-btn" title="Hapus">remove_circle_outline</i>
-    `;
-    container.appendChild(inputField);
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'validate';
+    input.value = value;
+    input.placeholder = 'Contoh: Laporan Pelaksanaan';
+
+    const removeBtn = document.createElement('a');
+    removeBtn.className = 'btn-floating btn-small waves-effect waves-light red';
+    removeBtn.innerHTML = '<i class="material-icons">remove</i>';
+
+    // PERBAIKAN: Event listener untuk tombol hapus
+    removeBtn.addEventListener('click', () => {
+        inputGroup.remove(); // Hapus seluruh baris input field
+    });
+
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(removeBtn);
+    container.appendChild(inputGroup);
 }
 
-// Helper untuk setup field rincian awal
+// Fungsi untuk setup field rincian awal
 function setupRincianFields(container, rincianText) {
     container.innerHTML = ''; // Selalu kosongkan dulu
     if (rincianText) {
@@ -719,6 +732,29 @@ async function showTugasDetail(tugas) {
     // 5. Setup Event Listener (dengan proteksi listener ganda)
     const addRincianBtn = document.getElementById('add-rincian-btn');
     const simpanBtn = document.getElementById('btn-simpan-penilaian');
+    const uploadBtn = document.getElementById('btn-upload-folder');
+
+    // Atur ulang tombol Simpan dan Gdrive setiap kali modal dibuka
+    simpanBtn.classList.add('disabled'); // Nonaktifkan tombol simpan secara default
+
+    const newUploadBtn = uploadBtn.cloneNode(true);
+    uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
+
+    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
+        newUploadBtn.href = tugas.linkGDriveBukti;
+        newUploadBtn.classList.remove('disabled');
+        newUploadBtn.classList.replace('btn-flat', 'btn');
+
+        // Tambahkan listener untuk mengaktifkan tombol Simpan setelah Gdrive diklik
+        newUploadBtn.addEventListener('click', () => {
+            simpanBtn.classList.remove('disabled');
+        }, { once: true }); // Opsi {once: true} memastikan listener hanya berjalan sekali
+
+    } else {
+        newUploadBtn.href = '#!';
+        newUploadBtn.classList.add('disabled');
+        newUploadBtn.classList.replace('btn', 'btn-flat');
+    }
 
     const newAddBtn = addRincianBtn.cloneNode(true);
     addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
@@ -727,18 +763,6 @@ async function showTugasDetail(tugas) {
     const newSimpanBtn = simpanBtn.cloneNode(true);
     simpanBtn.parentNode.replaceChild(newSimpanBtn, simpanBtn);
     newSimpanBtn.addEventListener('click', () => savePenilaian(tugas, nilaiSelect, rincianContainer));
-
-    // 6. Setup Tombol Upload Folder (MENGGUNAKAN VARIABEL YANG BENAR)
-    const uploadBtn = document.getElementById('btn-upload-folder');
-    if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
-        uploadBtn.href = tugas.linkGDriveBukti;
-        uploadBtn.classList.remove('disabled');
-        uploadBtn.classList.replace('btn-flat', 'btn');
-    } else {
-        uploadBtn.href = '#!';
-        uploadBtn.classList.add('disabled');
-        uploadBtn.classList.replace('btn', 'btn-flat');
-    }
 
     // 7. Buka Modal
     M.Modal.getInstance(modal).open();
