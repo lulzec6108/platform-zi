@@ -244,7 +244,8 @@ function handleGetTugasSaya(payload) {
       map[`${username}-${kodeHirarki}`] = {
         nilai: row[buktiHeaders.indexOf('Nilai')],
         jenisBuktiDukung: row[buktiHeaders.indexOf('Jenis Bukti Dukung')],
-        timestamp: row[buktiHeaders.indexOf('Timestamp')]
+        timestamp: row[buktiHeaders.indexOf('Timestamp')],
+        statusUser: row[buktiHeaders.indexOf('Status User')] || ''
       };
     }
     return map;
@@ -277,6 +278,7 @@ function handleGetTugasSaya(payload) {
         // Gabungkan dengan data dari bukti dukung
         nilai: bukti.nilai || '',
         jenisBuktiDukung: bukti.jenisBuktiDukung || '',
+        statusUser: bukti.statusUser || '', // TAMBAHKAN BARIS INI
         // Tambahkan status pengerjaan
         statusPengerjaan: statusPengerjaan
       });

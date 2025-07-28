@@ -767,6 +767,7 @@ async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
             throw new Error(response.message || 'Gagal menyimpan data ke backend');
         }
     } catch (error) {
+        console.error('Error saving penilaian:', error);
         showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan koneksi'));
     } finally {
         showLoading(false);
@@ -800,11 +801,8 @@ async function loadTugasSaya() {
                     <div class="col s12 m6 l4">
                         <div class="card task-card hoverable ${colorClass}">
                             <div class="card-content">
-                                <div class="task-hierarchy">
-                                    <span>${tugas.tingkatan1} &gt; ${tugas.tingkatan2} &gt; ${tugas.tingkatan3}</span>
-                                </div>
                                 <div class="card-status">
-                                    ${getStatusBadge(tugas)} <!-- FIX 2: Kirim seluruh objek tugas -->
+                                    ${getStatusBadge(tugas)}
                                 </div>
                                 <span class="card-title">${tugas.tingkatan4}</span>
                                 <span class="task-code">Kode: <span>${tugas.kodeHirarki}</span></span>
