@@ -56,6 +56,27 @@
         background-color: #fb8c00; /* Oranye */
         color: #fff;
       }
+
+      /* CSS Kustom Tambahan */
+      .hierarchy-level span {
+        background-color: transparent !important;
+        padding: 0 !important;
+        color: inherit !important;
+      }
+      .status-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Jarak antara label dan badge */
+      }
+      .task-card .card-content {
+        position: relative;
+        padding-top: 40px; /* Beri ruang untuk badge */
+      }
+      .task-card .card-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
     </style>
 </head>
 <body>
@@ -247,17 +268,13 @@
 
                 <!-- Info Tambahan -->
                 <div class="info-section">
-                    <p class="info-label">Aspek yang dinilai:</p>
-                    <p id="modal-detail-hirarki" class="info-value"></p>
-
-                    <p class="info-label">Panduan Pemberian Nilai:</p>
-                    <p id="modal-opsi-jawaban" class="info-value preserve-whitespace"></p>
-
-                    <p class="info-label">Referensi Bukti Dukung ZI:</p>
-                    <div id="modal-referensi-link" class="info-value"></div>
-
-                    <p class="info-label">Status:</p>
-                    <p id="modal-status" class="info-value"></p>
+                    <div class="status-wrapper"> <!-- Wrapper untuk meratakan status -->
+                        <p><strong>Status:</strong></p> 
+                        <div id="modal-status"></div>
+                    </div>
+                    <p><strong>Aspek yang dinilai:</strong> <span id="modal-detail-hirarki">-</span></p>
+                    <p><strong>Panduan Pemberian Nilai:</strong> <span id="modal-opsi-jawaban">-</span></p>
+                    <p><strong>Referensi Bukti Dukung ZI:</strong> <span id="modal-referensi-link">-</span></p>
                 </div>
 
                 <!-- Garis Pemisah -->
