@@ -691,10 +691,116 @@ async function openTugasModal(taskId) {
     }
 }
 
-// Fungsi untuk menampilkan data tugas yang sudah diambil
-function displayTugasSaya(data) {
-    // Fungsi ini akan diimplementasikan nanti. Placeholder ini aman.
+// --- FUNGSI UNTUK MENU TUGAS SAYA (VERSI STABIL) ---
+
+// Fungsi utama untuk memuat dan menampilkan data 'Tugas Saya'
+async function loadTugasSaya() {
+    const view = document.getElementById('tugas-saya-view');
+    const contentContainer = document.getElementById('tugas-saya-content');
+    const loader = view.querySelector('.loader-container');
+    const noDataMessage = view.querySelector('.no-data-message');
+
+    // Tampilkan loader, sembunyikan konten dan pesan 'tidak ada data'
+    loader.style.display = 'block';
+    contentContainer.style.display = 'none';
+    noDataMessage.style.display = 'none';
+    contentContainer.innerHTML = ''; // Kosongkan konten sebelum memuat
+
+    try {
+        const result = await callApi('getTugasSaya');
+        if (result.success && result.data.length > 0) {
+            displayTugasSaya(result.data); // Panggil fungsi untuk render UI
+            contentContainer.style.display = 'block';
+        } else {
+            noDataMessage.style.display = 'block'; // Tampilkan pesan jika tidak ada data
+        }
+    } catch (error) {
+        console.error('Error loading tugas saya:', error);
+        M.toast({ html: 'Gagal memuat data Tugas Saya.' });
+        noDataMessage.style.display = 'block';
+        noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
+    } finally {
+        loader.style.display = 'none'; // Sembunyikan loader setelah selesai
+    }
 }
+
+// Fungsi untuk merender data tugas ke dalam UI collapsible
+function displayTugasSaya(data) {
+    const contentContainer = document.getElementById('tugas-saya-content');
+    contentContainer.innerHTML = ''; // Pastikan bersih
+
+    // 1. Kelompokkan tugas berdasarkan tingkatan 1 (area)
+    const groupedTasks = data.reduce((acc, tugas) => {
+        const groupName = tugas.tingkatan1 || 'Lainnya';
+        if (!acc[groupName]) {
+            acc[groupName] = [];
+        }
+        acc[groupName].push(tugas);
+        return acc;
+    }, {});
+
+    // 2. Buat elemen collapsible
+    const collapsibleUl = document.createElement('ul');
+    collapsibleUl.className = 'collapsible expandable'; // expandable agar bisa buka banyak
+
+    // 3. Isi collapsible dengan data yang sudah dikelompokkan
+    Object.keys(groupedTasks).forEach((groupName, index) => {
+        const tasksInGroup = groupedTasks[groupName];
+        const li = document.createElement('li');
+        // Buka item pertama secara default
+        if (index === 0) {
+            li.className = 'active';
+        }
+
+        const header = document.createElement('div');
+        header.className = 'collapsible-header';
+        header.innerHTML = `<i class="material-icons">folder</i>${groupName}`;
+
+        const body = document.createElement('div');
+        body.className = 'collapsible-body';
+
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'task-cards-container';
+
+        tasksInGroup.forEach(tugas => {
+            const card = document.createElement('div');
+            card.className = 'task-card card';
+
+            // Ambil status badge dari fungsi yang sudah ada
+            const statusBadgeHtml = getStatusBadge(tugas);
+
+            card.innerHTML = `
+                <div class="card-content">
+                    <div class="card-status">${statusBadgeHtml}</div>
+                    <span class="card-title">${tugas.tingkatan4 || 'Tugas Tanpa Nama'}</span>
+                    <p><strong>Hirarki:</strong> ${tugas.tingkatan2 || ''} > ${tugas.tingkatan3 || ''}</p>
+                </div>
+                <div class="card-action">
+                    <a href="#!" class="btn-flat btn-detail waves-effect">
+                        <i class="material-icons">open_in_new</i>
+                        <span>Detail & Upload</span>
+                    </a>
+                </div>
+            `;
+            card.querySelector('.btn-detail').addEventListener('click', (e) => {
+                e.preventDefault();
+                showTugasDetail(tugas);
+            });
+            cardContainer.appendChild(card);
+        });
+
+        body.appendChild(cardContainer);
+        li.appendChild(header);
+        li.appendChild(body);
+        collapsibleUl.appendChild(li);
+    });
+
+    contentContainer.appendChild(collapsibleUl);
+
+    // Inisialisasi ulang komponen collapsible Materialize
+    M.Collapsible.init(collapsibleUl, { accordion: false });
+}
+
 
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
