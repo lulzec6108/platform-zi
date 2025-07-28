@@ -199,6 +199,27 @@
                     <!-- Konten Dashboard akan dimuat di sini -->
                 </div>
 
+                <div id="tugas-saya-view" class="view" style="display: none;">
+                    <div class="container">
+                        <h4 class="view-title">Tugas Saya</h4>
+                        <div class="loader-container center-align" style="display: none;">
+                            <div class="preloader-wrapper active">
+                                <div class="spinner-layer spinner-blue-only">
+                                    <div class="circle-clipper left"><div class="circle"></div></div>
+                                    <div class="gap-patch"><div class="circle"></div></div>
+                                    <div class="circle-clipper right"><div class="circle"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tugas-saya-content">
+                            <!-- Konten (collapsible) akan di-render di sini oleh JavaScript -->
+                        </div>
+                        <div class="no-data-message center-align" style="display: none;">
+                            <p>Tidak ada tugas yang tersedia untuk Anda saat ini.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="kinerja-tim-view" class="view" style="display: none;">
                     <div class="container">
                         <h3 class="header">Kinerja Tim</h3>
@@ -238,24 +259,6 @@
                             </table>
                             <p id="kinerja-tim-no-data" class="center-align" style="display: none; padding: 20px; color: #757575;">Belum ada data submisi untuk ditampilkan.</p>
                         </div>
-                    </div>
-                </div>
-
-                <div id="tugas-saya-view" class="view" style="display: none;">
-                    <h4 class="page-title">Tugas Saya</h4>
-                    <div class="divider"></div>
-                    <div class="loader-container center-align">
-                        <div class="preloader-wrapper big active">
-                            <div class="spinner-layer spinner-blue-only">
-                                <div class="circle-clipper left"><div class="circle"></div></div>
-                                <div class="gap-patch"><div class="circle"></div></div>
-                                <div class="circle-clipper right"><div class="circle"></div></div>
-                            </div>
-                        </div>
-                        <p>Memuat Tugas Anda...</p>
-                    </div>
-                    <div id="tugas-saya-container" class="row">
-                        <!-- Konten kartu tugas akan dimuat di sini oleh JavaScript -->
                     </div>
                 </div>
 
