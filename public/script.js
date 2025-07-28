@@ -667,7 +667,7 @@ async function showTugasDetail(tugas) {
     document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
 
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+    statusContainer.innerHTML = getStatusBadge(tugas); // PERBAIKAN: Kirim seluruh objek 'tugas'
 
     // Setup Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
@@ -793,12 +793,19 @@ async function loadTugasSaya() {
             container.innerHTML = ''; // Kosongkan kontainer
 
             result.data.forEach((tugas, index) => {
+                if (!tugas || !tugas.kodeHirarki) return; // FIX 1: Lewati data yang tidak valid
+
                 const colorClass = `card-color-${(index % 5) + 1}`; // Siklus 5 warna
                 const cardHtml = `
                     <div class="col s12 m6 l4">
                         <div class="card task-card hoverable ${colorClass}">
                             <div class="card-content">
-                                ${getStatusBadge(tugas.statusAdmin, tugas.statusKetua)}
+                                <div class="task-hierarchy">
+                                    <span>${tugas.tingkatan1} &gt; ${tugas.tingkatan2} &gt; ${tugas.tingkatan3}</span>
+                                </div>
+                                <div class="card-status">
+                                    ${getStatusBadge(tugas)} <!-- FIX 2: Kirim seluruh objek tugas -->
+                                </div>
                                 <span class="card-title">${tugas.tingkatan4}</span>
                                 <span class="task-code">Kode: <span>${tugas.kodeHirarki}</span></span>
                             </div>
@@ -978,7 +985,7 @@ async function showTugasDetail(tugas) {
     document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
 
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
+    statusContainer.innerHTML = getStatusBadge(tugas); // PERBAIKAN: Kirim seluruh objek 'tugas'
 
     // Setup Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
