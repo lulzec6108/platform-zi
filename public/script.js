@@ -834,12 +834,16 @@ async function loadTugasSaya() {
                 cardElement.innerHTML = cardHtml.trim();
                 const newCard = cardElement.firstChild;
 
-                // 1. CARI TOMBOL DAN TAMBAHKAN LISTENER PADA KARTU YANG BARU DIBUAT
-                newCard.querySelector('.btn-detail').addEventListener('click', () => {
-                    showTugasDetail(tugas);
+                // --- PERBAIKAN --- 
+                const detailButton = newCard.querySelector('.btn-detail');
+                // Simpan data tugas langsung di elemen tombol
+                detailButton.tugasData = tugas; 
+                
+                detailButton.addEventListener('click', function() {
+                    // Ambil data dari tombol yang diklik
+                    showTugasDetail(this.tugasData); 
                 });
 
-                // 2. SETELAH LISTENER TERPASANG, BARU TAMBAHKAN KARTU KE HALAMAN
                 container.appendChild(newCard);
             });
 
