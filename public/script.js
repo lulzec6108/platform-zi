@@ -1,5 +1,13 @@
 // script.js (REVISED & SECURED)
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi semua komponen Materialize secara otomatis.
+    // Ini akan mengaktifkan sidenav, modal, dropdown, dll.
+    M.AutoInit();
+
+    // Anda bisa menambahkan inisialisasi spesifik lain di sini jika perlu
+});
+
 // Konfigurasi
 const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify.toml
 const API_TIMEOUT = 20000; // 20 detik timeout
