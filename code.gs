@@ -54,15 +54,15 @@ function doGet(e) {
 function doPost(e) {
   let response;
   try {
-    // FIX: Ekstrak action dan payload dari body request
     const request = JSON.parse(e.postData.contents);
     const action = request.action;
-    const payload = request; // Seluruh body adalah payload
+    const payload = request; // Seluruh body adalah payload, termasuk username, password, dll.
 
     if (!action) {
-      throw new Error("Aksi POST tidak valid.");
+      throw new Error("Aksi POST tidak valid atau tidak ditemukan di body.");
     }
 
+    // Routing berdasarkan 'action'
     switch (action) {
       case 'login':
         response = handleLogin(payload);
@@ -74,11 +74,12 @@ function doPost(e) {
         response = handleSetStatusPenilaian(payload);
         break;
       default:
-        response = { success: false, message: 'Aksi POST tidak valid.' };
+        response = { success: false, message: `Aksi POST '${action}' tidak dikenali.` };
         break;
     }
   } catch (error) {
-    response = { success: false, message: 'Gagal memproses permintaan POST: ' + error.message };
+    Logger.log(`Error in doPost: ${error.message}`);
+    response = { success: false, message: `Gagal memproses permintaan POST: ${error.message}` };
   }
   return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -336,28 +337,39 @@ function handleSaveBuktiDukung(payload) {
   const data = sheet.getDataRange().getValues();
   const headers = data.shift(); // Ambil header
 
+  // Dapatkan semua indeks kolom yang relevan
   const usernameIndex = headers.indexOf('Username');
   const kodeIndex = headers.indexOf('Kode Hirarki');
   const nilaiIndex = headers.indexOf('Nilai');
   const jenisIndex = headers.indexOf('Jenis Bukti Dukung');
   const timestampIndex = headers.indexOf('Timestamp');
-  const statusUserIndex = headers.indexOf('Status User'); // <-- BARU: Dapatkan indeks kolom status
+  const statusUserIndex = headers.indexOf('Status User');
+  const statusKetuaPilarIndex = headers.indexOf('Status Ketua Pilar');
 
-  // Dapatkan username dari payload (dikirim otomatis oleh callApi)
+  // Dapatkan data dari payload frontend
   const username = payload.username;
+  const submissionType = payload.submissionType; // Tipe: 'draft' atau 'final'
+
   if (!username) {
-      return { success: false, message: 'Sesi pengguna tidak ditemukan. Silakan login ulang.' };
+    return { success: false, message: 'Sesi pengguna tidak ditemukan. Silakan login ulang.' };
   }
 
-  // Cari baris yang cocok
+  // Cari baris yang sudah ada untuk pengguna dan tugas ini
   for (let i = 0; i < data.length; i++) {
     if (data[i][usernameIndex] == username && data[i][kodeIndex] == payload.kodeHirarki) {
-      sheet.getRange(i + 2, nilaiIndex + 1).setValue(payload.nilai);
-      sheet.getRange(i + 2, jenisIndex + 1).setValue(payload.jenisBuktiDukung);
-      sheet.getRange(i + 2, timestampIndex + 1).setValue(new Date());
-      if (statusUserIndex !== -1) {
-        sheet.getRange(i + 2, statusUserIndex + 1).setValue("Tersimpan"); // <-- BARU: Set status
+      const rowIndex = i + 2; // +2 karena header sudah dihapus dan sheet 1-based
+      // Selalu perbarui nilai, jenis, dan timestamp
+      sheet.getRange(rowIndex, nilaiIndex + 1).setValue(payload.nilai);
+      sheet.getRange(rowIndex, jenisIndex + 1).setValue(payload.jenisBuktiDukung);
+      sheet.getRange(rowIndex, timestampIndex + 1).setValue(new Date());
+
+      // Perbarui status berdasarkan tipe submisi
+      if (submissionType === 'draft') {
+        sheet.getRange(rowIndex, statusUserIndex + 1).setValue("Sedang Dikerjakan");
+      } else if (submissionType === 'final') {
+        sheet.getRange(rowIndex, statusKetuaPilarIndex + 1).setValue("diterima");
       }
+      
       return { success: true, message: "Bukti dukung berhasil diperbarui." };
     }
   }
@@ -369,8 +381,12 @@ function handleSaveBuktiDukung(payload) {
   newRow[nilaiIndex] = payload.nilai;
   newRow[jenisIndex] = payload.jenisBuktiDukung;
   newRow[timestampIndex] = new Date();
-  if (statusUserIndex !== -1) {
-    newRow[statusUserIndex] = "Tersimpan"; // <-- BARU: Set status
+
+  // Set status berdasarkan tipe submisi
+  if (submissionType === 'draft') {
+    newRow[statusUserIndex] = "Sedang Dikerjakan";
+  } else if (submissionType === 'final') {
+    newRow[statusKetuaPilarIndex] = "diterima";
   }
   
   sheet.appendRow(newRow);
