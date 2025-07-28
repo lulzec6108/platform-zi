@@ -925,8 +925,3 @@ async function loadKinerjaTim() {
         loader.style.display = 'none';
     }
 }
-
-async function loadDashboard() {
-    const loader = document.getElementById('dashboard-loader');
-    const content = document.getElementById('dashboard-content');
-{{ ... }}
