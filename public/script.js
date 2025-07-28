@@ -641,6 +641,11 @@ async function openTugasModal(taskId) {
     }
 }
 
+// Fungsi untuk menampilkan data tugas yang sudah diambil
+function displayTugasSaya(data) {
+    // Fungsi ini akan diimplementasikan nanti. Placeholder ini aman.
+}
+
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
     const modal = document.getElementById('detailModal');
@@ -777,7 +782,7 @@ async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
     }
 }
 
-// Fungsi untuk memuat dan merender data 'Tugas Saya'
+// Fungsi untuk memuat data 'Tugas Saya'
 async function loadTugasSaya() {
     const container = document.getElementById('tugas-saya-container');
     const loader = document.querySelector('#tugas-saya-view .loader-container');
@@ -1091,9 +1096,4 @@ async function savePenilaian(tugas, submissionType) {
     } finally {
         showLoading(false);
     }
-}
-
-// Fungsi untuk menampilkan data tugas yang sudah diambil
-function displayTugasSaya(data) {
-{{ ... }}
 }
