@@ -266,15 +266,23 @@
                 <!-- Bagian Hirarki Tugas -->
                 <div id="modal-hierarchy-box" class="hierarchy-box"></div>
 
-                <!-- Info Tambahan -->
-                <div class="info-section">
-                    <div class="status-wrapper"> <!-- Wrapper untuk meratakan status -->
-                        <p><strong>Status:</strong></p> 
+                <!-- Info Detail Tugas -->
+                <div class="detail-section">
+                    <!-- Status (inline) -->
+                    <div class="status-wrapper">
+                        <p><strong>Status:</strong></p>
                         <div id="modal-status"></div>
                     </div>
-                    <p><strong>Aspek yang dinilai:</strong> <span id="modal-detail-hirarki">-</span></p>
-                    <p><strong>Panduan Pemberian Nilai:</strong> <span id="modal-opsi-jawaban">-</span></p>
-                    <p><strong>Referensi Bukti Dukung ZI:</strong> <span id="modal-referensi-link">-</span></p>
+
+                    <!-- Item lain (block) -->
+                    <p><strong>Detail Hirarki:</strong></p>
+                    <p id="modal-detail-hirarki">-</p>
+
+                    <p><strong>Panduan Penilaian:</strong></p>
+                    <p id="modal-opsi-jawaban" class="preserve-whitespace">-</p>
+
+                    <p><strong>Dokumen Referensi:</strong></p>
+                    <div id="modal-referensi-link">-</div>
                 </div>
 
                 <!-- Garis Pemisah -->
