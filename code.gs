@@ -337,9 +337,8 @@ function handleLogin(payload) {
 function handleSaveBuktiDukung(payload) {
   const sheet = ss.getSheetByName("BuktiDukung");
   const data = sheet.getDataRange().getValues();
-  const headers = data.shift(); // Ambil header
+  const headers = data.shift();
 
-  // Dapatkan semua indeks kolom yang relevan
   const usernameIndex = headers.indexOf('Username');
   const kodeIndex = headers.indexOf('Kode Hirarki');
   const nilaiIndex = headers.indexOf('Nilai');
@@ -347,36 +346,48 @@ function handleSaveBuktiDukung(payload) {
   const timestampIndex = headers.indexOf('Timestamp');
   const statusUserIndex = headers.indexOf('Status User');
   const statusKetuaPilarIndex = headers.indexOf('Status Ketua Pilar');
+  const catatanKetuaIndex = headers.indexOf('Catatan Ketua Pilar');
+  const statusAdminIndex = headers.indexOf('Status Admin');
+  const catatanAdminIndex = headers.indexOf('Catatan Admin');
 
-  // Dapatkan data dari payload frontend
   const username = payload.username;
-  const submissionType = payload.submissionType; // Tipe: 'draft' atau 'final'
+  const submissionType = payload.submissionType;
 
   if (!username) {
     return { success: false, message: 'Sesi pengguna tidak ditemukan. Silakan login ulang.' };
   }
 
-  // Cari baris yang sudah ada untuk pengguna dan tugas ini
   for (let i = 0; i < data.length; i++) {
     if (data[i][usernameIndex] == username && data[i][kodeIndex] == payload.kodeHirarki) {
-      const rowIndex = i + 2; // +2 karena header sudah dihapus dan sheet 1-based
-      // Selalu perbarui nilai, jenis, dan timestamp
+      const rowIndex = i + 2;
+      const statusKetua = data[i][statusKetuaPilarIndex] || '';
+      const statusAdmin = data[i][statusAdminIndex] || '';
+
+      const isLocked = (statusKetua.includes('Approved') || statusKetua.includes('diterima') || statusKetua.includes('Menunggu Verifikasi')) || statusAdmin.includes('Approved');
+      const isRejected = statusKetua.includes('Rejected') || statusAdmin.includes('Rejected');
+
+      if (isLocked && !isRejected) {
+        return { success: false, message: 'Tugas sudah dikunci dan tidak dapat diubah. Hubungi Ketua Pilar atau Admin jika perlu revisi.' };
+      }
+
       sheet.getRange(rowIndex, nilaiIndex + 1).setValue(payload.nilai);
       sheet.getRange(rowIndex, jenisIndex + 1).setValue(payload.jenisBuktiDukung);
       sheet.getRange(rowIndex, timestampIndex + 1).setValue(new Date());
 
-      // Perbarui status berdasarkan tipe submisi
       if (submissionType === 'draft') {
-        sheet.getRange(rowIndex, statusUserIndex + 1).setValue("Sedang Dikerjakan");
+        sheet.getRange(rowIndex, statusUserIndex + 1).setValue("Sedang Mengerjakan");
       } else if (submissionType === 'final') {
-        sheet.getRange(rowIndex, statusKetuaPilarIndex + 1).setValue("diterima");
+        sheet.getRange(rowIndex, statusUserIndex + 1).setValue("Terkirim");
+        sheet.getRange(rowIndex, statusKetuaPilarIndex + 1).setValue("Menunggu Verifikasi");
+        sheet.getRange(rowIndex, catatanKetuaIndex + 1).setValue("");
+        sheet.getRange(rowIndex, statusAdminIndex + 1).setValue("");
+        sheet.getRange(rowIndex, catatanAdminIndex + 1).setValue("");
       }
       
       return { success: true, message: "Bukti dukung berhasil diperbarui." };
     }
   }
 
-  // Jika tidak ditemukan, tambahkan baris baru
   const newRow = new Array(headers.length).fill('');
   newRow[usernameIndex] = username;
   newRow[kodeIndex] = payload.kodeHirarki;
@@ -384,11 +395,11 @@ function handleSaveBuktiDukung(payload) {
   newRow[jenisIndex] = payload.jenisBuktiDukung;
   newRow[timestampIndex] = new Date();
 
-  // Set status berdasarkan tipe submisi
   if (submissionType === 'draft') {
-    newRow[statusUserIndex] = "Sedang Dikerjakan";
+    newRow[statusUserIndex] = "Sedang Mengerjakan";
   } else if (submissionType === 'final') {
-    newRow[statusKetuaPilarIndex] = "diterima";
+    newRow[statusUserIndex] = "Terkirim";
+    newRow[statusKetuaPilarIndex] = "Menunggu Verifikasi";
   }
   
   sheet.appendRow(newRow);

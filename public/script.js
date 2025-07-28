@@ -84,6 +84,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Tampilkan view default (Dashboard)
     switchView('dashboard');
+
+    // Setup event listener untuk tombol simpan di modal verifikasi
+    const saveVerifikasiBtn = document.getElementById('save-verifikasi-btn');
+    saveVerifikasiBtn.addEventListener('click', async () => {
+        const statusSelect = document.getElementById('verifikasi-status-select');
+        const catatanText = document.getElementById('verifikasi-catatan');
+        const newStatus = statusSelect.value;
+        const catatan = catatanText.value;
+
+        if (!newStatus) {
+            M.toast({ html: 'Silakan pilih status terlebih dahulu.' });
+            return;
+        }
+
+        if (newStatus === 'Rejected' && !catatan.trim()) {
+            M.toast({ html: 'Catatan wajib diisi jika status ditolak (Rejected).' });
+            return;
+        }
+
+        saveVerifikasiBtn.disabled = true;
+        saveVerifikasiBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...`;
+
+        const payload = {
+            role: JSON.parse(sessionStorage.getItem('user')).role, // Perbaikan: Mengambil role dinamis dari state
+            targetUsername: saveVerifikasiBtn.dataset.targetUsername,
+            kodeHirarki: saveVerifikasiBtn.dataset.kodeHirarki,
+            status: newStatus,
+            catatan: catatan
+        };
+
+        try {
+            const result = await callApi('handleSetStatusPenilaian', payload);
+            if (result.success) {
+                M.toast({ html: 'Status berhasil diperbarui!' });
+                const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
+                modalInstance.close();
+                switchView('kinerja-tim'); // Refresh tampilan
+            } else {
+                throw new Error(result.message || 'Gagal memperbarui status.');
+            }
+        } catch (error) {
+            M.toast({ html: `Error: ${error.message}` });
+        } finally {
+            saveVerifikasiBtn.disabled = false;
+            saveVerifikasiBtn.innerHTML = 'Simpan Status';
+            catatanText.value = '';
+            statusSelect.value = '';
+            M.FormSelect.init(statusSelect); // Re-init select
+        }
+    });
 });
 
 // Fungsi untuk beralih antar view (Dashboard, Tugas Saya, dll.)
@@ -915,7 +965,7 @@ async function loadKinerjaTim() {
                     <td>${createStatusBadge(item.statusKetua)}</td>
                     <td>${createStatusBadge(item.statusAdmin)}</td>
                     <td>
-                        <a href="#!" class="btn-small waves-effect waves-light blue">Detail</a>
+                        <button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)})'>Detail</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -1096,4 +1146,17 @@ async function savePenilaian(tugas, submissionType) {
     } finally {
         showLoading(false);
     }
+}
+
+function showVerifikasiDetail(item) {
+    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota;
+    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas;
+    document.getElementById('verifikasi-waktu-submisi').textContent = new Date(item.timestamp).toLocaleString('id-ID');
+
+    const saveBtn = document.getElementById('save-verifikasi-btn');
+    saveBtn.dataset.targetUsername = item.targetUsername;
+    saveBtn.dataset.kodeHirarki = item.kodeHirarki;
+
+    const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
+    modalInstance.open();
 }

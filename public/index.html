@@ -331,6 +331,34 @@
             </div>
         </div>
 
+        <!-- Modal Verifikasi (untuk Ketua & Admin) -->
+        <div id="verifikasiModal" class="modal">
+            <div class="modal-content">
+                <h4 id="verifikasi-modal-title">Verifikasi Bukti Dukung</h4>
+                <div class="divider"></div>
+                <p><strong>Nama Anggota:</strong> <span id="verifikasi-nama-anggota"></span></p>
+                <p><strong>Nama Tugas:</strong> <span id="verifikasi-nama-tugas"></span></p>
+                <p><strong>Waktu Submisi:</strong> <span id="verifikasi-waktu-submisi"></span></p>
+                <div class="divider"></div>
+                <div class="input-field col s12">
+                    <select id="verifikasi-status-select">
+                        <option value="" disabled selected>Pilih Status</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <label>Set Status</label>
+                </div>
+                <div class="input-field col s12">
+                    <textarea id="verifikasi-catatan" class="materialize-textarea"></textarea>
+                    <label for="verifikasi-catatan">Catatan (Wajib diisi jika 'Rejected')</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-green btn-flat">Batal</a>
+                <button id="save-verifikasi-btn" class="btn waves-effect waves-light blue">Simpan Status</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- FAB (Floating Action Button) -->
