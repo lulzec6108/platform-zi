@@ -1,13 +1,5 @@
 // script.js (REVISED & SECURED)
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi semua komponen Materialize secara otomatis.
-    // Ini akan mengaktifkan sidenav, modal, dropdown, dll.
-    M.AutoInit();
-
-    // Anda bisa menambahkan inisialisasi spesifik lain di sini jika perlu
-});
-
 // Konfigurasi
 const API_BASE_URL = '/api'; // Menggunakan proxy Netlify yang diatur di netlify.toml
 const API_TIMEOUT = 20000; // 20 detik timeout
@@ -929,5 +921,44 @@ async function loadKinerjaTim() {
         noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
     } finally {
         loader.style.display = 'none';
+    }
+}
+
+// Helper untuk menambahkan satu field rincian
+function addRincianField(container, value = '') {
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'validate';
+    input.value = value;
+    input.placeholder = 'Contoh: Laporan Pelaksanaan';
+
+    const removeBtn = document.createElement('a');
+    removeBtn.className = 'btn-floating btn-small waves-effect waves-light red';
+    removeBtn.innerHTML = '<i class="material-icons">remove</i>';
+
+    removeBtn.addEventListener('click', () => {
+        inputGroup.remove();
+    });
+
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(removeBtn);
+    container.appendChild(inputGroup);
+}
+
+// Fungsi untuk setup field rincian awal
+function setupRincianFields(container, rincianText) {
+    container.innerHTML = ''; // Selalu kosongkan dulu
+    if (rincianText) {
+        const rincianArray = rincianText.split('|').filter(item => item.trim() !== '');
+        if (rincianArray.length > 0) {
+            rincianArray.forEach(value => addRincianField(container, value));
+        } else {
+            addRincianField(container); // Jika kosong, tambahkan satu field default
+        }
+    } else {
+        addRincianField(container); // Jika tidak ada data, tambahkan satu field default
     }
 }
