@@ -176,9 +176,45 @@
                 </div>
 
                 <div id="kinerja-tim-view" class="view" style="display: none;">
-                    <h4 class="page-title">Kinerja Tim</h4>
-                    <div class="divider"></div>
-                    <!-- Konten untuk Kinerja Tim akan ditambahkan di sini -->
+                    <div class="container">
+                        <h3 class="header">Kinerja Tim</h3>
+                        <p class="sub-header">Tinjau dan kelola submisi bukti dukung dari tim Anda.</p>
+                        
+                        <div id="kinerja-tim-loader" class="center-align" style="display: none; padding: 40px;">
+                            <div class="preloader-wrapper big active">
+                                <div class="spinner-layer spinner-blue-only">
+                                    <div class="circle-clipper left">
+                                        <div class="circle"></div>
+                                    </div>
+                                    <div class="gap-patch">
+                                        <div class="circle"></div>
+                                    </div>
+                                    <div class="circle-clipper right">
+                                        <div class="circle"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="kinerja-tim-content">
+                            <table class="striped responsive-table highlight">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Anggota</th>
+                                        <th>Nama Tugas</th>
+                                        <th>Waktu Submisi</th>
+                                        <th>Status Ketua</th>
+                                        <th>Status Admin</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kinerja-tim-table-body">
+                                    <!-- Baris akan diisi oleh JavaScript -->
+                                </tbody>
+                            </table>
+                            <p id="kinerja-tim-no-data" class="center-align" style="display: none; padding: 20px; color: #757575;">Belum ada data submisi untuk ditampilkan.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="tugas-saya-view" class="view" style="display: none;">

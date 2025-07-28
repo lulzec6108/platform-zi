@@ -99,13 +99,6 @@ function switchView(viewId) {
         targetView.style.display = 'block';
     }
 
-    // Panggil fungsi yang sesuai untuk memuat data view
-    if (viewId === 'link-pendukung-view') {
-        loadLinkPendukung();
-    } else if (viewId === 'tugas-saya-view') {
-        loadTugasSaya();
-    }
-
     // Hapus kelas 'active' dari semua item menu
     document.querySelectorAll('.sidenav li, .topnav li').forEach(li => {
         li.classList.remove('active');
@@ -123,14 +116,19 @@ function switchView(viewId) {
         activeNavMenuLink.parentElement.classList.add('active');
     }
 
-    // Muat data yang relevan berdasarkan view yang aktif
+    // Muat data yang relevan berdasarkan view yang aktif (SATU SUMBER KEBENARAN)
     switch (viewId) {
         case 'dashboard-view':
             loadDashboardData(); 
             break;
+        case 'tugas-saya-view':
+            loadTugasSaya();
+            break;
         case 'kinerja-tim-view':
-            // Di masa depan, panggil fungsi untuk memuat data kinerja tim di sini
-            console.log('Memuat data Kinerja Tim...');
+            loadKinerjaTim();
+            break;
+        case 'link-pendukung-view':
+            loadLinkPendukung();
             break;
     }
 }
@@ -632,47 +630,6 @@ async function openTugasModal(taskId) {
     }
 }
 
-// === FIX: Helper functions dikembalikan ===
-// Helper untuk menambahkan satu field rincian
-function addRincianField(container, value = '') {
-    const inputGroup = document.createElement('div');
-    inputGroup.className = 'input-group';
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'validate';
-    input.value = value;
-    input.placeholder = 'Contoh: Laporan Pelaksanaan';
-
-    const removeBtn = document.createElement('a');
-    removeBtn.className = 'btn-floating btn-small waves-effect waves-light red';
-    removeBtn.innerHTML = '<i class="material-icons">remove</i>';
-
-    // PERBAIKAN: Event listener untuk tombol hapus
-    removeBtn.addEventListener('click', () => {
-        inputGroup.remove(); // Hapus seluruh baris input field
-    });
-
-    inputGroup.appendChild(input);
-    inputGroup.appendChild(removeBtn);
-    container.appendChild(inputGroup);
-}
-
-// Fungsi untuk setup field rincian awal
-function setupRincianFields(container, rincianText) {
-    container.innerHTML = ''; // Selalu kosongkan dulu
-    if (rincianText) {
-        const rincianArray = rincianText.split('|').filter(item => item.trim() !== '');
-        if (rincianArray.length > 0) {
-            rincianArray.forEach(value => addRincianField(container, value));
-        } else {
-            addRincianField(container); // Jika kosong, tambahkan satu field default
-        }
-    } else {
-        addRincianField(container); // Jika tidak ada data, tambahkan satu field default
-    }
-}
-
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
     const modal = document.getElementById('detailModal');
@@ -915,3 +872,61 @@ function getStatusBadge(statusAdmin, statusKetua) {
 
     return `<span class="status-badge ${className}"><i class="material-icons">${icon}</i> ${status}</span>`;
 }
+
+// Fungsi untuk memuat data kinerja tim
+async function loadKinerjaTim() {
+    const loader = document.getElementById('kinerja-tim-loader');
+    const content = document.getElementById('kinerja-tim-content');
+    const tableBody = document.getElementById('kinerja-tim-table-body');
+    const noDataMessage = document.getElementById('kinerja-tim-no-data');
+    const user = JSON.parse(sessionStorage.getItem('user'));
+
+    // Tampilkan loader dan sembunyikan konten
+    loader.style.display = 'block';
+    content.style.display = 'none';
+    noDataMessage.style.display = 'none';
+    tableBody.innerHTML = '';
+
+    try {
+        const result = await callApi('getKinerjaTim');
+        if (result.success && result.data.length > 0) {
+            result.data.forEach(item => {
+                const row = document.createElement('tr');
+
+                // Fungsi untuk membuat status badge
+                const createStatusBadge = (status) => {
+                    if (!status) return '<span class="grey-text">-</span>';
+                    const statusClass = status.toLowerCase().replace(/\s+/g, '-');
+                    return `<span class="status-badge-small ${statusClass}">${status}</span>`;
+                };
+
+                row.innerHTML = `
+                    <td>${item.namaLengkap}</td>
+                    <td>${item.namaTugas}</td>
+                    <td>${new Date(item.timestamp).toLocaleString('id-ID')}</td>
+                    <td>${createStatusBadge(item.statusKetua)}</td>
+                    <td>${createStatusBadge(item.statusAdmin)}</td>
+                    <td>
+                        <a href="#!" class="btn-small waves-effect waves-light blue">Detail</a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            content.style.display = 'block';
+        } else {
+            noDataMessage.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading Kinerja Tim:', error);
+        M.toast({ html: 'Gagal memuat data Kinerja Tim.' });
+        noDataMessage.style.display = 'block';
+        noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+async function loadDashboard() {
+    const loader = document.getElementById('dashboard-loader');
+    const content = document.getElementById('dashboard-content');
+{{ ... }}

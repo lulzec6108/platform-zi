@@ -36,6 +36,9 @@ function doGet(e) {
       case 'getTugasSaya':
         result = handleGetTugasSaya(payload);
         break;
+      case 'getKinerjaTim': // <-- BARU: Daftarkan aksi baru
+        result = handleGetKinerjaTim(payload);
+        break;
       default:
         result = { success: false, message: 'Aksi GET tidak valid.' };
         break;
@@ -280,6 +283,13 @@ function handleGetTugasSaya(payload) {
   });
 
   return { success: true, data: userTugas };
+}
+
+function handleGetKinerjaTim(payload) {
+  const sheet = ss.getSheetByName("BuktiDukung");
+  const data = sheet.getDataRange().getValues();
+  // Logika untuk mengambil dan memfilter data kinerja tim akan ditambahkan di sini
+  return { success: true, data: data }; // Placeholder
 }
 
 function handleLogin(payload) {
