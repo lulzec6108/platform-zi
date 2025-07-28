@@ -699,17 +699,19 @@ async function showTugasDetail(tugas) {
     // PERBAIKAN: Menggunakan 'panduanPenilaian' dari backend
     document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
 
-    // PERBAIKAN: Mengubah status menjadi badge
+    // PERBAIKAN: Mengubah status menjadi badge dinamis berdasarkan pengerjaan
     const statusContainer = document.getElementById('modal-status');
     statusContainer.innerHTML = '';
-    const statusText = tugas.status || 'BELUM DIKERJAKAN';
+    const statusText = tugas.statusPengerjaan || 'BELUM DIKERJAKAN'; // Menggunakan data baru
     const statusBadge = document.createElement('span');
     statusBadge.textContent = statusText;
     statusBadge.className = 'status-badge';
-    if (statusText.toUpperCase().includes('SUDAH')) {
-        statusBadge.classList.add('sudah-dikerjakan');
-    } else {
-        statusBadge.classList.add('belum-dikerjakan');
+
+    // Logika pewarnaan baru
+    if (statusText === 'SEDANG DIKERJAKAN') {
+        statusBadge.classList.add('sedang-dikerjakan'); // Kelas untuk warna oranye
+    } else { // Asumsi lainnya adalah 'BELUM DIKERJAKAN'
+        statusBadge.classList.add('belum-dikerjakan'); // Kelas untuk warna merah
     }
     statusContainer.appendChild(statusBadge);
 

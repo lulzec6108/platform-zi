@@ -251,7 +251,11 @@ function handleGetTugasSaya(payload) {
     const tugasUsername = row[usernameIndex];
     if (tugasUsername === user.username) {
       const kodeHirarki = row[kodeHirarkiIndex];
-      const bukti = buktiDukungMap[`${user.username}-${kodeHirarki}`] || {}; // Ambil bukti atau objek kosong
+      const buktiKey = `${user.username}-${kodeHirarki}`;
+      const bukti = buktiDukungMap[buktiKey] || {}; // Ambil bukti atau objek kosong
+
+      // Tentukan status pengerjaan berdasarkan keberadaan data di BuktiDukung
+      const statusPengerjaan = buktiDukungMap.hasOwnProperty(buktiKey) ? "SEDANG DIKERJAKAN" : "BELUM DIKERJAKAN";
 
       userTugas.push({
         username: tugasUsername,
@@ -268,7 +272,9 @@ function handleGetTugasSaya(payload) {
         linkGDriveBukti: linkGDriveBuktiIndex !== -1 ? row[linkGDriveBuktiIndex] : '',
         // Gabungkan dengan data dari bukti dukung
         nilai: bukti.nilai || '',
-        jenisBuktiDukung: bukti.jenisBuktiDukung || ''
+        jenisBuktiDukung: bukti.jenisBuktiDukung || '',
+        // Tambahkan status pengerjaan
+        statusPengerjaan: statusPengerjaan
       });
     }
   });
@@ -325,6 +331,7 @@ function handleSaveBuktiDukung(payload) {
   const nilaiIndex = headers.indexOf('Nilai');
   const jenisIndex = headers.indexOf('Jenis Bukti Dukung');
   const timestampIndex = headers.indexOf('Timestamp');
+  const statusUserIndex = headers.indexOf('Status User'); // <-- BARU: Dapatkan indeks kolom status
 
   // Dapatkan username dari payload (dikirim otomatis oleh callApi)
   const username = payload.username;
@@ -338,6 +345,9 @@ function handleSaveBuktiDukung(payload) {
       sheet.getRange(i + 2, nilaiIndex + 1).setValue(payload.nilai);
       sheet.getRange(i + 2, jenisIndex + 1).setValue(payload.jenisBuktiDukung);
       sheet.getRange(i + 2, timestampIndex + 1).setValue(new Date());
+      if (statusUserIndex !== -1) {
+        sheet.getRange(i + 2, statusUserIndex + 1).setValue("Tersimpan"); // <-- BARU: Set status
+      }
       return { success: true, message: "Bukti dukung berhasil diperbarui." };
     }
   }
@@ -349,6 +359,9 @@ function handleSaveBuktiDukung(payload) {
   newRow[nilaiIndex] = payload.nilai;
   newRow[jenisIndex] = payload.jenisBuktiDukung;
   newRow[timestampIndex] = new Date();
+  if (statusUserIndex !== -1) {
+    newRow[statusUserIndex] = "Tersimpan"; // <-- BARU: Set status
+  }
   
   sheet.appendRow(newRow);
   return { success: true, message: "Bukti dukung berhasil disimpan." };
