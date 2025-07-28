@@ -2145,3 +2145,38 @@ table tr:hover {
     padding: 0; /* Hapus padding default */
     background-color: #fafafa; /* Latar belakang sedikit abu-abu */
 }
+
+/* 9. Modal Button Styles
+-------------------------------------------------- */
+.modal-footer .btn {
+    display: inline-flex; /* Memungkinkan alignment vertikal */
+    align-items: center; /* Teks tengah secara vertikal */
+    justify-content: center; /* Teks tengah secara horizontal */
+    text-transform: none;
+    border-radius: 20px;
+    padding: 0 24px;
+}
+
+.btn-gdrive {
+    background-color: #ff9800 !important; /* Orange */
+}
+
+.btn-gdrive:hover {
+    background-color: #fb8c00 !important; /* Orange Darken-1 */
+}
+
+.btn-draft {
+    background-color: #9e9e9e !important; /* Grey */
+}
+
+.btn-draft:hover {
+    background-color: #757575 !important; /* Grey Darken-1 */
+}
+
+.btn-submit {
+    background-color: #1e88e5 !important; /* Blue */
+}
+
+.btn-submit:hover {
+    background-color: #1565c0 !important; /* Blue Darken-2 */
+}

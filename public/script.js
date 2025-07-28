@@ -892,6 +892,11 @@ async function showTugasDetail(tugas) {
         openGdriveBtn.target = '_blank';
     }
 
+    // PERBAIKAN: Tambahkan kelas unik untuk styling
+    if (openGdriveBtn) openGdriveBtn.classList.add('btn-gdrive');
+    if (saveDraftBtn) saveDraftBtn.classList.add('btn-draft');
+    if (submitFinalBtn) submitFinalBtn.classList.add('btn-submit');
+
     // Logika untuk menampilkan/menyembunyikan tombol berdasarkan status
     const isLocked = tugas.statusKetua === 'Menunggu Verifikasi' || tugas.statusKetua === 'Approved' || tugas.statusAdmin === 'Approved';
 
@@ -919,8 +924,13 @@ async function showTugasDetail(tugas) {
 
             // Tambahkan event listener untuk mengaktifkan tombol setelah GDrive dibuka
             newGdriveBtn.addEventListener('click', function() {
-                if(saveDraftBtn) saveDraftBtn.disabled = false;
-                if(submitFinalBtn) submitFinalBtn.disabled = false;
+                // PERBAIKAN: Ambil referensi tombol terbaru dari dalam listener
+                const currentSaveBtn = document.getElementById('save-draft-btn');
+                const currentSubmitBtn = document.getElementById('submit-final-btn');
+                
+                if(currentSaveBtn) currentSaveBtn.disabled = false;
+                if(currentSubmitBtn) currentSubmitBtn.disabled = false;
+                
                 M.toast({ html: 'Tombol Simpan & Kirim telah diaktifkan.' });
             }, { once: true }); // Opsi 'once' memastikan listener hanya berjalan sekali
         }
