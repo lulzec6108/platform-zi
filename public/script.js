@@ -731,7 +731,8 @@ async function showTugasDetail(tugas) {
         newUploadBtn.classList.replace('btn', 'btn-flat');
     }
 
-    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer));
+    const rincianContainer2 = document.getElementById('rincian-fields-container');
+    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
     newSimpanBtn.addEventListener('click', () => savePenilaian(tugas, nilaiSelect, rincianContainer));
 
     // 6. Buka Modal
@@ -1032,7 +1033,8 @@ async function showTugasDetail(tugas) {
     addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
 
     // Tambah listener baru
-    newAddBtn.addEventListener('click', () => addRincianField(tugas.rincian));
+    const rincianContainer2 = document.getElementById('rincian-fields-container');
+    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
     newSaveDraftBtn.addEventListener('click', () => savePenilaian(tugas, 'draft'));
     newSubmitFinalBtn.addEventListener('click', () => savePenilaian(tugas, 'final'));
 
