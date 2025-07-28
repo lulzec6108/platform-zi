@@ -77,6 +77,9 @@
         top: 10px;
         right: 10px;
       }
+      .loader-container {
+        padding: 40px 0;
+      }
     </style>
 </head>
 <body>
@@ -241,7 +244,16 @@
                 <div id="tugas-saya-view" class="view" style="display: none;">
                     <h4 class="page-title">Tugas Saya</h4>
                     <div class="divider"></div>
-                    <!-- Wadah untuk daftar tugas dalam bentuk kartu -->
+                    <div class="loader-container center-align">
+                        <div class="preloader-wrapper big active">
+                            <div class="spinner-layer spinner-blue-only">
+                                <div class="circle-clipper left"><div class="circle"></div></div>
+                                <div class="gap-patch"><div class="circle"></div></div>
+                                <div class="circle-clipper right"><div class="circle"></div></div>
+                            </div>
+                        </div>
+                        <p>Memuat Tugas Anda...</p>
+                    </div>
                     <div id="tugas-saya-container" class="row">
                         <!-- Konten kartu tugas akan dimuat di sini oleh JavaScript -->
                     </div>
@@ -250,7 +262,16 @@
                 <div id="link-pendukung-view" class="view" style="display: none;">
                     <h4 class="page-title">Link Pendukung</h4>
                     <div class="divider"></div>
-                    <!-- Kontainer untuk kartu link, yang dicari oleh JS -->
+                    <div class="loader-container center-align">
+                        <div class="preloader-wrapper big active">
+                            <div class="spinner-layer spinner-blue-only">
+                                <div class="circle-clipper left"><div class="circle"></div></div>
+                                <div class="gap-patch"><div class="circle"></div></div>
+                                <div class="circle-clipper right"><div class="circle"></div></div>
+                            </div>
+                        </div>
+                        <p>Memuat Link Pendukung...</p>
+                    </div>
                     <div id="link-pendukung-container" class="row"></div>
                 </div>
             </div>

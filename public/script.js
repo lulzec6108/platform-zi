@@ -313,13 +313,15 @@ async function loadLinkPendukung() {
     // Tunda eksekusi untuk memastikan DOM view sudah dirender sepenuhnya
     setTimeout(async () => {
         const container = document.getElementById('link-pendukung-container');
+        const loader = document.querySelector('#link-pendukung-view .loader-container');
         if (!container) {
             console.error('Kontainer #link-pendukung-container tidak ditemukan.');
             return;
         }
         
         try {
-            showLoading(true);
+            container.innerHTML = '';
+            loader.style.display = 'block';
             
             // Panggil callApi hanya dengan action, karena method defaultnya GET
             // dan username akan ditambahkan secara otomatis oleh callApi.
@@ -411,7 +413,7 @@ async function loadLinkPendukung() {
             const container = document.getElementById('link-pendukung-container');
             container.innerHTML = `<p class="center-align red-text">Gagal memuat data. ${error.message}</p>`;
         } finally {
-            showLoading(false);
+            loader.style.display = 'none';
         }
     }, 0); // Jeda 0ms untuk menempatkan eksekusi di akhir antrian event
 }
@@ -778,10 +780,11 @@ async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
 // Fungsi untuk memuat dan merender data 'Tugas Saya'
 async function loadTugasSaya() {
     const container = document.getElementById('tugas-saya-container');
+    const loader = document.querySelector('#tugas-saya-view .loader-container');
     if (!container) return;
 
-    showLoading(true);
-    container.innerHTML = '<p class="center-align">Memuat tugas ZI Anda...</p>';
+    container.innerHTML = '';
+    loader.style.display = 'block';
 
     try {
         const result = await callApi('getTugasSaya');
@@ -841,7 +844,7 @@ async function loadTugasSaya() {
         console.error('Error in loadTugasSaya:', error);
         container.innerHTML = `<div class="center-align red-text"><i class="large material-icons">error_outline</i><p>Gagal memuat tugas: ${error.message}</p></div>`;
     } finally {
-        showLoading(false);
+        loader.style.display = 'none';
     }
 }
 
@@ -887,10 +890,19 @@ async function loadKinerjaTim() {
                 // Fungsi untuk membuat status badge
                 const createStatusBadge = (status) => {
                     if (!status) return '<span class="grey-text">-</span>';
-                    const statusClass = status.toLowerCase().replace(/\s+/g, '-');
-                    return `<span class="status-badge-small ${statusClass}">${status}</span>`;
+                    
+                    let color = 'grey';
+                    if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('terverifikasi')) {
+                        color = 'green';
+                    } else if (status.toLowerCase().includes('ditolak')) {
+                        color = 'red';
+                    } else if (status.toLowerCase().includes('proses') || status.toLowerCase().includes('dikerjakan')) {
+                        color = 'orange';
+                    }
+                    
+                    return `<span class="status-badge-small ${color}">${status}</span>`;
                 };
-
+                
                 row.innerHTML = `
                     <td>${item.namaLengkap}</td>
                     <td>${item.namaTugas}</td>
@@ -1079,4 +1091,9 @@ async function savePenilaian(tugas, submissionType) {
     } finally {
         showLoading(false);
     }
+}
+
+// Fungsi untuk menampilkan data tugas yang sudah diambil
+function displayTugasSaya(data) {
+{{ ... }}
 }
