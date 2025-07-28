@@ -179,43 +179,52 @@ function checkAuthStatus() {
 
 // Fungsi terpusat untuk semua panggilan API ke backend
 async function callApi(action, method = 'GET', body = null) {
-  const user = JSON.parse(sessionStorage.getItem('user'));
-  const params = new URLSearchParams({ action });
+    const user = JSON.parse(sessionStorage.getItem('user'));
 
-  // PENTING: Selalu tambahkan username untuk request GET jika user sudah login
-  if (user && user.username) {
-    params.append('username', user.username);
-  }
-
-  // Untuk POST, body akan di-handle terpisah. Untuk GET, semua ada di params.
-  const url = (method === 'GET') ? `/api/proxy?${params.toString()}` : '/api/proxy';
-
-  const options = {
-    method: method,
-    headers: { 'Content-Type': 'application/json' },
-  };
-
-  if (method === 'POST' && body) {
-    // PERBAIKAN: Sisipkan username ke dalam body untuk POST jika user login
-    if (user && user.username) {
-      body.username = user.username;
+    // Untuk GET, action dan username (jika ada) dikirim sebagai query parameter
+    const params = new URLSearchParams({ action });
+    if (method === 'GET' && user && user.username) {
+        params.append('username', user.username);
     }
-    // Kirim payload lengkap di body. Proxy akan menambahkan apiKey.
-    options.body = JSON.stringify({ action, payload: body });
-  }
 
-  try {
-    const response = await fetch(url, options);
-    const result = await response.json();
+    const url = `/api/proxy?${params.toString()}`;
 
-    if (!result.success) {
-      throw new Error(result.message || 'Terjadi kesalahan tidak diketahui dari server.');
+    const options = { 
+        method,
+        headers: { 'Content-Type': 'application/json' }
+    };
+
+    if (method === 'POST') {
+        // Siapkan payload untuk body request
+        const payload = { ...body };
+        if (user && user.username) {
+            payload.username = user.username;
+        }
+        
+        // Body request untuk POST berisi action dan payload yang digabung.
+        // Sesuai dengan code.gs versi lama.
+        options.body = JSON.stringify({ 
+            action,
+            ...payload
+        });
     }
-    return result;
-  } catch (error) {
-    console.error(`Gagal memanggil API '${action}':`, error);
-    throw error;
-  }
+
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+        }
+        const result = await response.json();
+        if (result.success === false) {
+            throw new Error(result.message || 'Terjadi kesalahan dari server.');
+        }
+        return result;
+    } catch (error) {
+        console.error(`Gagal memanggil API '${action}':`, error);
+        showError(error.message);
+        throw error;
+    }
 }
 
 // Fungsi untuk menangani login
