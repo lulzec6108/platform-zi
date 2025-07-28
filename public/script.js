@@ -642,7 +642,10 @@ async function openTugasModal(taskId) {
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
     const modal = document.getElementById('detailModal');
-    if (!modal) return;
+    if (!modal) {
+        console.error('Modal element with ID "detailModal" not found.');
+        return;
+    }
 
     // 1. Setup Diagram Pohon Hirarki
     const hierarchyBox = document.getElementById('modal-hierarchy-box');
@@ -653,7 +656,6 @@ async function showTugasDetail(tugas) {
             const div = document.createElement('div');
             div.className = 'hierarchy-level';
             hierarchyBox.appendChild(div);
-            // Tambahkan span di dalam div untuk teks agar tidak terpengaruh oleh pseudo-element
             const textSpan = document.createElement('span');
             textSpan.textContent = tugas[levelKey];
             div.appendChild(textSpan);
@@ -662,24 +664,10 @@ async function showTugasDetail(tugas) {
 
     // 2. Isi Info Detail
     document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    // PERBAIKAN: Menggunakan 'panduanPenilaian' dari backend
     document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
 
-    // PERBAIKAN: Mengubah status menjadi badge dinamis berdasarkan pengerjaan
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = '';
-    const statusText = tugas.statusPengerjaan || 'BELUM DIKERJAKAN'; // Menggunakan data baru
-    const statusBadge = document.createElement('span');
-    statusBadge.textContent = statusText;
-    statusBadge.className = 'status-badge';
-
-    // Logika pewarnaan baru
-    if (statusText === 'SEDANG DIKERJAKAN') {
-        statusBadge.classList.add('sedang-dikerjakan'); // Kelas untuk warna oranye
-    } else { // Asumsi lainnya adalah 'BELUM DIKERJAKAN'
-        statusBadge.classList.add('belum-dikerjakan'); // Kelas untuk warna merah
-    }
-    statusContainer.appendChild(statusBadge);
+    statusContainer.innerHTML = getStatusBadge(tugas.statusAdmin, tugas.statusKetua);
 
     // Setup Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
@@ -696,7 +684,7 @@ async function showTugasDetail(tugas) {
 
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
-    nilaiSelect.innerHTML = '<option value="" disabled>Pilih Nilai</option>';
+    nilaiSelect.innerHTML = '<option value="" disabled selected>Pilih Nilai</option>';
     if (tugas.pilihanJawaban) {
         tugas.pilihanJawaban.split('/').forEach(opsi => {
             const option = document.createElement('option');
@@ -712,30 +700,28 @@ async function showTugasDetail(tugas) {
     const rincianContainer = document.getElementById('rincian-fields-container');
     setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
 
-    // 5. PERBAIKAN FINAL: Logika Tombol Footer
+    // 5. Logika Tombol Footer (dengan penghapusan listener lama)
     const addRincianBtn = document.getElementById('add-rincian-btn');
     const simpanBtn = document.getElementById('btn-simpan-penilaian');
     const uploadBtn = document.getElementById('btn-upload-folder');
 
-    // Kloning tombol untuk menghapus listener lama
     const newSimpanBtn = simpanBtn.cloneNode(true);
-    const newUploadBtn = uploadBtn.cloneNode(true);
-    const newAddBtn = addRincianBtn.cloneNode(true);
-
-    // Ganti tombol di DOM
     simpanBtn.parentNode.replaceChild(newSimpanBtn, simpanBtn);
+    
+    const newUploadBtn = uploadBtn.cloneNode(true);
     uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
+
+    const newAddBtn = addRincianBtn.cloneNode(true);
     addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
 
     // Terapkan logika pada tombol baru
-    newSimpanBtn.classList.add('disabled'); // Selalu nonaktifkan di awal
+    newSimpanBtn.classList.add('disabled'); 
 
     if (tugas.linkGDriveBukti && tugas.linkGDriveBukti.trim() !== '') {
         newUploadBtn.href = tugas.linkGDriveBukti;
         newUploadBtn.classList.remove('disabled');
         newUploadBtn.classList.replace('btn-flat', 'btn');
         
-        // Listener untuk mengaktifkan tombol simpan
         newUploadBtn.addEventListener('click', () => {
             newSimpanBtn.classList.remove('disabled');
         }, { once: true });
@@ -745,7 +731,6 @@ async function showTugasDetail(tugas) {
         newUploadBtn.classList.replace('btn', 'btn-flat');
     }
 
-    // Tambahkan listener lain ke tombol baru
     newAddBtn.addEventListener('click', () => addRincianField(rincianContainer));
     newSimpanBtn.addEventListener('click', () => savePenilaian(tugas, nilaiSelect, rincianContainer));
 

@@ -234,53 +234,54 @@
                 </div>
             </div>
         </main>
-    </div>
 
-    <!-- Modal Structure: Detail Tugas (Versi Final) -->
-    <div id="detailModal" class="modal modal-fixed-footer">
-        <div class="modal-header">
-            <h5>Detail Tugas</h5>
-            <a href="#!" class="modal-close waves-effect waves-circle btn-flat"><i class="material-icons">close</i></a>
-        </div>
-        <div class="modal-content">
-            <!-- Bagian Hirarki Tugas -->
-            <div id="modal-hierarchy-box" class="hierarchy-box"></div>
-
-            <!-- Info Tambahan -->
-            <div class="info-section">
-                <p class="info-label">Aspek yang dinilai:</p>
-                <p id="modal-detail-hirarki" class="info-value"></p>
-
-                <p class="info-label">Panduan Pemberian Nilai:</p>
-                <p id="modal-opsi-jawaban" class="info-value preserve-whitespace"></p>
-
-                <p class="info-label">Referensi Bukti Dukung ZI:</p>
-                <div id="modal-referensi-link" class="info-value"></div>
-
-                <p class="info-label">Status:</p>
-                <p id="modal-status" class="info-value"></p>
+        <!-- Modal Structure: Detail Tugas (Versi Final) -->
+        <div id="detailModal" class="modal modal-fixed-footer">
+            <div class="modal-header">
+                <h5>Detail Tugas</h5>
+                <a href="#!" class="modal-close waves-effect waves-circle btn-flat"><i class="material-icons">close</i></a>
             </div>
+            <div class="modal-content">
+                <!-- Bagian Hirarki Tugas -->
+                <div id="modal-hierarchy-box" class="hierarchy-box"></div>
 
-            <!-- Garis Pemisah -->
-            <div class="divider"></div>
+                <!-- Info Tambahan -->
+                <div class="info-section">
+                    <p class="info-label">Aspek yang dinilai:</p>
+                    <p id="modal-detail-hirarki" class="info-value"></p>
 
-            <!-- Form Penilaian dalam Card -->
-            <div class="form-section card-panel">
-                <h6 class="form-title center-align">Form Penilaian Mandiri</h6>
-                <div class="input-field">
-                    <select id="nilai-select">
-                        <option value="" disabled selected>Pilih Nilai</option>
-                    </select>
-                    <label>Pilih Nilai</label>
+                    <p class="info-label">Panduan Pemberian Nilai:</p>
+                    <p id="modal-opsi-jawaban" class="info-value preserve-whitespace"></p>
+
+                    <p class="info-label">Referensi Bukti Dukung ZI:</p>
+                    <div id="modal-referensi-link" class="info-value"></div>
+
+                    <p class="info-label">Status:</p>
+                    <p id="modal-status" class="info-value"></p>
                 </div>
-                <div id="rincian-fields-container"></div>
-                <button id="add-rincian-btn" class="btn-small waves-effect waves-light"><i class="material-icons left">add</i>Tambah Rincian</button>
+
+                <!-- Garis Pemisah -->
+                <div class="divider"></div>
+
+                <!-- Form Penilaian dalam Card -->
+                <div class="form-section card-panel">
+                    <h6 class="form-title center-align">Form Penilaian Mandiri</h6>
+                    <div class="input-field">
+                        <select id="nilai-select">
+                            <option value="" disabled selected>Pilih Nilai</option>
+                        </select>
+                        <label>Pilih Nilai</label>
+                    </div>
+                    <div id="rincian-fields-container"></div>
+                    <button id="add-rincian-btn" class="btn-small waves-effect waves-light"><i class="material-icons left">add</i>Tambah Rincian</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="btn-upload-folder" href="#!" target="_blank" class="btn-flat waves-effect waves-green">Buka Gdrive ZI 6108</a>
+                <a id="btn-simpan-penilaian" href="#!" class="btn waves-effect waves-light">Simpan</a>
             </div>
         </div>
-        <div class="modal-footer">
-            <a id="btn-upload-folder" href="#!" target="_blank" class="btn-flat waves-effect waves-green">Buka Gdrive ZI 6108</a>
-            <a id="btn-simpan-penilaian" href="#!" class="btn waves-effect waves-light">Simpan</a>
-        </div>
+
     </div>
 
     <!-- FAB (Floating Action Button) -->
