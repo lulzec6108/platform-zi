@@ -740,7 +740,6 @@ async function showTugasDetail(tugas) {
 
 // Fungsi untuk menyimpan data penilaian
 async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
-    // Validasi sederhana: pastikan nilai sudah dipilih
     if (!nilaiSelect.value) {
         showError('Silakan pilih nilai terlebih dahulu.');
         return;
@@ -749,18 +748,15 @@ async function savePenilaian(tugas, nilaiSelect, rincianContainer) {
     showLoading(true);
     try {
         const rincianInputs = rincianContainer.querySelectorAll('input');
-        // Gabungkan semua rincian menjadi satu string dengan pemisah '|'
         const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
         const rincianText = rincianValues.join('|');
 
-        // Siapkan data untuk dikirim. Username & Timestamp akan di-handle backend.
         const dataToUpdate = {
-            kodeHirarki: tugas.kodeHirarki, // Ini adalah 'primary key' kita
+            kodeHirarki: tugas.kodeHirarki,
             nilai: nilaiSelect.value,
             jenisBuktiDukung: rincianText,
         };
 
-        // Panggil API untuk menyimpan/memperbarui data
         const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
 
         if (response.success) {
