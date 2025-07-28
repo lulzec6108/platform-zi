@@ -610,7 +610,7 @@ function renderDashboardTable(tasks) {
             <td>${getStatusBadge(task.statusKetuaPilar)}</td>
             <td>${getStatusBadge(task.statusAdmin)}</td>
             <td>
-                <button class="btn btn-small waves-effect waves-light" 
+                <button class="btn btn-small waves-effect waves-light blue" 
                         onclick="openTugasModal('${task.id}')">
                     <i class="material-icons">visibility</i>
                 </button>
@@ -801,6 +801,23 @@ function displayTugasSaya(data) {
     M.Collapsible.init(collapsibleUl, { accordion: false });
 }
 
+function getStatusBadge(task) {
+    let status = task.status_tugas || 'Belum Dikerjakan';
+    let statusClass = 'grey'; // Default
+    let statusText = status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    if (status.includes('Approved') || status.includes('Disetujui')) {
+        statusClass = 'green';
+    } else if (status.includes('Rejected') || status.includes('Ditolak')) {
+        statusClass = 'red';
+    } else if (status.includes('Progress') || status.includes('Dikerjakan')) {
+        statusClass = 'orange';
+    } else if (status.includes('Submitted') || status.includes('Terkirim')) {
+        statusClass = 'blue';
+    }
+
+    return `<span class="new badge ${statusClass}" data-badge-caption="">${statusText}</span>`;
+}
 
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
 async function showTugasDetail(tugas) {
