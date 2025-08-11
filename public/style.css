@@ -1549,7 +1549,14 @@ table tr:hover {
 
 .task-breadcrumb div {
     position: relative;
-    padding-left: 25px; /* Ruang untuk garis dan ikon */
+    padding-left: 25px; /* Ruang untuk garis */
+    line-height: 1.6;
+    font-size: 15px;
+    color: #263238;
+}
+
+.task-breadcrumb div:not(:last-child) {
+    margin-bottom: 6px;
 }
 
 /* Garis vertikal untuk pohon hirarki */
@@ -1557,9 +1564,9 @@ table tr:hover {
     content: '';
     position: absolute;
     left: 10px;
-    top: -10px;
+    top: 0;
     bottom: 0;
-    border-left: 1.5px dashed #bdbdbd;
+    border-left: 1.5px dashed #c0c0c0;
 }
 
 .task-breadcrumb div:first-child::before {
@@ -1568,15 +1575,16 @@ table tr:hover {
 
 /* Simbol cabang pohon */
 .task-breadcrumb div::after {
-    content: '└─';
+    content: '';
     position: absolute;
     left: 10px;
-    top: 0;
-    color: #757575;
+    top: 12px; /* sejajar tengah teks */
+    border-top: 1.5px dashed #c0c0c0;
+    width: 12px;
 }
 
-.task-breadcrumb div:first-child::after {
-    content: ''; /* Hilangkan simbol untuk root */
+.task-breadcrumb div:last-child::before {
+    height: 12px;
 }
 
 /* === PERBAIKAN: Pohon Hirarki (Sesuai Referensi) === */
@@ -1793,4 +1801,71 @@ table tr:hover {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+}
+
+/* Detail Modal: header refinements */
+#detailModal .modal-header {
+    position: relative;
+    padding: 16px 24px;
+    border-bottom: 2px solid #e6e9ef; /* lebih tegas */
+    background-color: #ffffff;
+    margin-bottom: 8px; /* beri jarak dengan konten */
+}
+#detailModal .modal-header h5 {
+    margin: 0;
+    font-size: 1.4rem; /* sedikit lebih kecil agar rapi */
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #263238;
+}
+#detailModal .modal-header .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    color: #455a64;
+}
+#detailModal .modal-header .modal-close i {
+    font-size: 22px;
+}
+#detailModal .modal-content {
+    padding: 16px 24px 24px; /* ruang yang nyaman */
+}
+
+/* Detail Modal: hierarchy tree (scoped) */
+#modal-hierarchy-box {
+    background-color: #ffffff;
+    border: 1px solid #e6e9ef;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 16px;
+}
+#modal-hierarchy-box .hierarchy-level {
+    position: relative;
+    padding-left: 28px; /* ruang untuk garis */
+    line-height: 1.6;
+    font-size: 15px;
+    color: #263238;
+}
+#modal-hierarchy-box .hierarchy-level:not(:last-child) {
+    margin-bottom: 6px;
+}
+#modal-hierarchy-box .hierarchy-level::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    border-left: 1.5px dashed #c0c0c0;
+}
+#modal-hierarchy-box .hierarchy-level::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 12px; /* sejajar tengah teks */
+    border-top: 1.5px dashed #c0c0c0;
+    width: 12px;
+}
+#modal-hierarchy-box .hierarchy-level:last-child::before {
+    height: 12px;
 }
