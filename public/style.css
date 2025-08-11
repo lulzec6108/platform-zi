@@ -1942,3 +1942,55 @@ table tr:hover {
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
+
+/* === REVISI: Background & Indent Hirarki (mengikuti referensi gambar 2) === */
+#modal-hierarchy-box {
+    /* Gaya kartu halus dengan nuansa warm/peach profesional */
+    --tree-bg: #fff8f0;           /* latar utama */
+    --tree-border: #ffe7cf;       /* border lembut */
+    --tree-shadow: rgba(0,0,0,0.04);
+
+    background-color: var(--tree-bg);
+    border: 1px solid var(--tree-border);
+    border-radius: 12px;
+    padding: 16px 16px 12px;
+    box-shadow: 0 4px 12px var(--tree-shadow);
+    margin-bottom: 16px;
+}
+
+/* Dasar tiap baris hierarki + sistem indent berbasis variabel */
+#modal-hierarchy-box .hierarchy-level {
+    --indent: 0px; /* default, dioverride oleh .level-2/3/4 */
+    position: relative;
+    padding-left: calc(28px + var(--indent));
+    line-height: 1.7;
+    font-size: 15px;
+    color: #263238;
+}
+#modal-hierarchy-box .hierarchy-level:not(:last-child) { margin-bottom: 6px; }
+
+/* Konektor dashed mengikuti indent */
+#modal-hierarchy-box .hierarchy-level::before {
+    content: '';
+    position: absolute;
+    left: calc(10px + var(--indent));
+    top: 0; bottom: 0;
+    border-left: 1.5px dashed rgba(38,50,56,0.28); /* grey-blue halus */
+}
+#modal-hierarchy-box .hierarchy-level::after {
+    content: '';
+    position: absolute;
+    left: calc(10px + var(--indent));
+    top: 12px; width: 12px;
+    border-top: 1.5px dashed rgba(38,50,56,0.28);
+}
+#modal-hierarchy-box .hierarchy-level:last-child::before { height: 12px; }
+
+/* Level-specific indent (folder-like) */
+#modal-hierarchy-box .hierarchy-level.level-1 { --indent: 0px; }
+#modal-hierarchy-box .hierarchy-level.level-2 { --indent: 24px; }
+#modal-hierarchy-box .hierarchy-level.level-3 { --indent: 48px; }
+#modal-hierarchy-box .hierarchy-level.level-4 { --indent: 72px; }
+
+/* Opsional: penekanan teks untuk level terdalam agar hirarki terbaca */
+#modal-hierarchy-box .hierarchy-level.level-4 { color: #37474f; }

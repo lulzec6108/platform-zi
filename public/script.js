@@ -833,12 +833,10 @@ async function showTugasDetail(tugas) {
     const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
     levels.forEach((levelKey, index) => {
         if (tugas[levelKey]) {
-            const div = document.createElement('div');
-            div.className = 'hierarchy-level';
-            hierarchyBox.appendChild(div);
-            const textSpan = document.createElement('span');
-            textSpan.textContent = tugas[levelKey];
-            div.appendChild(textSpan);
+            const item = document.createElement('div');
+            item.className = `hierarchy-level level-${index + 1}`; // penting untuk indentasi bermakna
+            item.textContent = tugas[levelKey];
+            hierarchyBox.appendChild(item);
         }
     });
 
