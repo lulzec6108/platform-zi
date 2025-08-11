@@ -70,6 +70,9 @@ function doPost(e) {
       case 'saveBuktiDukung':
         response = handleSaveBuktiDukung(payload);
         break;
+      case 'handleSetStatusPenilaian': // Frontend compatibility
+        response = handleSetStatusPenilaian(payload);
+        break;
       case 'setStatusPenilaian':
         response = handleSetStatusPenilaian(payload);
         break;
@@ -360,11 +363,18 @@ function handleSaveBuktiDukung(payload) {
   for (let i = 0; i < data.length; i++) {
     if (data[i][usernameIndex] == username && data[i][kodeIndex] == payload.kodeHirarki) {
       const rowIndex = i + 2;
-      const statusKetua = data[i][statusKetuaPilarIndex] || '';
-      const statusAdmin = data[i][statusAdminIndex] || '';
+      const statusKetua = (data[i][statusKetuaPilarIndex] || '').toString();
+      const statusAdmin = (data[i][statusAdminIndex] || '').toString();
+      const k = statusKetua.toLowerCase();
+      const a = statusAdmin.toLowerCase();
+      const ketuaApproved = k.includes('approved') || k.includes('disetujui') || k.includes('diterima') || k.includes('terverifikasi');
+      const ketuaPending  = k.includes('menunggu') || k.includes('pending') || k.includes('verifikasi');
+      const ketuaRejected = k.includes('rejected') || k.includes('ditolak');
+      const adminApproved = a.includes('approved') || a.includes('disetujui') || a.includes('diterima') || a.includes('terverifikasi');
+      const adminRejected = a.includes('rejected') || a.includes('ditolak');
 
-      const isLocked = (statusKetua.includes('Approved') || statusKetua.includes('diterima') || statusKetua.includes('Menunggu Verifikasi')) || statusAdmin.includes('Approved');
-      const isRejected = statusKetua.includes('Rejected') || statusAdmin.includes('Rejected');
+      const isLocked = ketuaPending || ketuaApproved || adminApproved;
+      const isRejected = ketuaRejected || adminRejected;
 
       if (isLocked && !isRejected) {
         return { success: false, message: 'Tugas sudah dikunci dan tidak dapat diubah. Hubungi Ketua Pilar atau Admin jika perlu revisi.' };
@@ -407,22 +417,72 @@ function handleSaveBuktiDukung(payload) {
 }
 
 function handleSetStatusPenilaian(payload) {
-  var sheet = ss.getSheetByName("BuktiDukung");
-  var data = sheet.getDataRange().getValues();
-  var colStatus = payload.role === "admin" ? 7 : 5;
-  var colCatatan = payload.role === "admin" ? 8 : 6;
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][1] && data[i][0] == payload.username && data[i][1] == payload.kodeHirarki) {
-      sheet.getRange(i+1, colStatus+1).setValue(payload.status);
-      sheet.getRange(i+1, colCatatan+1).setValue(payload.catatan);
-      return { success: true, message: "Status berhasil diperbarui." };
+  const sheet = ss.getSheetByName('BuktiDukung');
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+  if (values.length === 0) return { success: false, message: 'Sheet BuktiDukung kosong.' };
+
+  // Header-based indices for robustness
+  const headers = values[0];
+  const idxUsername = headers.indexOf('Username');
+  const idxKode = headers.indexOf('Kode Hirarki');
+  const idxStatusKetua = headers.indexOf('Status Ketua Pilar');
+  const idxCatatanKetua = headers.indexOf('Catatan Ketua Pilar');
+  const idxStatusAdmin = headers.indexOf('Status Admin');
+  const idxCatatanAdmin = headers.indexOf('Catatan Admin');
+  const idxTimestamp = headers.indexOf('Timestamp');
+
+  if ([idxUsername, idxKode].some(i => i < 0)) {
+    return { success: false, message: 'Header kolom tidak lengkap di sheet BuktiDukung.' };
+  }
+
+  const role = String(payload.role || '').toLowerCase();
+  const targetUser = payload.targetUsername || payload.username; // fallback
+  const kode = payload.kodeHirarki;
+  if (!targetUser || !kode) return { success: false, message: 'Parameter targetUsername/kodeHirarki tidak lengkap.' };
+
+  // Find row by (username, kode hirarki)
+  let rowIndex = -1; // 1-based row index
+  for (let i = 1; i < values.length; i++) {
+    if ((values[i][idxUsername] || '') == targetUser && (values[i][idxKode] || '') == kode) {
+      rowIndex = i + 1;
+      break;
     }
   }
-  var row = [payload.username, payload.kodeHirarki, "", "", new Date(), "", "", "", ""];
-  row[colStatus] = payload.status;
-  row[colCatatan] = payload.catatan;
-  sheet.appendRow(row);
-  return { success: true, message: "Status berhasil ditambahkan." };
+
+  // Prepare write columns per role
+  let statusCol = -1, catatanCol = -1;
+  if (role.includes('admin')) {
+    statusCol = idxStatusAdmin;
+    catatanCol = idxCatatanAdmin;
+  } else if (role.includes('ketua')) {
+    statusCol = idxStatusKetua;
+    catatanCol = idxCatatanKetua;
+  } else {
+    return { success: false, message: 'Role tidak diizinkan.' };
+  }
+  if (statusCol < 0 || catatanCol < 0) {
+    return { success: false, message: 'Kolom status/catatan untuk peran tidak ditemukan.' };
+  }
+
+  const now = new Date();
+  if (rowIndex > 0) {
+    // Update
+    sheet.getRange(rowIndex, statusCol + 1).setValue(payload.status || '');
+    sheet.getRange(rowIndex, catatanCol + 1).setValue(payload.catatan || '');
+    if (idxTimestamp >= 0) sheet.getRange(rowIndex, idxTimestamp + 1).setValue(now);
+    return { success: true, message: 'Status berhasil diperbarui.' };
+  } else {
+    // Append new with 10 columns respecting header order
+    const newRow = new Array(headers.length).fill('');
+    newRow[idxUsername] = targetUser;
+    newRow[idxKode] = kode;
+    if (idxTimestamp >= 0) newRow[idxTimestamp] = now;
+    newRow[statusCol] = payload.status || '';
+    newRow[catatanCol] = payload.catatan || '';
+    sheet.appendRow(newRow);
+    return { success: true, message: 'Status berhasil ditambahkan.' };
+  }
 }
 
 function getUserInfo(username) {
