@@ -117,21 +117,32 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const result = await callApi('handleSetStatusPenilaian', payload);
             if (result.success) {
-                M.toast({ html: 'Status berhasil diperbarui!' });
-                const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
-                modalInstance.close();
+                showError('Status berhasil diperbarui!', 'success');
+                try {
+                    const el = document.getElementById('verifikasiModal');
+                    if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+                        const modalInstance = M.Modal.getInstance(el);
+                        if (modalInstance && typeof modalInstance.close === 'function') modalInstance.close();
+                    } else if (el && typeof el.close === 'function') {
+                        el.close();
+                    }
+                } catch (e) {
+                    console.warn('Tidak dapat menutup modal verifikasi:', e);
+                }
                 switchView('kinerja-tim'); // Refresh tampilan
             } else {
                 throw new Error(result.message || 'Gagal memperbarui status.');
             }
         } catch (error) {
-            M.toast({ html: `Error: ${error.message}` });
+            showError(`Error: ${error.message}`);
         } finally {
             saveVerifikasiBtn.disabled = false;
             saveVerifikasiBtn.innerHTML = 'Simpan Status';
             catatanText.value = '';
             statusSelect.value = '';
-            M.FormSelect.init(statusSelect); // Re-init select
+            if (window.M && M.FormSelect && typeof M.FormSelect.init === 'function') {
+                M.FormSelect.init(statusSelect); // Re-init select
+            }
         }
     });
 });
@@ -392,20 +403,15 @@ async function loadLinkPendukung() {
                             // Kategori Dokumen & File (Biru & Merah)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#42A5F5"/></svg>`, // Dokumen Biru
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#EF5350"/></svg>`, // PDF Merah
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="#78909C"/></svg>`, // Folder Abu-abu
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#AB47BC"/></svg>`, // Attachment Ungu
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 13v8h8v-8h-8zM3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#78909C"/></svg>`, // Folder Abu-abu
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6h-1.5z" fill="#AB47BC"/></svg>`, // Attachment Ungu
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFA726"/></svg>`, // Spreadsheet Hijau
 
                             // Kategori Data & Grafik (Oranye & Kuning)
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="#FFCA28"/></svg>`, // Grafik Naik Kuning
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#FFA726"/></svg>`, // Bar Chart Oranye
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="#FFEE58"/></svg>`, // Database Kuning
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FF7043"/></svg>`, // Info Oranye Tua
-
-                            // Kategori Web & Jaringan (Hijau & Teal)
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 13v8h8v-8h-8zM3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#66BB6A"/></svg>`, // Link Hijau
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5.9c1.16 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z" fill="#26A69A"/></svg>`, // Browser Teal
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 9.03 14.1 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6zm4 18H6V4h7v5h5v11z" fill="#4DB6AC"/></svg>`, // Update Teal
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 0H6v4h8v-4h4V4h-4v2h-4V4h-4v4h-2z" fill="#4DB6AC"/></svg>`, // Update Teal
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.63 5.84C16.27 4.48 14.21 3.5 12 3.5c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.68 0 6.84-2.47 7.73-5.84l-2.06-.65C16.83 16.53 14.61 18 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 12h7V5l-2.37.84z" fill="#00ACC1"/></svg>`, // Sync Cyan Tua
 
                             // Kategori Pengguna & Tim (Indigo & Ungu)
@@ -529,7 +535,9 @@ function showLoading(isLoading) {
 // Fungsi untuk menampilkan pesan error atau sukses
 function showError(message, type = 'error') {
     const classes = type === 'success' ? 'green' : 'red';
-    M.toast({ html: message, classes: classes, displayLength: 4000 });
+    if (window.M && M.toast) {
+        M.toast({ html: message, classes: classes, displayLength: 4000 });
+    }
 }
 
 // Fungsi untuk mengatur avatar gambar berwarna secara acak menggunakan DiceBear API
@@ -586,19 +594,21 @@ function renderDashboardTable(tasks) {
         const row = document.createElement('tr');
         
         // Fungsi untuk membuat badge status
-        const getStatusBadge = (status) => {
+        const makeStatusBadge = (status) => {
             if (!status) return '';
             
+            const s = (status || '').toString();
+            const l = s.toLowerCase();
             let color = 'grey';
-            if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('terverifikasi')) {
+            if (l.includes('setuju') || l.includes('terverifikasi')) {
                 color = 'green';
-            } else if (status.toLowerCase().includes('ditolak')) {
+            } else if (l.includes('ditolak')) {
                 color = 'red';
-            } else if (status.toLowerCase().includes('proses') || status.toLowerCase().includes('dikerjakan')) {
+            } else if (l.includes('proses') || l.includes('dikerjakan')) {
                 color = 'orange';
             }
             
-            return `<span class="new badge ${color}" data-badge-caption="${status}"></span>`;
+            return `<span class="new badge ${color}" data-badge-caption="${s}"></span>`;
         };
         
         row.innerHTML = `
@@ -606,9 +616,9 @@ function renderDashboardTable(tasks) {
             <td>${task.pilar || '-'}</td>
             <td>${task.namaTugas || '-'}</td>
             <td>${task.pic || '-'}</td>
-            <td>${getStatusBadge(task.statusPengerjaan)}</td>
-            <td>${getStatusBadge(task.statusKetuaPilar)}</td>
-            <td>${getStatusBadge(task.statusAdmin)}</td>
+            <td>${makeStatusBadge(task.statusPengerjaan)}</td>
+            <td>${makeStatusBadge(task.statusKetuaPilar)}</td>
+            <td>${makeStatusBadge(task.statusAdmin)}</td>
             <td>
                 <button class="btn btn-small waves-effect waves-light blue" 
                         onclick="openTugasModal('${task.id}')">
@@ -674,12 +684,21 @@ async function openTugasModal(taskId) {
             
             // Inisialisasi select
             const selects = document.querySelectorAll('select');
-            M.FormSelect.init(selects);
+            if (window.M && M.FormSelect && typeof M.FormSelect.init === 'function') {
+                M.FormSelect.init(selects);
+            }
             
             // Tampilkan modal
-            const modal = M.Modal.getInstance(document.getElementById('detailModal')) || 
-                         M.Modal.init(document.getElementById('detailModal'));
-            modal.open();
+            try {
+                if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+                    M.Modal.getInstance(document.getElementById('detailModal')).open();
+                } else if (document.getElementById('detailModal') && typeof document.getElementById('detailModal').showModal === 'function') {
+                    // Fallback untuk <dialog> jika ada
+                    document.getElementById('detailModal').showModal();
+                }
+            } catch (e) {
+                console.warn('Tidak dapat membuka modal:', e);
+            }
         } else {
             throw new Error(response.message || 'Gagal memuat detail tugas');
         }
@@ -691,6 +710,48 @@ async function openTugasModal(taskId) {
     }
 }
 
+// Normalize statuses from sheet variants
+function normalizeStatus(str) {
+    const s = (str || '').toString().trim().toLowerCase();
+    if (!s) return '';
+    if (/(approve|disetujui|diterima|terverifikasi)/i.test(s)) return 'approved';
+    if (/(reject|ditolak)/i.test(s)) return 'rejected';
+    if (/(menunggu|pending|verifikasi)/i.test(s)) return 'pending';
+    return s;
+  }
+  
+  function deriveTaskState(tugas) {
+    const type = (tugas.submissionType || '').toLowerCase();
+    const ketua = normalizeStatus(tugas.statusKetua);
+    const admin = normalizeStatus(tugas.statusAdmin);
+    const hasDraft = !!(tugas.jenisBuktiDukung && type !== 'final');
+  
+    if (admin === 'rejected') {
+      return { statusText: 'Rejected by Admin', phase: 'rejected_admin', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
+    }
+    if (ketua === 'rejected') {
+      return { statusText: 'Rejected by Ketua Pilar', phase: 'rejected_ketua', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
+    }
+  
+    if (type === 'final') {
+      if ((ketua === 'pending' || !ketua) && !admin) {
+        return { statusText: ketua === 'pending' ? 'Menunggu Verifikasi Ketua' : 'Submitted', phase: ketua === 'pending' ? 'pending_ketua' : 'submitted', canEditAnggota: false, ketuaCanAct: true, adminCanAct: false, lockUI: true };
+      }
+      if (ketua === 'approved' && (admin === 'pending' || !admin)) {
+        return { statusText: admin === 'pending' ? 'Menunggu Verifikasi Admin' : 'Approved by Ketua Pilar', phase: admin === 'pending' ? 'pending_admin' : 'approved_ketua', canEditAnggota: false, ketuaCanAct: false, adminCanAct: true, lockUI: true };
+      }
+      if (ketua === 'approved' && admin === 'approved') {
+        return { statusText: 'Approved by Admin', phase: 'approved_admin', canEditAnggota: false, ketuaCanAct: false, adminCanAct: false, lockUI: true };
+      }
+    }
+  
+    if (hasDraft || type === 'draft') {
+      return { statusText: 'Sedang Mengerjakan', phase: 'working', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
+    }
+  
+    return { statusText: 'Belum Mengerjakan', phase: 'idle', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
+  }
+
 // --- FUNGSI UNTUK MENU TUGAS SAYA (VERSI STABIL) ---
 
 // Fungsi utama untuk memuat dan menampilkan data 'Tugas Saya'
@@ -700,7 +761,7 @@ async function loadTugasSaya() {
     const loader = view.querySelector('.loader-container');
     const noDataMessage = view.querySelector('.no-data-message');
 
-    // Tampilkan loader, sembunyikan konten dan pesan 'tidak ada data'
+    // Tampilkan loader dan sembunyikan konten
     loader.style.display = 'block';
     contentContainer.style.display = 'none';
     noDataMessage.style.display = 'none';
@@ -716,7 +777,7 @@ async function loadTugasSaya() {
         }
     } catch (error) {
         console.error('Error loading tugas saya:', error);
-        M.toast({ html: 'Gagal memuat data Tugas Saya.' });
+        showError('Gagal memuat data Tugas Saya.');
         noDataMessage.style.display = 'block';
         noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
     } finally {
@@ -772,7 +833,7 @@ function displayTugasSaya(data) {
             card.className = 'task-card card';
 
             // Ambil status badge dari fungsi yang sudah ada
-            const statusBadgeHtml = getStatusBadge(tugas);
+            const statusBadgeHtml = getStatusBadgeLegacy(tugas);
 
             card.innerHTML = `
                 <div class="card-content">
@@ -803,24 +864,25 @@ function displayTugasSaya(data) {
     contentContainer.appendChild(collapsibleUl);
 
     // Inisialisasi ulang komponen collapsible Materialize
-    M.Collapsible.init(collapsibleUl, { accordion: false });
+    if (window.M && M.Collapsible && typeof M.Collapsible.init === 'function') {
+        M.Collapsible.init(collapsibleUl, { accordion: false });
+    }
 }
 
-function getStatusBadge(task) {
-    let status = task.status_tugas || 'Belum Dikerjakan';
-    let statusClass = 'grey'; // Default
-    let statusText = status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-    if (status.includes('Approved') || status.includes('Disetujui')) {
+function getStatusBadgeLegacy(task) {
+    const status = (task.status_tugas || 'Belum Dikerjakan').toString();
+    const l = status.toLowerCase();
+    let statusClass = 'grey';
+    if (l.includes('approved') || l.includes('disetujui')) {
         statusClass = 'green';
-    } else if (status.includes('Rejected') || status.includes('Ditolak')) {
+    } else if (l.includes('rejected') || l.includes('ditolak')) {
         statusClass = 'red';
-    } else if (status.includes('Progress') || status.includes('Dikerjakan')) {
+    } else if (l.includes('progress') || l.includes('dikerjakan') || l.includes('proses')) {
         statusClass = 'orange';
-    } else if (status.includes('Submitted') || status.includes('Terkirim')) {
+    } else if (l.includes('submitted') || l.includes('terkirim')) {
         statusClass = 'blue';
     }
-
+    const statusText = status.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
     return `<span class="new badge ${statusClass}" data-badge-caption="">${statusText}</span>`;
 }
 
@@ -885,7 +947,9 @@ async function showTugasDetail(tugas) {
         });
     }
     nilaiSelect.value = tugas.nilai || '';
-    M.FormSelect.init(nilaiSelect);
+    if (window.M && M.FormSelect && typeof M.FormSelect.init === 'function') {
+        M.FormSelect.init(nilaiSelect);
+    }
 
     // 4. Setup Rincian Bukti Dukung
     const rincianContainer = document.getElementById('rincian-fields-container');
@@ -911,31 +975,27 @@ async function showTugasDetail(tugas) {
     if (submitFinalBtn) submitFinalBtn.classList.add('btn-submit');
 
     // Logika untuk menampilkan/menyembunyikan tombol berdasarkan status
-    const isLocked = tugas.statusKetua === 'Menunggu Verifikasi' || tugas.statusKetua === 'Approved' || tugas.statusAdmin === 'Approved';
-
-    if (isLocked) {
-        // Sembunyikan semua tombol aksi jika tugas terkunci
+    const st = deriveTaskState(tugas);
+    if (st.lockUI) {
         if(openGdriveBtn) openGdriveBtn.style.display = 'none';
         if(saveDraftBtn) saveDraftBtn.style.display = 'none';
         if(submitFinalBtn) submitFinalBtn.style.display = 'none';
         if(addRincianBtn) addRincianBtn.style.display = 'none';
     } else {
-        // Tampilkan tombol jika tugas bisa diedit (draft atau ditolak)
-        if(openGdriveBtn) openGdriveBtn.style.display = 'inline-block';
-        if(saveDraftBtn) saveDraftBtn.style.display = 'inline-block';
-        if(submitFinalBtn) submitFinalBtn.style.display = 'inline-block';
-        if(addRincianBtn) addRincianBtn.style.display = 'inline-block';
+        // Tampilkan tombol ketika anggota boleh mengedit
+        const disp = st.canEditAnggota ? 'inline-block' : 'none';
+        if(openGdriveBtn) openGdriveBtn.style.display = disp;
+        if(saveDraftBtn) saveDraftBtn.style.display = disp;
+        if(submitFinalBtn) submitFinalBtn.style.display = disp;
+        if(addRincianBtn) addRincianBtn.style.display = disp;
 
-        // Nonaktifkan tombol simpan & kirim pada awalnya
+        // Nonaktifkan simpan/kirim sampai user membuka GDrive (opsional, tetap dipertahankan)
         if(saveDraftBtn) saveDraftBtn.disabled = true;
         if(submitFinalBtn) submitFinalBtn.disabled = true;
 
-        // Hapus event listener lama untuk mencegah duplikasi
         if (openGdriveBtn) {
             const newGdriveBtn = openGdriveBtn.cloneNode(true);
             openGdriveBtn.parentNode.replaceChild(newGdriveBtn, openGdriveBtn);
-
-            // Tambahkan event listener untuk mengaktifkan tombol setelah GDrive dibuka
             newGdriveBtn.addEventListener('click', function() {
                 // PERBAIKAN: Ambil referensi tombol terbaru dari dalam listener
                 const currentSaveBtn = document.getElementById('save-draft-btn');
@@ -944,331 +1004,44 @@ async function showTugasDetail(tugas) {
                 if(currentSaveBtn) currentSaveBtn.disabled = false;
                 if(currentSubmitBtn) currentSubmitBtn.disabled = false;
                 
-                M.toast({ html: 'Tombol Simpan & Kirim telah diaktifkan.' });
+                if (window.M && M.toast) {
+                    M.toast({ html: 'Tombol Simpan & Kirim telah diaktifkan.' });
+                }
             }, { once: true }); // Opsi 'once' memastikan listener hanya berjalan sekali
         }
     }
 
     // Hapus listener lama untuk tombol simpan/kirim/tambah
-    const newSaveDraftBtn = saveDraftBtn.cloneNode(true);
-    saveDraftBtn.parentNode.replaceChild(newSaveDraftBtn, saveDraftBtn);
+    const newSaveDraftBtn = saveDraftBtn ? saveDraftBtn.cloneNode(true) : null;
+    if (newSaveDraftBtn && saveDraftBtn.parentNode) saveDraftBtn.parentNode.replaceChild(newSaveDraftBtn, saveDraftBtn);
 
-    const newSubmitFinalBtn = submitFinalBtn.cloneNode(true);
-    submitFinalBtn.parentNode.replaceChild(newSubmitFinalBtn, submitFinalBtn);
+    const newSubmitFinalBtn = submitFinalBtn ? submitFinalBtn.cloneNode(true) : null;
+    if (newSubmitFinalBtn && submitFinalBtn.parentNode) submitFinalBtn.parentNode.replaceChild(newSubmitFinalBtn, submitFinalBtn);
 
-    const newAddBtn = addRincianBtn.cloneNode(true);
-    addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
-
-    // Tambah listener baru
-    const rincianContainer2 = document.getElementById('rincian-fields-container');
-    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
-    newSaveDraftBtn.addEventListener('click', () => savePenilaian(tugas, 'draft'));
-    newSubmitFinalBtn.addEventListener('click', () => savePenilaian(tugas, 'final'));
-
-    // 6. Buka Modal
-    M.Modal.getInstance(modal).open();
-}
-
-// Fungsi untuk menyimpan data penilaian
-async function savePenilaian(tugas, submissionType) {
-    const modal = document.getElementById('detailModal');
-    const nilaiSelect = document.getElementById('nilai-select');
-    
-    if (!nilaiSelect.value) {
-        showError('Silakan pilih nilai terlebih dahulu.');
-        return;
-    }
-
-    showLoading(true);
-    try {
-        const rincianInputs = document.getElementById('rincian-fields-container').querySelectorAll('input');
-        const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
-        const rincianText = rincianValues.join('|');
-
-        const dataToUpdate = {
-            kodeHirarki: tugas.kodeHirarki,
-            nilai: nilaiSelect.value,
-            jenisBuktiDukung: rincianText,
-            submissionType: submissionType // BARU: Kirim tipe submisi ke backend
-        };
-
-        const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
-
-        if (response.success) {
-            showError('Penilaian berhasil disimpan!', 'success');
-            M.Modal.getInstance(modal).close();
-            loadTugasSaya(); // Muat ulang data untuk menampilkan status terbaru
-        } else {
-            throw new Error(response.message || 'Gagal menyimpan data ke backend');
-        }
-    } catch (error) {
-        showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan koneksi'));
-    } finally {
-        showLoading(false);
-    }
-}
-
-function showVerifikasiDetail(item) {
-    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota;
-    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas;
-    document.getElementById('verifikasi-waktu-submisi').textContent = new Date(item.waktuSubmisi).toLocaleString('id-ID');
-
-    const saveBtn = document.getElementById('save-verifikasi-btn');
-    saveBtn.dataset.targetUsername = item.targetUsername;
-    saveBtn.dataset.kodeHirarki = item.kodeHirarki;
-
-    const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
-    modalInstance.open();
-}
-
-// Fungsi untuk memuat data kinerja tim
-async function loadKinerjaTim() {
-    const loader = document.getElementById('kinerja-tim-loader');
-    const content = document.getElementById('kinerja-tim-content');
-    const tableBody = document.getElementById('kinerja-tim-table-body');
-    const noDataMessage = document.getElementById('kinerja-tim-no-data');
-    const user = JSON.parse(sessionStorage.getItem('user'));
-
-    // Tampilkan loader dan sembunyikan konten
-    loader.style.display = 'block';
-    content.style.display = 'none';
-    noDataMessage.style.display = 'none';
-    tableBody.innerHTML = '';
-
-    try {
-        const result = await callApi('getKinerjaTim');
-        if (result.success && result.data.length > 0) {
-            result.data.forEach(item => {
-                const row = document.createElement('tr');
-
-                // Fungsi untuk membuat status badge
-                const createStatusBadge = (status) => {
-                    if (!status) return '<span class="grey-text">-</span>';
-                    
-                    let color = 'grey';
-                    if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('terverifikasi')) {
-                        color = 'green';
-                    } else if (status.toLowerCase().includes('ditolak')) {
-                        color = 'red';
-                    } else if (status.toLowerCase().includes('proses') || status.toLowerCase().includes('dikerjakan')) {
-                        color = 'orange';
-                    }
-                    
-                    return `<span class="status-badge-small ${color}">${status}</span>`;
-                };
-                
-                row.innerHTML = `
-                    <td>${item.namaAnggota || 'N/A'}</td>
-                    <td>${item.namaTugas || 'N/A'}</td>
-                    <td>${item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : 'N/A'}</td>
-                    <td>${createStatusBadge(item.statusKetua)}</td>
-                    <td>${createStatusBadge(item.statusAdmin)}</td>
-                    <td>
-                        <button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)})'>Detail</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-            content.style.display = 'block';
-        } else {
-            noDataMessage.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading Kinerja Tim:', error);
-        M.toast({ html: 'Gagal memuat data Kinerja Tim.' });
-        noDataMessage.style.display = 'block';
-        noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
-    } finally {
-        loader.style.display = 'none';
-    }
-}
-
-// Helper untuk menambahkan satu field rincian
-function addRincianField(container, value = '') {
-    const inputGroup = document.createElement('div');
-    inputGroup.className = 'input-group';
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'validate';
-    input.value = value;
-    input.placeholder = 'Contoh: Laporan Pelaksanaan';
-
-    const removeBtn = document.createElement('a');
-    removeBtn.className = 'btn-floating btn-small waves-effect waves-light red';
-    removeBtn.innerHTML = '<i class="material-icons">remove</i>';
-
-    removeBtn.addEventListener('click', () => {
-        inputGroup.remove();
-    });
-
-    inputGroup.appendChild(input);
-    inputGroup.appendChild(removeBtn);
-    container.appendChild(inputGroup);
-}
-
-// Fungsi untuk setup field rincian awal
-function setupRincianFields(container, rincianText) {
-    container.innerHTML = ''; // Selalu kosongkan dulu
-    if (rincianText) {
-        const rincianArray = rincianText.split('|').filter(item => item.trim() !== '');
-        if (rincianArray.length > 0) {
-            rincianArray.forEach(value => addRincianField(container, value));
-        } else {
-            addRincianField(container); // Jika kosong, tambahkan satu field default
-        }
-    } else {
-        addRincianField(container); // Jika tidak ada data, tambahkan satu field default
-    }
-}
-
-// Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
-async function showTugasDetail(tugas) {
-    const modal = document.getElementById('detailModal');
-    if (!modal) {
-        console.error('Modal element with ID "detailModal" not found.');
-        return;
-    }
-
-    // 1. Setup Diagram Pohon Hirarki
-    const hierarchyBox = document.getElementById('modal-hierarchy-box');
-    hierarchyBox.innerHTML = '';
-    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
-    levels.forEach((levelKey, index) => {
-        if (tugas[levelKey]) {
-            const item = document.createElement('div');
-            item.className = `hierarchy-level level-${index + 1}`; // penting untuk indentasi bermakna
-            item.textContent = tugas[levelKey];
-            hierarchyBox.appendChild(item);
-        }
-    });
-
-    // 2. Isi Info Detail
-    document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    // Format Panduan Penilaian menjadi per-baris (a., b., c., ...)
-    const panduanEl = document.getElementById('modal-opsi-jawaban');
-    const rawPanduan = (tugas.panduanPenilaian || '').toString().trim();
-    const formattedPanduan = (() => {
-        if (!rawPanduan) return 'Panduan tidak tersedia.';
-        // Jika sheet menggunakan pemisah '|', gunakan itu terlebih dahulu
-        if (rawPanduan.includes('|')) {
-            return rawPanduan
-                .split('|')
-                .map(s => s.trim())
-                .filter(Boolean)
-                .map(line => `<div class="panduan-line">${line}</div>`) 
-                .join('');
-        }
-        // Sisipkan line break sebelum b., c., d., dst. tanpa mengubah a. di awal
-        const withBreaks = rawPanduan
-            .replace(/\s([b-z])\.\s/gi, (m, p1) => `<br>${p1}. `); // enter sebelum b. .. z.
-        return withBreaks
-            .split(/<br>/)
-            .map(s => s.trim())
-            .filter(Boolean)
-            .map(line => `<div class="panduan-line">${line}</div>`)
-            .join('');
-    })();
-    panduanEl.innerHTML = formattedPanduan;
-
-    // 3. Setup Form Penilaian
-    const nilaiSelect = document.getElementById('nilai-select');
-    nilaiSelect.innerHTML = '<option value="" disabled selected>Pilih Nilai</option>';
-    if (tugas.pilihanJawaban) {
-        tugas.pilihanJawaban.split('/').forEach(opsi => {
-            const option = document.createElement('option');
-            option.value = opsi.trim();
-            option.textContent = opsi.trim();
-            nilaiSelect.appendChild(option);
-        });
-    }
-    nilaiSelect.value = tugas.nilai || '';
-    M.FormSelect.init(nilaiSelect);
-
-    // 4. Setup Rincian Bukti Dukung
-    const rincianContainer = document.getElementById('rincian-fields-container');
-    setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
-
-    // 5. Logika Tombol Footer (dengan penghapusan listener lama)
-    const openGdriveBtn = document.getElementById('open-gdrive-btn');
-    const saveDraftBtn = document.getElementById('save-draft-btn');
-    const submitFinalBtn = document.getElementById('submit-final-btn');
-    const addRincianBtn = document.getElementById('add-rincian-btn');
-
-    // Mengatur link GDrive dan memastikannya terbuka di tab baru
-    if (openGdriveBtn) {
-        // Ikuti pola yang sama seperti link referensi
-        const gdriveLink = (tugas.linkGDriveBukti || tugas.linkBuktiDukung || '').toString().trim();
-        openGdriveBtn.href = gdriveLink || '#!';
-        openGdriveBtn.target = '_blank';
-    }
-
-    // PERBAIKAN: Tambahkan kelas unik untuk styling
-    if (openGdriveBtn) openGdriveBtn.classList.add('btn-gdrive');
-    if (saveDraftBtn) saveDraftBtn.classList.add('btn-draft');
-    if (submitFinalBtn) submitFinalBtn.classList.add('btn-submit');
-
-    // Logika untuk menampilkan/menyembunyikan tombol berdasarkan status
-    const isLocked = tugas.statusKetua === 'Menunggu Verifikasi' || tugas.statusKetua === 'Approved' || tugas.statusAdmin === 'Approved';
-
-    if (isLocked) {
-        // Sembunyikan semua tombol aksi jika tugas terkunci
-        if(openGdriveBtn) openGdriveBtn.style.display = 'none';
-        if(saveDraftBtn) saveDraftBtn.style.display = 'none';
-        if(submitFinalBtn) submitFinalBtn.style.display = 'none';
-        if(addRincianBtn) addRincianBtn.style.display = 'none';
-    } else {
-        // Tampilkan tombol jika tugas bisa diedit (draft atau ditolak)
-        if(openGdriveBtn) openGdriveBtn.style.display = 'inline-block';
-        if(saveDraftBtn) saveDraftBtn.style.display = 'inline-block';
-        if(submitFinalBtn) submitFinalBtn.style.display = 'inline-block';
-        if(addRincianBtn) addRincianBtn.style.display = 'inline-block';
-
-        // Nonaktifkan tombol simpan & kirim pada awalnya
-        if(saveDraftBtn) saveDraftBtn.disabled = true;
-        if(submitFinalBtn) submitFinalBtn.disabled = true;
-
-        // Hapus event listener lama untuk mencegah duplikasi
-        if (openGdriveBtn) {
-            const newGdriveBtn = openGdriveBtn.cloneNode(true);
-            openGdriveBtn.parentNode.replaceChild(newGdriveBtn, openGdriveBtn);
-
-            // Tambahkan event listener untuk mengaktifkan tombol setelah GDrive dibuka
-            newGdriveBtn.addEventListener('click', function() {
-                // PERBAIKAN: Ambil referensi tombol terbaru dari dalam listener
-                const currentSaveBtn = document.getElementById('save-draft-btn');
-                const currentSubmitBtn = document.getElementById('submit-final-btn');
-                
-                if(currentSaveBtn) currentSaveBtn.disabled = false;
-                if(currentSubmitBtn) currentSubmitBtn.disabled = false;
-                
-                M.toast({ html: 'Tombol Simpan & Kirim telah diaktifkan.' });
-            }, { once: true }); // Opsi 'once' memastikan listener hanya berjalan sekali
-        }
-    }
-
-    // Hapus listener lama untuk tombol simpan/kirim/tambah
-    const newSaveDraftBtn = saveDraftBtn.cloneNode(true);
-    saveDraftBtn.parentNode.replaceChild(newSaveDraftBtn, saveDraftBtn);
-
-    const newSubmitFinalBtn = submitFinalBtn.cloneNode(true);
-    submitFinalBtn.parentNode.replaceChild(newSubmitFinalBtn, submitFinalBtn);
-
-    const newAddBtn = addRincianBtn.cloneNode(true);
-    addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
+    const newAddBtn = addRincianBtn ? addRincianBtn.cloneNode(true) : null;
+    if (newAddBtn && addRincianBtn.parentNode) addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
 
     // Tambah listener baru
     const rincianContainer2 = document.getElementById('rincian-fields-container');
-    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
-    newSaveDraftBtn.addEventListener('click', () => savePenilaian(tugas, 'draft'));
-    newSubmitFinalBtn.addEventListener('click', () => savePenilaian(tugas, 'final'));
+    if (newAddBtn) newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
+    if (newSaveDraftBtn) newSaveDraftBtn.addEventListener('click', () => savePenilaian(tugas, 'draft'));
+    if (newSubmitFinalBtn) newSubmitFinalBtn.addEventListener('click', () => savePenilaian(tugas, 'final'));
 
     // 6. Buka Modal
-    M.Modal.getInstance(modal).open();
+    try {
+        if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+            M.Modal.getInstance(modal).open();
+        } else if (modal && typeof modal.showModal === 'function') {
+            // Fallback untuk <dialog> jika ada
+            modal.showModal();
+        }
+    } catch (e) {
+        console.warn('Tidak dapat membuka modal:', e);
+    }
 
     // Kembalikan render Status
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadge(tugas);
+    statusContainer.innerHTML = getStatusBadgeLegacy(tugas);
 
     // Kembalikan Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
@@ -1312,7 +1085,16 @@ async function savePenilaian(tugas, submissionType) {
 
         if (response.success) {
             showError('Penilaian berhasil disimpan!', 'success');
-            M.Modal.getInstance(modal).close();
+            try {
+                if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+                    M.Modal.getInstance(modal).close();
+                } else if (modal && typeof modal.close === 'function') {
+                    // Fallback untuk <dialog> jika ada
+                    modal.close();
+                }
+            } catch (e) {
+                console.warn('Tidak dapat menutup modal:', e);
+            }
             loadTugasSaya(); // Muat ulang data untuk menampilkan status terbaru
         } else {
             throw new Error(response.message || 'Gagal menyimpan data ke backend');
@@ -1333,8 +1115,16 @@ function showVerifikasiDetail(item) {
     saveBtn.dataset.targetUsername = item.targetUsername;
     saveBtn.dataset.kodeHirarki = item.kodeHirarki;
 
-    const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
-    modalInstance.open();
+    try {
+        if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+            M.Modal.getInstance(document.getElementById('verifikasiModal')).open();
+        } else if (document.getElementById('verifikasiModal') && typeof document.getElementById('verifikasiModal').showModal === 'function') {
+            // Fallback untuk <dialog> jika ada
+            document.getElementById('verifikasiModal').showModal();
+        }
+    } catch (e) {
+        console.warn('Tidak dapat membuka modal:', e);
+    }
 }
 
 // Fungsi untuk memuat data kinerja tim
@@ -1391,7 +1181,7 @@ async function loadKinerjaTim() {
         }
     } catch (error) {
         console.error('Error loading Kinerja Tim:', error);
-        M.toast({ html: 'Gagal memuat data Kinerja Tim.' });
+        showError('Gagal memuat data Kinerja Tim.');
         noDataMessage.style.display = 'block';
         noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
     } finally {
@@ -1437,3 +1227,22 @@ function setupRincianFields(container, rincianText) {
         addRincianField(container); // Jika tidak ada data, tambahkan satu field default
     }
 }
+
+// === Badge status konsisten berbasis deriveTaskState ===
+function getStatusBadge(tugas) {
+    const st = deriveTaskState(tugas);
+    let color = 'grey';
+    switch (st.phase) {
+      case 'idle': color = 'grey'; break;
+      case 'working': color = 'orange'; break;
+      case 'submitted': color = 'blue'; break;
+      case 'pending_ketua': color = 'blue'; break;
+      case 'approved_ketua': color = 'blue'; break;
+      case 'pending_admin': color = 'blue'; break;
+      case 'approved_admin': color = 'green'; break;
+      case 'rejected_ketua':
+      case 'rejected_admin': color = 'red'; break;
+      default: color = 'grey';
+    }
+    return `<span class="status-badge ${color}" title="${st.phase}">${st.statusText}</span>`;
+  }
