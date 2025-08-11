@@ -1938,3 +1938,36 @@ table tr:hover {
 
 /* Pastikan tidak ada motif strip (override aturan lama) */
 #modal-hierarchy-box { background-image: none !important; }
+
+/* === Tugas Saya: Group header elegant === */
+.tugas-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #E8F2FF;            /* soft blue */
+  border: 1px solid #D6E6FF;      /* subtle border */
+  border-radius: 10px;             /* rounded like screenshot */
+  padding: 12px 14px;
+  margin: 8px 8px 0;               /* slight inset from container */
+  color: #0D47A1;                  /* deep blue text */
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.tugas-group-header .material-icons {
+  color: #1E88E5;
+  margin-right: 6px;
+}
+.tugas-group-header .group-title { display: inline-flex; align-items: center; gap: 8px; }
+.tugas-group-header .group-text { text-transform: uppercase; font-size: 15px; }
+
+/* Divider line under header to separate from cards */
+.tugas-group-header + .collapsible-body {
+  border-top: 1px solid #E3EDFF;
+  padding-top: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .tugas-group-header { padding: 10px 12px; border-radius: 8px; }
+  .tugas-group-header .group-text { font-size: 14px; }
+}

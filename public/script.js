@@ -753,8 +753,13 @@ function displayTugasSaya(data) {
         }
 
         const header = document.createElement('div');
-        header.className = 'collapsible-header';
-        header.innerHTML = `<i class="material-icons">folder</i>${groupName}`;
+        header.className = 'collapsible-header tugas-group-header';
+        header.innerHTML = `
+            <span class="group-title">
+                <i class="material-icons">folder</i>
+                <span class="group-text">${groupName}</span>
+            </span>
+        `;
 
         const body = document.createElement('div');
         body.className = 'collapsible-body';
