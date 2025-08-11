@@ -1589,7 +1589,7 @@ table tr:hover {
 
 /* === PERBAIKAN: Pohon Hirarki (Sesuai Referensi) === */
 .task-breadcrumb {
-    background-color: #fffaf2; /* Warna semi-oranye yang sangat lembut */
+    background-color: #fff8f0; /* Warna semi-oranye yang sangat lembut */
     border: 1px solid #ffeacc;
     border-radius: 8px;
     padding: 16px 20px;
@@ -1920,8 +1920,35 @@ table tr:hover {
   .tugas-group-header { padding: 10px 12px; border-radius: 8px; }
   .tugas-group-header .group-text { font-size: 14px; }
 }
-/* Panduan Penilaian: line spacing */
-#modal-opsi-jawaban .panduan-line { 
-  margin: 4px 0 6px; 
-  line-height: 1.6; 
+
+/* === Modal Hierarchy: indentation and connectors (restored) === */
+#modal-hierarchy-box .hierarchy-level {
+  --indent: 0px; /* overridden by level-2/3/4 */
+  position: relative;
+  padding-left: calc(28px + var(--indent));
+  line-height: 1.7;
+  font-size: 15px;
+  color: #263238;
 }
+#modal-hierarchy-box .hierarchy-level:not(:last-child) { margin-bottom: 6px; }
+
+#modal-hierarchy-box .hierarchy-level::before {
+  content: '';
+  position: absolute;
+  left: calc(10px + var(--indent));
+  top: 0; bottom: 0;
+  border-left: 1.5px dashed rgba(38,50,56,0.28);
+}
+#modal-hierarchy-box .hierarchy-level::after {
+  content: '';
+  position: absolute;
+  left: calc(10px + var(--indent));
+  top: 12px; width: 12px;
+  border-top: 1.5px dashed rgba(38,50,56,0.28);
+}
+#modal-hierarchy-box .hierarchy-level:last-child::before { height: 12px; }
+
+#modal-hierarchy-box .hierarchy-level.level-1 { --indent: 0px; }
+#modal-hierarchy-box .hierarchy-level.level-2 { --indent: 24px; }
+#modal-hierarchy-box .hierarchy-level.level-3 { --indent: 48px; }
+#modal-hierarchy-box .hierarchy-level.level-4 { --indent: 72px; color: #37474f; }

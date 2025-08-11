@@ -1121,3 +1121,319 @@ function setupRincianFields(container, rincianText) {
         addRincianField(container); // Jika tidak ada data, tambahkan satu field default
     }
 }
+
+// Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
+async function showTugasDetail(tugas) {
+    const modal = document.getElementById('detailModal');
+    if (!modal) {
+        console.error('Modal element with ID "detailModal" not found.');
+        return;
+    }
+
+    // 1. Setup Diagram Pohon Hirarki
+    const hierarchyBox = document.getElementById('modal-hierarchy-box');
+    hierarchyBox.innerHTML = '';
+    const levels = ['tingkatan1', 'tingkatan2', 'tingkatan3', 'tingkatan4'];
+    levels.forEach((levelKey, index) => {
+        if (tugas[levelKey]) {
+            const item = document.createElement('div');
+            item.className = `hierarchy-level level-${index + 1}`; // penting untuk indentasi bermakna
+            item.textContent = tugas[levelKey];
+            hierarchyBox.appendChild(item);
+        }
+    });
+
+    // 2. Isi Info Detail
+    document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
+    // Format Panduan Penilaian menjadi per-baris (a., b., c., ...)
+    const panduanEl = document.getElementById('modal-opsi-jawaban');
+    const rawPanduan = (tugas.panduanPenilaian || '').toString().trim();
+    const formattedPanduan = (() => {
+        if (!rawPanduan) return 'Panduan tidak tersedia.';
+        // Jika sheet menggunakan pemisah '|', gunakan itu terlebih dahulu
+        if (rawPanduan.includes('|')) {
+            return rawPanduan
+                .split('|')
+                .map(s => s.trim())
+                .filter(Boolean)
+                .map(line => `<div class="panduan-line">${line}</div>`) 
+                .join('');
+        }
+        // Sisipkan line break sebelum b., c., d., dst. tanpa mengubah a. di awal
+        const withBreaks = rawPanduan
+            .replace(/\s([b-z])\.\s/gi, (m, p1) => `<br>${p1}. `); // enter sebelum b. .. z.
+        return withBreaks
+            .split(/<br>/)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(line => `<div class="panduan-line">${line}</div>`)
+            .join('');
+    })();
+    panduanEl.innerHTML = formattedPanduan;
+
+    // 3. Setup Form Penilaian
+    const nilaiSelect = document.getElementById('nilai-select');
+    nilaiSelect.innerHTML = '<option value="" disabled selected>Pilih Nilai</option>';
+    if (tugas.pilihanJawaban) {
+        tugas.pilihanJawaban.split('/').forEach(opsi => {
+            const option = document.createElement('option');
+            option.value = opsi.trim();
+            option.textContent = opsi.trim();
+            nilaiSelect.appendChild(option);
+        });
+    }
+    nilaiSelect.value = tugas.nilai || '';
+    M.FormSelect.init(nilaiSelect);
+
+    // 4. Setup Rincian Bukti Dukung
+    const rincianContainer = document.getElementById('rincian-fields-container');
+    setupRincianFields(rincianContainer, tugas.jenisBuktiDukung);
+
+    // 5. Logika Tombol Footer (dengan penghapusan listener lama)
+    const openGdriveBtn = document.getElementById('open-gdrive-btn');
+    const saveDraftBtn = document.getElementById('save-draft-btn');
+    const submitFinalBtn = document.getElementById('submit-final-btn');
+    const addRincianBtn = document.getElementById('add-rincian-btn');
+
+    // Mengatur link GDrive dan memastikannya terbuka di tab baru
+    if (openGdriveBtn) {
+        // Ikuti pola yang sama seperti link referensi
+        const gdriveLink = (tugas.linkGDriveBukti || tugas.linkBuktiDukung || '').toString().trim();
+        openGdriveBtn.href = gdriveLink || '#!';
+        openGdriveBtn.target = '_blank';
+    }
+
+    // PERBAIKAN: Tambahkan kelas unik untuk styling
+    if (openGdriveBtn) openGdriveBtn.classList.add('btn-gdrive');
+    if (saveDraftBtn) saveDraftBtn.classList.add('btn-draft');
+    if (submitFinalBtn) submitFinalBtn.classList.add('btn-submit');
+
+    // Logika untuk menampilkan/menyembunyikan tombol berdasarkan status
+    const isLocked = tugas.statusKetua === 'Menunggu Verifikasi' || tugas.statusKetua === 'Approved' || tugas.statusAdmin === 'Approved';
+
+    if (isLocked) {
+        // Sembunyikan semua tombol aksi jika tugas terkunci
+        if(openGdriveBtn) openGdriveBtn.style.display = 'none';
+        if(saveDraftBtn) saveDraftBtn.style.display = 'none';
+        if(submitFinalBtn) submitFinalBtn.style.display = 'none';
+        if(addRincianBtn) addRincianBtn.style.display = 'none';
+    } else {
+        // Tampilkan tombol jika tugas bisa diedit (draft atau ditolak)
+        if(openGdriveBtn) openGdriveBtn.style.display = 'inline-block';
+        if(saveDraftBtn) saveDraftBtn.style.display = 'inline-block';
+        if(submitFinalBtn) submitFinalBtn.style.display = 'inline-block';
+        if(addRincianBtn) addRincianBtn.style.display = 'inline-block';
+
+        // Nonaktifkan tombol simpan & kirim pada awalnya
+        if(saveDraftBtn) saveDraftBtn.disabled = true;
+        if(submitFinalBtn) submitFinalBtn.disabled = true;
+
+        // Hapus event listener lama untuk mencegah duplikasi
+        if (openGdriveBtn) {
+            const newGdriveBtn = openGdriveBtn.cloneNode(true);
+            openGdriveBtn.parentNode.replaceChild(newGdriveBtn, openGdriveBtn);
+
+            // Tambahkan event listener untuk mengaktifkan tombol setelah GDrive dibuka
+            newGdriveBtn.addEventListener('click', function() {
+                // PERBAIKAN: Ambil referensi tombol terbaru dari dalam listener
+                const currentSaveBtn = document.getElementById('save-draft-btn');
+                const currentSubmitBtn = document.getElementById('submit-final-btn');
+                
+                if(currentSaveBtn) currentSaveBtn.disabled = false;
+                if(currentSubmitBtn) currentSubmitBtn.disabled = false;
+                
+                M.toast({ html: 'Tombol Simpan & Kirim telah diaktifkan.' });
+            }, { once: true }); // Opsi 'once' memastikan listener hanya berjalan sekali
+        }
+    }
+
+    // Hapus listener lama untuk tombol simpan/kirim/tambah
+    const newSaveDraftBtn = saveDraftBtn.cloneNode(true);
+    saveDraftBtn.parentNode.replaceChild(newSaveDraftBtn, saveDraftBtn);
+
+    const newSubmitFinalBtn = submitFinalBtn.cloneNode(true);
+    submitFinalBtn.parentNode.replaceChild(newSubmitFinalBtn, submitFinalBtn);
+
+    const newAddBtn = addRincianBtn.cloneNode(true);
+    addRincianBtn.parentNode.replaceChild(newAddBtn, addRincianBtn);
+
+    // Tambah listener baru
+    const rincianContainer2 = document.getElementById('rincian-fields-container');
+    newAddBtn.addEventListener('click', () => addRincianField(rincianContainer2)); // PERBAIKAN: Kirim elemen kontainer
+    newSaveDraftBtn.addEventListener('click', () => savePenilaian(tugas, 'draft'));
+    newSubmitFinalBtn.addEventListener('click', () => savePenilaian(tugas, 'final'));
+
+    // 6. Buka Modal
+    M.Modal.getInstance(modal).open();
+
+    // Kembalikan render Status
+    const statusContainer = document.getElementById('modal-status');
+    statusContainer.innerHTML = getStatusBadge(tugas);
+
+    // Kembalikan Link Referensi
+    const referensiContainer = document.getElementById('modal-referensi-link');
+    referensiContainer.innerHTML = '';
+    const ref = (tugas.linkReferensi || '').toString().trim();
+    if (ref) {
+        const link = document.createElement('a');
+        link.href = ref;
+        link.textContent = 'Lihat Dokumen Referensi';
+        link.target = '_blank';
+        referensiContainer.appendChild(link);
+    } else {
+        referensiContainer.textContent = 'Tidak ada referensi.';
+    }
+}
+
+// Fungsi untuk menyimpan data penilaian
+async function savePenilaian(tugas, submissionType) {
+    const modal = document.getElementById('detailModal');
+    const nilaiSelect = document.getElementById('nilai-select');
+    
+    if (!nilaiSelect.value) {
+        showError('Silakan pilih nilai terlebih dahulu.');
+        return;
+    }
+
+    showLoading(true);
+    try {
+        const rincianInputs = document.getElementById('rincian-fields-container').querySelectorAll('input');
+        const rincianValues = Array.from(rincianInputs).map(input => input.value.trim()).filter(val => val);
+        const rincianText = rincianValues.join('|');
+
+        const dataToUpdate = {
+            kodeHirarki: tugas.kodeHirarki,
+            nilai: nilaiSelect.value,
+            jenisBuktiDukung: rincianText,
+            submissionType: submissionType // BARU: Kirim tipe submisi ke backend
+        };
+
+        const response = await callApi('saveBuktiDukung', 'POST', dataToUpdate);
+
+        if (response.success) {
+            showError('Penilaian berhasil disimpan!', 'success');
+            M.Modal.getInstance(modal).close();
+            loadTugasSaya(); // Muat ulang data untuk menampilkan status terbaru
+        } else {
+            throw new Error(response.message || 'Gagal menyimpan data ke backend');
+        }
+    } catch (error) {
+        showError('Gagal menyimpan: ' + (error.message || 'Terjadi kesalahan koneksi'));
+    } finally {
+        showLoading(false);
+    }
+}
+
+function showVerifikasiDetail(item) {
+    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota;
+    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas;
+    document.getElementById('verifikasi-waktu-submisi').textContent = new Date(item.waktuSubmisi).toLocaleString('id-ID');
+
+    const saveBtn = document.getElementById('save-verifikasi-btn');
+    saveBtn.dataset.targetUsername = item.targetUsername;
+    saveBtn.dataset.kodeHirarki = item.kodeHirarki;
+
+    const modalInstance = M.Modal.getInstance(document.getElementById('verifikasiModal'));
+    modalInstance.open();
+}
+
+// Fungsi untuk memuat data kinerja tim
+async function loadKinerjaTim() {
+    const loader = document.getElementById('kinerja-tim-loader');
+    const content = document.getElementById('kinerja-tim-content');
+    const tableBody = document.getElementById('kinerja-tim-table-body');
+    const noDataMessage = document.getElementById('kinerja-tim-no-data');
+    const user = JSON.parse(sessionStorage.getItem('user'));
+
+    // Tampilkan loader dan sembunyikan konten
+    loader.style.display = 'block';
+    content.style.display = 'none';
+    noDataMessage.style.display = 'none';
+    tableBody.innerHTML = '';
+
+    try {
+        const result = await callApi('getKinerjaTim');
+        if (result.success && result.data.length > 0) {
+            result.data.forEach(item => {
+                const row = document.createElement('tr');
+
+                // Fungsi untuk membuat status badge
+                const createStatusBadge = (status) => {
+                    if (!status) return '<span class="grey-text">-</span>';
+                    
+                    let color = 'grey';
+                    if (status.toLowerCase().includes('setuju') || status.toLowerCase().includes('terverifikasi')) {
+                        color = 'green';
+                    } else if (status.toLowerCase().includes('ditolak')) {
+                        color = 'red';
+                    } else if (status.toLowerCase().includes('proses') || status.toLowerCase().includes('dikerjakan')) {
+                        color = 'orange';
+                    }
+                    
+                    return `<span class="status-badge-small ${color}">${status}</span>`;
+                };
+                
+                row.innerHTML = `
+                    <td>${item.namaAnggota || 'N/A'}</td>
+                    <td>${item.namaTugas || 'N/A'}</td>
+                    <td>${item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : 'N/A'}</td>
+                    <td>${createStatusBadge(item.statusKetua)}</td>
+                    <td>${createStatusBadge(item.statusAdmin)}</td>
+                    <td>
+                        <button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)})'>Detail</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            content.style.display = 'block';
+        } else {
+            noDataMessage.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading Kinerja Tim:', error);
+        M.toast({ html: 'Gagal memuat data Kinerja Tim.' });
+        noDataMessage.style.display = 'block';
+        noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+// Helper untuk menambahkan satu field rincian
+function addRincianField(container, value = '') {
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'validate';
+    input.value = value;
+    input.placeholder = 'Contoh: Laporan Pelaksanaan';
+
+    const removeBtn = document.createElement('a');
+    removeBtn.className = 'btn-floating btn-small waves-effect waves-light red';
+    removeBtn.innerHTML = '<i class="material-icons">remove</i>';
+
+    removeBtn.addEventListener('click', () => {
+        inputGroup.remove();
+    });
+
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(removeBtn);
+    container.appendChild(inputGroup);
+}
+
+// Fungsi untuk setup field rincian awal
+function setupRincianFields(container, rincianText) {
+    container.innerHTML = ''; // Selalu kosongkan dulu
+    if (rincianText) {
+        const rincianArray = rincianText.split('|').filter(item => item.trim() !== '');
+        if (rincianArray.length > 0) {
+            rincianArray.forEach(value => addRincianField(container, value));
+        } else {
+            addRincianField(container); // Jika kosong, tambahkan satu field default
+        }
+    } else {
+        addRincianField(container); // Jika tidak ada data, tambahkan satu field default
+    }
+}
