@@ -401,8 +401,8 @@ async function loadLinkPendukung() {
                         // PERBAIKAN: Koleksi Ikon Diperbanyak untuk mendukung hingga 50+ link unik
                         const icons = [
                             // Kategori Dokumen & File (Biru & Merah)
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#42A5F5"/></svg>`, // Dokumen Biru
-                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#EF5350"/></svg>`, // PDF Merah
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#42A5F5"/></svg>`, // Dokumen Biru
+                            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 0H6v4h8v-4h4V4h-4v2h-4V4h-4v4h-2z" fill="#EF5350"/></svg>`, // PDF Merah
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 13v8h8v-8h-8zM3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" fill="#78909C"/></svg>`, // Folder Abu-abu
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5S13.5 3.62 13.5 5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6h-1.5z" fill="#AB47BC"/></svg>`, // Attachment Ungu
                             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" fill="#FFA726"/></svg>`, // Spreadsheet Hijau
@@ -725,15 +725,20 @@ function normalizeStatus(str) {
     const ketua = normalizeStatus(tugas.statusKetua);
     const admin = normalizeStatus(tugas.statusAdmin);
     const hasDraft = !!(tugas.jenisBuktiDukung && type !== 'final');
-  
+    const userStatusStr = (tugas.statusUser || tugas.status_user || '').toString().trim().toLowerCase();
+
     if (admin === 'rejected') {
       return { statusText: 'Rejected by Admin', phase: 'rejected_admin', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
     }
     if (ketua === 'rejected') {
       return { statusText: 'Rejected by Ketua Pilar', phase: 'rejected_ketua', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
     }
-  
-    if (type === 'final') {
+
+    const isUserSubmitted = userStatusStr.includes('terkirim') || userStatusStr.includes('submitted');
+    const effectiveType = type || (isUserSubmitted ? 'final' : (hasDraft ? 'draft' : ''));
+    const isUserWorking = userStatusStr.includes('sedang') || userStatusStr.includes('mengerja') || userStatusStr.includes('progress');
+
+    if (effectiveType === 'final') {
       if ((ketua === 'pending' || !ketua) && !admin) {
         return { statusText: ketua === 'pending' ? 'Menunggu Verifikasi Ketua' : 'Submitted', phase: ketua === 'pending' ? 'pending_ketua' : 'submitted', canEditAnggota: false, ketuaCanAct: true, adminCanAct: false, lockUI: true };
       }
@@ -744,12 +749,31 @@ function normalizeStatus(str) {
         return { statusText: 'Approved by Admin', phase: 'approved_admin', canEditAnggota: false, ketuaCanAct: false, adminCanAct: false, lockUI: true };
       }
     }
-  
-    if (hasDraft || type === 'draft') {
+
+    if (hasDraft || effectiveType === 'draft' || isUserWorking) {
       return { statusText: 'Sedang Mengerjakan', phase: 'working', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
     }
-  
+
     return { statusText: 'Belum Mengerjakan', phase: 'idle', canEditAnggota: true, ketuaCanAct: false, adminCanAct: false, lockUI: false };
+  }
+
+// === Badge status konsisten berbasis deriveTaskState ===
+function getStatusBadge(tugas) {
+    const st = deriveTaskState(tugas);
+    let color = 'grey';
+    switch (st.phase) {
+      case 'idle': color = 'grey'; break;
+      case 'working': color = 'orange'; break;
+      case 'submitted': color = 'blue'; break;
+      case 'pending_ketua': color = 'blue'; break;
+      case 'approved_ketua': color = 'blue'; break;
+      case 'pending_admin': color = 'blue'; break;
+      case 'approved_admin': color = 'green'; break;
+      case 'rejected_ketua':
+      case 'rejected_admin': color = 'red'; break;
+      default: color = 'grey';
+    }
+    return `<span class="status-badge ${color}" title="${st.phase}">${st.statusText}</span>`;
   }
 
 // --- FUNGSI UNTUK MENU TUGAS SAYA (VERSI STABIL) ---
@@ -833,7 +857,7 @@ function displayTugasSaya(data) {
             card.className = 'task-card card';
 
             // Ambil status badge dari fungsi yang sudah ada
-            const statusBadgeHtml = getStatusBadgeLegacy(tugas);
+            const statusBadgeHtml = getStatusBadge(tugas);
 
             card.innerHTML = `
                 <div class="card-content">
@@ -883,7 +907,7 @@ function getStatusBadgeLegacy(task) {
         statusClass = 'blue';
     }
     const statusText = status.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
-    return `<span class="new badge ${statusClass}" data-badge-caption="">${statusText}</span>`;
+    return `<span class="new badge ${statusClass}" data-badge-caption="${statusText}"></span>`;
 }
 
 // Fungsi untuk membuka detail tugas (VERSI PERBAIKAN TOTAL)
@@ -1041,7 +1065,7 @@ async function showTugasDetail(tugas) {
 
     // Kembalikan render Status
     const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadgeLegacy(tugas);
+    statusContainer.innerHTML = getStatusBadge(tugas);
 
     // Kembalikan Link Referensi
     const referensiContainer = document.getElementById('modal-referensi-link');
@@ -1227,22 +1251,3 @@ function setupRincianFields(container, rincianText) {
         addRincianField(container); // Jika tidak ada data, tambahkan satu field default
     }
 }
-
-// === Badge status konsisten berbasis deriveTaskState ===
-function getStatusBadge(tugas) {
-    const st = deriveTaskState(tugas);
-    let color = 'grey';
-    switch (st.phase) {
-      case 'idle': color = 'grey'; break;
-      case 'working': color = 'orange'; break;
-      case 'submitted': color = 'blue'; break;
-      case 'pending_ketua': color = 'blue'; break;
-      case 'approved_ketua': color = 'blue'; break;
-      case 'pending_admin': color = 'blue'; break;
-      case 'approved_admin': color = 'green'; break;
-      case 'rejected_ketua':
-      case 'rejected_admin': color = 'red'; break;
-      default: color = 'grey';
-    }
-    return `<span class="status-badge ${color}" title="${st.phase}">${st.statusText}</span>`;
-  }

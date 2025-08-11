@@ -243,12 +243,16 @@ function handleGetTugasSaya(payload) {
   const buktiDukungMap = buktiData.reduce((map, row) => {
     const username = row[buktiHeaders.indexOf('Username')];
     const kodeHirarki = row[buktiHeaders.indexOf('Kode Hirarki')];
+    const idxStatusKetua = buktiHeaders.indexOf('Status Ketua Pilar');
+    const idxStatusAdmin = buktiHeaders.indexOf('Status Admin');
     if (username && kodeHirarki) {
       map[`${username}-${kodeHirarki}`] = {
         nilai: row[buktiHeaders.indexOf('Nilai')],
         jenisBuktiDukung: row[buktiHeaders.indexOf('Jenis Bukti Dukung')],
         timestamp: row[buktiHeaders.indexOf('Timestamp')],
-        statusUser: row[buktiHeaders.indexOf('Status User')] || ''
+        statusUser: row[buktiHeaders.indexOf('Status User')] || '',
+        statusKetua: idxStatusKetua !== -1 ? (row[idxStatusKetua] || '') : '',
+        statusAdmin: idxStatusAdmin !== -1 ? (row[idxStatusAdmin] || '') : ''
       };
     }
     return map;
@@ -281,7 +285,9 @@ function handleGetTugasSaya(payload) {
         // Gabungkan dengan data dari bukti dukung
         nilai: bukti.nilai || '',
         jenisBuktiDukung: bukti.jenisBuktiDukung || '',
-        statusUser: bukti.statusUser || '', // TAMBAHKAN BARIS INI
+        statusUser: bukti.statusUser || '',
+        statusKetua: bukti.statusKetua || '',
+        statusAdmin: bukti.statusAdmin || '',
         // Tambahkan status pengerjaan
         statusPengerjaan: statusPengerjaan
       });
