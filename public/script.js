@@ -886,7 +886,9 @@ async function showTugasDetail(tugas) {
 
     // Mengatur link GDrive dan memastikannya terbuka di tab baru
     if (openGdriveBtn) {
-        openGdriveBtn.href = tugas.linkBuktiDukung || '#!';
+        // Ikuti pola yang sama seperti link referensi
+        const gdriveLink = (tugas.linkGDriveBukti || tugas.linkBuktiDukung || '').toString().trim();
+        openGdriveBtn.href = gdriveLink || '#!';
         openGdriveBtn.target = '_blank';
     }
 
