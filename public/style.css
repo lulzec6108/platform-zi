@@ -1869,3 +1869,76 @@ table tr:hover {
 #modal-hierarchy-box .hierarchy-level:last-child::before {
     height: 12px;
 }
+
+/* === PERBAIKAN: Membuat Semi-Blue Background dengan Terminal-Like Indent Stripes untuk Hierarchy Box === */
+#modal-hierarchy-box {
+    background-color: #f3f7fe; /* semi-biru profesional */
+    border: 1px solid #d9e4ff;
+    border-radius: 12px;
+    padding: 16px 16px 12px;
+    box-shadow: 0 4px 12px rgba(30, 136, 229, 0.06);
+    margin-bottom: 16px;
+    /* Efek indentasi ala terminal (strip vertikal halus setiap 24px) */
+    background-image: repeating-linear-gradient(
+        to right,
+        rgba(21,101,192,0.06) 0, rgba(21,101,192,0.06) 24px,
+        transparent 24px, transparent 48px
+    );
+    background-size: auto 100%;
+}
+#modal-hierarchy-box .hierarchy-level {
+    position: relative;
+    padding-left: 28px; /* ruang untuk garis */
+    line-height: 1.65;
+    font-size: 15px;
+    color: #243238;
+}
+#modal-hierarchy-box .hierarchy-level:not(:last-child) { margin-bottom: 6px; }
+#modal-hierarchy-box .hierarchy-level::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    border-left: 1.5px dashed rgba(13,71,161,0.35);
+}
+#modal-hierarchy-box .hierarchy-level::after {
+    content: '';
+    position: absolute;
+    left: 10px; top: 12px;
+    border-top: 1.5px dashed rgba(13,71,161,0.35);
+    width: 12px;
+}
+#modal-hierarchy-box .hierarchy-level:last-child::before { height: 12px; }
+
+/* === PERBAIKAN: Membuat Status Section sebagai Card dengan Elevation === */
+#detailModal .status-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #f6faff; /* biru sangat muda */
+    border: 1px solid #e3edff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 14px;
+}
+#detailModal #modal-status .new.badge,
+#detailModal #modal-status .status-badge,
+#detailModal #modal-status .status-badge-small {
+    height: 24px;
+    line-height: 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 0 10px;
+}
+
+/* === PERBAIKAN: Meningkatkan Readability Spacing untuk Detail Section === */
+#detailModal .detail-section p { 
+    margin: 8px 0 14px;
+    color: #37474f;
+    font-size: 15px;
+}
+#detailModal .detail-section p strong { color: #263238; }
+#detailModal .form-section.card-panel {
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
