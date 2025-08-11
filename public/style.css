@@ -1607,6 +1607,7 @@ table tr:hover {
     left: 8px;
     top: 0;
     border-left: 1.5px dashed #e0e0e0;
+    height: 100%;
 }
 
 /* Garis horizontal cabang */
@@ -1614,9 +1615,9 @@ table tr:hover {
     content: '';
     position: absolute;
     left: 8px;
-    top: 12px; /* Posisikan di tengah tinggi baris */
-    width: 12px;
-    border-bottom: 1.5px dashed #e0e0e0;
+    top: 12px; /* Sejajar dengan tengah teks */
+    border-top: 1.5px dashed #e0e0e0;
+    width: 10px;
 }
 
 /* Sembunyikan garis untuk elemen pertama (root) dan setelah elemen terakhir */
@@ -1636,428 +1637,12 @@ table tr:hover {
 .task-breadcrumb .level-3 { margin-left: 40px; }
 .task-breadcrumb .level-4 { margin-left: 60px; font-weight: 500; color: #bf360c; } /* Tingkat 4 lebih menonjol */
 
-/* === PERBAIKAN: Kartu Tugas & Tombol === */
-
-/* Font baru untuk kode tugas */
-.task-code {
-    font-family: 'Poppins', sans-serif; /* Diubah ke Poppins */
-    font-size: 0.9rem;
-    font-weight: 500; /* Medium weight, lebih mudah dibaca */
-    color: #546e7a; /* Warna teks lebih netral */
-    background-color: #eceff1; /* Highlight abu-abu lembut */
-    padding: 3px 8px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-top: 8px;
-}
-
-/* Warna-warni lembut untuk kartu tugas */
-.card-color-1 { background-color: #e3f2fd; } /* Biru */
-.card-color-2 { background-color: #e8f5e9; } /* Hijau */
-.card-color-3 { background-color: #fffde7; } /* Kuning */
-.card-color-4 { background-color: #f3e5f5; } /* Ungu */
-.card-color-5 { background-color: #fbe9e7; } /* Oranye */
-
-/* Perbaikan alignment vertikal untuk semua tombol dengan ikon */
-.btn, .btn-flat, .btn-small {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn .material-icons, .btn-flat .material-icons, .btn-small .material-icons {
-    line-height: inherit; /* Pastikan ikon mengikuti line-height tombol */
-}
-
-/* Layout baru untuk tombol referensi */
-.referensi-container {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Jarak antara label dan tombol */
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
-/* === Gaya Modal Detail Tugas (Sesuai Gambar) === */
-#detailModal .modal-content {
-    padding: 24px 32px;
-}
-
-.hierarchy-box {
-    background-color: #fff3e0; /* Oranye sangat muda */
-    border: 1px solid #ffe0b2;
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 24px;
-    position: relative;
-}
-
-.hierarchy-level {
-    position: relative;
-    padding-left: 25px; /* Indentasi untuk garis */
-    margin-bottom: 8px;
-}
-
-.hierarchy-level::before {
-    content: '';
-    position: absolute;
-    left: 10px;
-    top: 0;
-    bottom: 0;
-    border-left: 1px dashed #c5c5c5;
-}
-
-.hierarchy-level:last-child::before {
-    height: 10px; /* Garis putus-putus tidak sampai bawah untuk item terakhir */
-}
-
-.hierarchy-level.level-4.active {
-    color: #d32f2f; /* Warna merah untuk item aktif */
-    font-weight: 500;
-}
-
-.info-section {
-    margin-bottom: 24px;
-}
-
-.info-label {
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 2px;
-}
-
-.info-value {
-    color: #333;
-    margin-top: 0;
-    margin-bottom: 16px;
-}
-
-#modal-status {
-    font-weight: 500;
-}
-
-.upload-section {
-    margin-top: 24px;
-}
-
-/* === Gaya Kartu Tugas (Tugas Saya) - Desain Baru === */
-.task-card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    border-left: 5px solid #2196F3; /* Warna default (biru) */
-    transition: box-shadow .25s, transform .25s;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.task-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-/* Warna border berdasarkan status */
-.task-card.status-selesai {
-    border-left-color: #4CAF50; /* Hijau */
-}
-.task-card.status-menunggu-verifikasi {
-    border-left-color: #FF9800; /* Oranye */
-}
-.task-card.status-revisi {
-    border-left-color: #f44336; /* Merah */
-}
-.task-card.status-belum-dikerjakan {
-    border-left-color: #607D8B; /* Biru Keabuan */
-}
-
-.task-card .card-content {
-    padding: 20px;
-    flex-grow: 1; /* Membuat konten mengisi ruang */
-}
-
-.task-card .task-status-badge {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #fff;
-    background-color: #9e9e9e; /* Warna badge netral */
-    border-radius: 12px;
-    padding: 4px 10px;
-    margin-bottom: 16px;
-    display: inline-block;
-}
-
-.task-card .card-title {
-    font-size: 1.1rem;
-    font-weight: 500;
-    line-height: 1.4;
-    color: #37474F;
-    margin-bottom: 12px;
-}
-
-.task-card .task-code {
-    display: inline-block;
-    background-color: #ECEFF1;
-    color: #546E7A;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-family: 'Roboto Mono', monospace;
-}
-
-.task-card .card-action {
-    background-color: #f9f9f9; /* Latar belakang abu-abu sangat muda */
-    border-top: 1px solid #ECEFF1;
-    padding: 12px 20px !important;
-}
-
-.task-card .btn-detail {
-    background-color: transparent;
-    color: #1976D2;
-    box-shadow: none;
-    width: 100%;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-}
-
-.task-card .btn-detail:hover {
-    background-color: #E3F2FD;
-    box-shadow: none;
-}
-
-.task-card .btn-detail i {
-    margin-right: 8px;
-    font-size: 1.2rem;
-}
-
-/* Menyempurnakan desain kartu dengan mempertebal font kode dan menyelaraskan warna badge status dengan warna border kartu untuk tampilan yang lebih modern dan informatif. */
-.task-card .task-code {
-    font-weight: 600;
-}
-
-.task-card.status-selesai .task-status-badge {
-    background-color: #4CAF50;
-}
-.task-card.status-menunggu-verifikasi .task-status-badge {
-    background-color: #FF9800;
-}
-.task-card.status-revisi .task-status-badge {
-    background-color: #f44336;
-}
-.task-card.status-belum-dikerjakan .task-status-badge {
-    background-color: #607D8B;
-}
-
-/* === Gaya Modal Detail Tugas (Desain Pohon Baru) === */
-
-/* Nonaktifkan animasi modal agar instan */
-.modal {
-    transition: none !important;
-    animation: none !important;
-}
-
-.modal.open {
-    transform: none !important;
-}
-
-.modal-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid #ddd;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h5 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-/* Hapus background oranye dan border lama */
-.hierarchy-box {
-    background-color: transparent;
-    border: none;
-    padding: 16px 0;
-}
-
-/* Gaya diagram pohon */
-.hierarchy-level {
-    position: relative;
-    padding-left: 25px; /* Ruang untuk garis */
-    margin-bottom: 4px;
-    font-size: 1rem;
-}
-
-/* Garis vertikal putus-putus */
-.hierarchy-level::before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 0;
-    border-left: 1.5px dashed #bdbdbd;
-    height: 100%;
-}
-
-/* Garis horizontal putus-putus */
-.hierarchy-level::after {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 12px; /* Sejajar dengan tengah teks */
-    border-top: 1.5px dashed #bdbdbd;
-    width: 10px;
-}
-
-/* Atur garis untuk item terakhir agar tidak terlalu panjang */
-.hierarchy-level:last-child::before {
-    height: 12px;
-}
-
-/* Item aktif (paling bawah) dibuat lebih menonjol */
-.hierarchy-level.active {
-    font-weight: 500;
-    color: #333;
-}
-
-.info-section {
-    margin-top: 16px;
-}
-
-.info-label {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 4px;
-}
-
-.info-value {
-    color: #555;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-/* Kelas untuk menjaga format newline dari spreadsheet */
-.preserve-whitespace {
-    white-space: pre-wrap;
-}
-
-.form-section {
-    margin-top: 24px;
-    padding-top: 16px;
-}
-
-.form-title {
-    font-size: 1.2rem; /* Ukuran judul form dikecilkan */
-    font-weight: 500;
-    margin-bottom: 24px;
-}
-
-.modal-footer {
-    background-color: #f5f5f5;
-}
-
-/* Beri background dan efek kartu pada kotak hirarki */
-.hierarchy-box {
-    background-color: #fffaf0; /* Warna krem/oranye muda */
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-/* Ubah warna tombol Tambah Rincian menjadi hijau */
-#add-rincian-btn {
-    background-color: #4CAF50 !important; /* Warna hijau */
-}
-
-/* Ubah tombol Buka Folder menjadi kuning dan beri jarak */
-#btn-upload-folder.btn,
-#btn-upload-folder.btn-flat {
-    color: #212121;
-    background-color: #ffeb3b;
-    margin-right: 8px; /* Jarak antara tombol */
-}
-
-#btn-upload-folder.btn:hover,
-#btn-upload-folder.btn-flat:hover {
-    background-color: #fdd835;
-}
-
-/* === PERBAIKAN: Tree Diagram Hirarki === */
-.hierarchy-box {
-    background-color: #fffaf0; /* Warna krem/oranye muda */
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Desain Ulang Tree Diagram Hirarki */
-.hierarchy-level {
-    position: relative;
-    padding-left: 25px; /* Ruang untuk garis */
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-.hierarchy-level::before {
-    content: '';
-    position: absolute;
-    left: 10px;
-    top: 0;
-    border-left: 1.5px dashed #c0c0c0;
-    height: 100%;
-}
-
-.hierarchy-level:last-child::before {
-    height: 12px;
-}
-
-.hierarchy-level::after {
-    content: '';
-    position: absolute;
-    left: 10px;
-    top: 12px; /* Sejajar dengan tengah teks */
-    border-top: 1.5px dashed #c0c0c0;
-    width: 10px;
-}
-
-/* Gaya untuk Status Badge */
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: white;
-    text-transform: uppercase;
-    display: inline-block;
-}
-
-.status-badge.belum-dikerjakan {
-    background-color: #9e9e9e; /* Abu-abu */
-}
-
-.status-badge.sudah-dikerjakan {
-    background-color: #4CAF50; /* Hijau */
-}
-
-.hierarchy-level {
-    position: relative;
-    padding-left: 25px; /* Beri ruang untuk garis */
-    margin-bottom: 8px;
-    font-size: 1rem;
-    line-height: 1.4;
-}
-
 /* Menambahkan padding tambahan untuk setiap level, menciptakan indentasi */
-.hierarchy-level:nth-child(2) { padding-left: 45px; }
-.hierarchy-level:nth-child(3) { padding-left: 65px; }
-.hierarchy-level:nth-child(4) { padding-left: 85px; }
+.task-breadcrumb .level-2 { padding-left: 45px; }
+.task-breadcrumb .level-3 { padding-left: 65px; }
+.task-breadcrumb .level-4 { padding-left: 85px; }
 
-.hierarchy-level span {
+.task-breadcrumb span {
     background-color: #fff;
     padding: 0 4px;
 }
@@ -2148,35 +1733,64 @@ table tr:hover {
 
 /* 9. Modal Button Styles
 -------------------------------------------------- */
+.modal-actions .btn,
 .modal-footer .btn {
-    display: inline-flex; /* Memungkinkan alignment vertikal */
-    align-items: center; /* Teks tengah secara vertikal */
-    justify-content: center; /* Teks tengah secara horizontal */
+    display: inline-flex; /* pastikan vertical centering */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    line-height: 44px; /* fallback untuk Materialize */
+    padding: 0 18px;
+    border-radius: 10px;
     text-transform: none;
-    border-radius: 20px;
-    padding: 0 24px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+.modal-actions .btn i.left,
+.modal-footer .btn i.left {
+    margin-right: 8px;
+}
+
+/* Variants selaras tema */
 .btn-gdrive {
-    background-color: #ff9800 !important; /* Orange */
+    background-color: #fb8c00 !important; /* Orange darken-1 */
+    color: #fff !important;
 }
-
-.btn-gdrive:hover {
-    background-color: #fb8c00 !important; /* Orange Darken-1 */
-}
+.btn-gdrive:hover { background-color: #f57c00 !important; }
 
 .btn-draft {
-    background-color: #9e9e9e !important; /* Grey */
+    background-color: #90a4ae !important; /* Blue Grey 300-400 */
+    color: #0b2533 !important;
 }
-
-.btn-draft:hover {
-    background-color: #757575 !important; /* Grey Darken-1 */
-}
+.btn-draft:hover { background-color: #78909c !important; color: #0b2533 !important; }
 
 .btn-submit {
-    background-color: #1e88e5 !important; /* Blue */
+    background-color: var(--primary-color) !important;
+    color: var(--text-on-primary) !important;
+}
+.btn-submit:hover { background-color: var(--primary-color-dark) !important; }
+
+/* Disabled state harmonis */
+.modal-actions .btn:disabled,
+.modal-footer .btn:disabled {
+    background-color: #cfd8dc !important;
+    color: #78909c !important;
+    box-shadow: none !important;
 }
 
-.btn-submit:hover {
-    background-color: #1565c0 !important; /* Blue Darken-2 */
+/* Responsif spacing di area tombol */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
