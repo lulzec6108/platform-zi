@@ -847,23 +847,31 @@ async function showTugasDetail(tugas) {
 
     // 2. Isi Info Detail
     document.getElementById('modal-detail-hirarki').textContent = tugas.tingkatan4 || '-';
-    document.getElementById('modal-opsi-jawaban').textContent = tugas.panduanPenilaian || 'Panduan tidak tersedia.';
-
-    const statusContainer = document.getElementById('modal-status');
-    statusContainer.innerHTML = getStatusBadge(tugas); // PERBAIKAN: Kirim seluruh objek 'tugas'
-
-    // Setup Link Referensi
-    const referensiContainer = document.getElementById('modal-referensi-link');
-    referensiContainer.innerHTML = '';
-    if (tugas.linkReferensi && tugas.linkReferensi.trim() !== '') {
-        const link = document.createElement('a');
-        link.href = tugas.linkReferensi;
-        link.textContent = 'Lihat Dokumen Referensi';
-        link.target = '_blank';
-        referensiContainer.appendChild(link);
-    } else {
-        referensiContainer.textContent = 'Tidak ada referensi.';
-    }
+    // Format Panduan Penilaian menjadi per-baris (a., b., c., ...)
+    const panduanEl = document.getElementById('modal-opsi-jawaban');
+    const rawPanduan = (tugas.panduanPenilaian || '').toString().trim();
+    const formattedPanduan = (() => {
+        if (!rawPanduan) return 'Panduan tidak tersedia.';
+        // Jika sheet menggunakan pemisah '|', gunakan itu terlebih dahulu
+        if (rawPanduan.includes('|')) {
+            return rawPanduan
+                .split('|')
+                .map(s => s.trim())
+                .filter(Boolean)
+                .map(line => `<div class="panduan-line">${line}</div>`) 
+                .join('');
+        }
+        // Sisipkan line break sebelum b., c., d., dst. tanpa mengubah a. di awal
+        const withBreaks = rawPanduan
+            .replace(/\s([b-z])\.\s/gi, (m, p1) => `<br>${p1}. `); // enter sebelum b. .. z.
+        return withBreaks
+            .split(/<br>/)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(line => `<div class="panduan-line">${line}</div>`)
+            .join('');
+    })();
+    panduanEl.innerHTML = formattedPanduan;
 
     // 3. Setup Form Penilaian
     const nilaiSelect = document.getElementById('nilai-select');
