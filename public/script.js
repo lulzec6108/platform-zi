@@ -1144,25 +1144,22 @@ async function savePenilaian(tugas, submissionType) {
 // --- Cache for MappingTugas ---
 window._mappingTugasCache = window._mappingTugasCache || {};
 async function showVerifikasiDetail(item, mode = "detail") {
+    // Tampilkan spinner loading
+    showLoading(true);
+    // Bersihkan field
+    [
+        'verifikasi-nilai-row','verifikasi-jenis-bukti-row','verifikasi-hierarchy-box','verifikasi-mapping-row','verifikasi-link-gdrive','verifikasi-link-referensi'
+    ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
     document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota || item.nama || '-';
     document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas || item.kodeHirarki || '-';
     document.getElementById('verifikasi-waktu-submisi').textContent = item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : (item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : '-');
 
-    // Tambahan: Tampilkan Nilai dan Jenis Bukti Dukung
-    let nilaiRow = document.getElementById('verifikasi-nilai-row');
-    let jenisRow = document.getElementById('verifikasi-jenis-row');
-    if (!nilaiRow) {
-        nilaiRow = document.createElement('p');
-        nilaiRow.id = 'verifikasi-nilai-row';
-        document.querySelector('#verifikasiModal .modal-content').insertBefore(nilaiRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
-    }
-    if (!jenisRow) {
-        jenisRow = document.createElement('p');
-        jenisRow.id = 'verifikasi-jenis-row';
-        document.querySelector('#verifikasiModal .modal-content').insertBefore(jenisRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
-    }
-    nilaiRow.innerHTML = `<strong>Nilai:</strong> <span>${item.nilai || '-'}</span>`;
-    jenisRow.innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${item.jenisBuktiDukung || '-'}</span>`;
+    // Tampilkan Nilai dan Jenis Bukti Dukung
+    document.getElementById('verifikasi-nilai-row').innerHTML = `<strong>Nilai:</strong> <span>${item.nilai || '-'}</span>`;
+    document.getElementById('verifikasi-jenis-bukti-row').innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${item.jenisBuktiDukung || '-'}</span>`;
 
     // --- Ambil detail MappingTugas berdasarkan kodeHirarki ---
     // --- Gunakan field MappingTugas langsung dari item ---
@@ -1176,12 +1173,6 @@ async function showVerifikasiDetail(item, mode = "detail") {
     };
     // --- Render Pohon Hirarki (Tingkatan 1-4) ---
     let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
-    if (!hierarchyBox) {
-        hierarchyBox = document.createElement('div');
-        hierarchyBox.id = 'verifikasi-hierarchy-box';
-        hierarchyBox.style.marginBottom = '10px';
-        document.querySelector('#verifikasiModal .modal-content').insertBefore(hierarchyBox, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
-    }
     hierarchyBox.innerHTML = '';
     const levels = [
         { key: 'tingkatan1', label: 'Tingkatan 1' },
@@ -1195,8 +1186,6 @@ async function showVerifikasiDetail(item, mode = "detail") {
             adaTingkatan = true;
             const div = document.createElement('div');
             div.className = `hierarchy-level level-${idx+1}`;
-            div.style.marginLeft = `${idx * 18}px`;
-            div.style.fontWeight = idx === 0 ? 'bold' : 'normal';
             div.textContent = mapping[lvl.key];
             hierarchyBox.appendChild(div);
         }
@@ -1211,13 +1200,22 @@ async function showVerifikasiDetail(item, mode = "detail") {
         mappingHTML += `<strong>Panduan Penilaian:</strong> <span class=\"preserve-whitespace\">${mapping.panduanPenilaian || '-'}<\/span><br/>`;
         mappingHTML += `<strong>Pilihan Jawaban:</strong> ${mapping.pilihanJawaban || '-'}<br/>`;
     }
-    let mappingRow = document.getElementById('verifikasi-mapping-row');
-    if (!mappingRow) {
-        mappingRow = document.createElement('div');
-        mappingRow.id = 'verifikasi-mapping-row';
-        document.querySelector('#verifikasiModal .modal-content').insertBefore(mappingRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
+    document.getElementById('verifikasi-mapping-row').innerHTML = mappingHTML;
+
+    // Render link GDrive
+    const gdriveEl = document.getElementById('verifikasi-link-gdrive');
+    if (item.linkGDrive && item.linkGDrive.startsWith('http')) {
+        gdriveEl.innerHTML = `<a href="${item.linkGDrive}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">folder_open</i>Lihat Bukti Dukung</a>`;
+    } else {
+        gdriveEl.innerHTML = '<em>Tidak ada link GDrive</em>';
     }
-    mappingRow.innerHTML = mappingHTML;
+    // Render link Referensi
+    const refEl = document.getElementById('verifikasi-link-referensi');
+    if (item.linkReferensi && item.linkReferensi.startsWith('http')) {
+        refEl.innerHTML = `<a href="${item.linkReferensi}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">link</i>Lihat Referensi</a>`;
+    } else {
+        refEl.innerHTML = '<em>Tidak ada link referensi</em>';
+    }
 
     const saveBtn = document.getElementById('save-verifikasi-btn');
     saveBtn.dataset.targetUsername = item.targetUsername;
@@ -1256,6 +1254,19 @@ async function showVerifikasiDetail(item, mode = "detail") {
         }
     } catch (e) {
         console.warn('Tidak dapat membuka modal:', e);
+    } finally {
+        showLoading(false);
+    }
+    // Tombol close (X)
+    const closeBtn = document.getElementById('verifikasi-modal-close');
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+                M.Modal.getInstance(document.getElementById('verifikasiModal')).close();
+            } else if (document.getElementById('verifikasiModal') && typeof document.getElementById('verifikasiModal').close === 'function') {
+                document.getElementById('verifikasiModal').close();
+            }
+        };
     }
 }
 

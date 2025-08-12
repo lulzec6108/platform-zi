@@ -337,12 +337,19 @@
 
         <!-- Modal Verifikasi (untuk Ketua & Admin) -->
         <div id="verifikasiModal" class="modal">
-            <div class="modal-content">
-                <h4 id="verifikasi-modal-title">Verifikasi Bukti Dukung</h4>
+            <div class="modal-content" style="max-height:80vh;overflow-y:auto;position:relative;">
+                <a href="#!" class="modal-close-x" id="verifikasi-modal-close" style="position:absolute;top:16px;right:16px;z-index:10;font-size:2rem;color:#888;"><i class="material-icons">close</i></a>
+                <h4 id="verifikasi-modal-title" class="center-align" style="font-weight:600;margin-top:0;">Verifikasi Bukti Dukung</h4>
                 <div class="divider"></div>
                 <p><strong>Nama Anggota:</strong> <span id="verifikasi-nama-anggota"></span></p>
                 <p><strong>Nama Tugas:</strong> <span id="verifikasi-nama-tugas"></span></p>
                 <p><strong>Waktu Submisi:</strong> <span id="verifikasi-waktu-submisi"></span></p>
+                <p id="verifikasi-nilai-row"></p>
+                <p id="verifikasi-jenis-bukti-row"></p>
+                <div id="verifikasi-hierarchy-box"></div>
+                <div id="verifikasi-mapping-row"></div>
+                <p><strong>Link Bukti Dukung:</strong> <span id="verifikasi-link-gdrive"></span></p>
+                <p><strong>Link Referensi:</strong> <span id="verifikasi-link-referensi"></span></p>
                 <div class="divider"></div>
                 <div class="input-field col s12">
                     <select id="verifikasi-status-select">
