@@ -1144,6 +1144,122 @@ async function savePenilaian(tugas, submissionType) {
 // --- Cache for MappingTugas ---
 window._mappingTugasCache = window._mappingTugasCache || {};
 async function showVerifikasiDetail(item, mode = "detail") {
+    showLoading(true);
+    [
+        'verifikasi-nilai-row','verifikasi-jenis-bukti-row','verifikasi-hierarchy-box','verifikasi-mapping-row','verifikasi-link-gdrive','verifikasi-link-referensi'
+    ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota || item.nama || '-';
+    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas || item.kodeHirarki || '-';
+    document.getElementById('verifikasi-waktu-submisi').textContent = item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : (item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : '-');
+
+    // Ambil MappingTugas dari cache atau fetch jika belum ada
+    let mapping = null;
+    const kode = item.kodeHirarki || item.kode || item.namaTugas;
+    if (window._mappingTugasCache[kode]) {
+        mapping = window._mappingTugasCache[kode];
+    } else {
+        try {
+            const result = await callApi('getMappingTugasForUser', 'GET', { kode });
+            if (result.success && result.data && result.data.length > 0) {
+                mapping = result.data[0];
+                window._mappingTugasCache[kode] = mapping;
+            }
+        } catch (e) {
+            mapping = null;
+        }
+    }
+    mapping = mapping || item;
+
+    // Render Nilai dan Jenis Bukti Dukung
+    document.getElementById('verifikasi-nilai-row').innerHTML = `<strong>Nilai:</strong> <span>${mapping.nilai || '-'}</span>`;
+    document.getElementById('verifikasi-jenis-bukti-row').innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${mapping.jenisBuktiDukung || '-'}</span>`;
+
+    // Render pohon hirarki
+    let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
+    hierarchyBox.innerHTML = '';
+    const levels = [
+        { key: 'tingkatan1', label: 'Tingkatan 1' },
+        { key: 'tingkatan2', label: 'Tingkatan 2' },
+        { key: 'tingkatan3', label: 'Tingkatan 3' },
+        { key: 'tingkatan4', label: 'Tingkatan 4' }
+    ];
+    let adaTingkatan = false;
+    levels.forEach((lvl, idx) => {
+        if (mapping[lvl.key]) {
+            adaTingkatan = true;
+            const div = document.createElement('div');
+            div.className = `hierarchy-level level-${idx+1}`;
+            div.textContent = mapping[lvl.key];
+            hierarchyBox.appendChild(div);
+        }
+    });
+    if (!adaTingkatan) {
+        hierarchyBox.innerHTML = '<em>Detail tugas tidak ditemukan.</em>';
+    }
+
+    // Render Panduan Penilaian dan Pilihan Jawaban
+    let mappingHTML = '';
+    if (mapping.panduanPenilaian || mapping.pilihanJawaban) {
+        mappingHTML += `<strong>Panduan Penilaian:</strong> <span class="preserve-whitespace">${mapping.panduanPenilaian || '-'}<\/span><br/>`;
+        mappingHTML += `<strong>Pilihan Jawaban:</strong> ${mapping.pilihanJawaban || '-'}<br/>`;
+    }
+    document.getElementById('verifikasi-mapping-row').innerHTML = mappingHTML;
+
+    // Render link GDrive
+    const gdriveEl = document.getElementById('verifikasi-link-gdrive');
+    if (mapping.linkGDrive && mapping.linkGDrive.startsWith('http')) {
+        gdriveEl.innerHTML = `<a href="${mapping.linkGDrive}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">folder_open<\/i>Lihat Bukti Dukung<\/a>`;
+    } else {
+        gdriveEl.innerHTML = '<em>Tidak ada link GDrive</em>';
+    }
+    // Render link Referensi
+    const refEl = document.getElementById('verifikasi-link-referensi');
+    if (mapping.linkReferensi && mapping.linkReferensi.startsWith('http')) {
+        refEl.innerHTML = `<a href="${mapping.linkReferensi}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">link<\/i>Lihat Referensi<\/a>`;
+    } else {
+        refEl.innerHTML = '<em>Tidak ada link referensi</em>';
+    }
+
+    // Status, catatan, dan modal
+    const saveBtn = document.getElementById('save-verifikasi-btn');
+    saveBtn.dataset.targetUsername = item.targetUsername;
+    saveBtn.dataset.kodeHirarki = kode;
+    saveBtn.dataset.mode = mode;
+    const statusSelect = document.getElementById('verifikasi-status-select');
+    const catatanText = document.getElementById('verifikasi-catatan');
+    if (mode === 'revoke') {
+        statusSelect.innerHTML = `<option value="Ditolak Admin" selected>Ditolak Admin<\/option>`;
+        statusSelect.disabled = true;
+        catatanText.value = '';
+        catatanText.placeholder = 'Catatan wajib diisi untuk membatalkan persetujuan';
+    } else {
+        statusSelect.innerHTML = `
+            <option value="" disabled selected>Pilih Status<\/option>
+            <option value="Approved">Approved<\/option>
+            <option value="Rejected">Rejected<\/option>
+        `;
+        statusSelect.disabled = false;
+        catatanText.value = '';
+        catatanText.placeholder = "Catatan (Wajib diisi jika 'Rejected')";
+    }
+    if (window.M && M.FormSelect && typeof M.FormSelect.init === 'function') {
+        M.FormSelect.init(statusSelect);
+    }
+    try {
+        if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
+            M.Modal.getInstance(document.getElementById('verifikasiModal')).open();
+        } else if (document.getElementById('verifikasiModal') && typeof document.getElementById('verifikasiModal').showModal === 'function') {
+            document.getElementById('verifikasiModal').showModal();
+        }
+    } catch (e) {
+        console.warn('Tidak dapat membuka modal:', e);
+    } finally {
+        showLoading(false);
+    }
+}
     // Tampilkan spinner loading
     showLoading(true);
     // Bersihkan field
