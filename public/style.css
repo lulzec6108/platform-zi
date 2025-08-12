@@ -16,6 +16,10 @@
     --card-background: #ffffff;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --border-radius: 8px;
+    --tree-border: #e3e8f0;
+    --tree-bg: #f4faff;
+    --tree-bg2: #eaf0fa;
+    --tree-bg3: #f9fafb;
 }
 
 /* Global Box Sizing */

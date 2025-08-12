@@ -337,16 +337,41 @@
 
         <!-- Modal Verifikasi (untuk Ketua & Admin) -->
         <div id="verifikasiModal" class="modal">
-            <div class="modal-content" style="max-height:80vh;overflow-y:auto;position:relative;">
-                <a href="#!" class="modal-close-x" id="verifikasi-modal-close" style="position:absolute;top:16px;right:16px;z-index:10;font-size:2rem;color:#888;"><i class="material-icons">close</i></a>
-                <h5 id="verifikasi-modal-title" class="center-align" style="font-weight:600;margin-top:0;">Verifikasi Bukti Dukung</h5>
-                <div class="divider"></div>
-                <p><strong>Nama Anggota:</strong> <span id="verifikasi-nama-anggota"></span></p>
-                <p><strong>Nama Tugas:</strong> <span id="verifikasi-nama-tugas"></span></p>
-                <p><strong>Waktu Submisi:</strong> <span id="verifikasi-waktu-submisi"></span></p>
-                <p id="verifikasi-nilai-row"></p>
-                <p id="verifikasi-jenis-bukti-row"></p>
-                <div id="verifikasi-hierarchy-box"></div>
+            <div class="modal-header" style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #eee;padding:16px 24px 8px 24px;display:flex;align-items:center;justify-content:center;">
+                <h5 id="verifikasi-modal-title" class="center-align" style="font-weight:600;margin:0;flex:1;">Verifikasi Bukti Dukung</h5>
+                <a href="#" class="modal-close-x" id="verifikasi-modal-close" style="position:absolute;top:16px;right:24px;z-index:30;font-size:2rem;color:#888;"><i class="material-icons">close</i></a>
+            </div>
+            <div class="modal-content" style="max-height:70vh;overflow-y:auto;padding-top:0;">
+                <div class="card" style="padding:28px 20px 12px 20px;background:#fcfcfc;box-shadow:0 2px 16px rgba(0,0,0,0.04);border-radius:14px;">
+                    <div class="divider" style="margin-bottom:20px;"></div>
+                    <p><strong>Nama Anggota:</strong> <span id="verifikasi-nama-anggota"></span></p>
+                    <p><strong>Nama Tugas:</strong> <span id="verifikasi-nama-tugas"></span></p>
+                    <p><strong>Waktu Submisi:</strong> <span id="verifikasi-waktu-submisi"></span></p>
+                    <p id="verifikasi-nilai-row"></p>
+                    <p id="verifikasi-jenis-bukti-row"></p>
+                    <div id="verifikasi-hierarchy-box"></div>
+                    <div id="verifikasi-mapping-row"></div>
+                    <p><strong>Link Bukti Dukung:</strong> <span id="verifikasi-link-gdrive"></span></p>
+                    <p><strong>Link Referensi:</strong> <span id="verifikasi-link-referensi"></span></p>
+                    <div class="divider"></div>
+                    <!-- Form Approve/Reject dalam Card -->
+                    <div class="form-section card-panel" style="margin-bottom:24px;">
+                        <h6 class="form-title center-align">Form Verifikasi Bukti Dukung</h6>
+                        <div class="input-field">
+                            <select id="verifikasi-status-select">
+                                <option value="" disabled selected>Pilih Status</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                            <label>Set Status</label>
+                        </div>
+                        <div class="input-field">
+                            <textarea id="verifikasi-catatan" class="materialize-textarea"></textarea>
+                            <label for="verifikasi-catatan">Catatan (Wajib diisi jika 'Rejected')</label>
+                        </div>
+                        <div class="modal-actions center-align">
+                            <button type="button" id="save-verifikasi-btn" class="btn btn-submit waves-effect"><i class="material-icons left">check_circle</i>Simpan Status</button>
+                        </div>
                 <div id="verifikasi-mapping-row"></div>
                 <p><strong>Link Bukti Dukung:</strong> <span id="verifikasi-link-gdrive"></span></p>
                 <p><strong>Link Referensi:</strong> <span id="verifikasi-link-referensi"></span></p>

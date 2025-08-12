@@ -1177,7 +1177,7 @@ async function showVerifikasiDetail(item, mode = "detail") {
     document.getElementById('verifikasi-nilai-row').innerHTML = `<strong>Nilai:</strong> <span>${mapping.nilai || '-'}</span>`;
     document.getElementById('verifikasi-jenis-bukti-row').innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${mapping.jenisBuktiDukung || '-'}</span>`;
 
-    // Render pohon hirarki
+    // --- Render Pohon Hirarki (Tingkatan 1-4) ---
     let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
     hierarchyBox.innerHTML = '';
     const levels = [
@@ -1187,16 +1187,16 @@ async function showVerifikasiDetail(item, mode = "detail") {
         { key: 'tingkatan4', label: 'Tingkatan 4' }
     ];
     let adaTingkatan = false;
+    let treeHTML = '';
     levels.forEach((lvl, idx) => {
         if (mapping[lvl.key]) {
             adaTingkatan = true;
-            const div = document.createElement('div');
-            div.className = `hierarchy-level level-${idx+1}`;
-            div.textContent = mapping[lvl.key];
-            hierarchyBox.appendChild(div);
+            treeHTML += `<div class="hierarchy-level level-${idx+1}">${mapping[lvl.key]}</div>`;
         }
     });
-    if (!adaTingkatan) {
+    if (adaTingkatan) {
+        hierarchyBox.innerHTML = `<div style="margin-bottom:6px;font-size:0.96em;font-weight:600;color:#5a5a5a;">Pohon Hirarki Tugas:</div>` + treeHTML;
+    } else {
         hierarchyBox.innerHTML = '<em>Detail tugas tidak ditemukan.</em>';
     }
 
