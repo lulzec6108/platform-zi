@@ -1174,8 +1174,9 @@ async function showVerifikasiDetail(item, mode = "detail") {
     mapping = mapping || item;
 
     // Render Nilai dan Jenis Bukti Dukung
-    document.getElementById('verifikasi-nilai-row').innerHTML = `<strong>Nilai:</strong> <span>${mapping.nilai || '-'}</span>`;
-    document.getElementById('verifikasi-jenis-bukti-row').innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${mapping.jenisBuktiDukung || '-'}</span>`;
+    const nilaiTampil = mapping.nilai || mapping.Nilai || item.nilai || item.Nilai || '-';
+    document.getElementById('verifikasi-nilai-row').innerHTML = `<strong>Nilai:</strong> <span>${nilaiTampil}</span>`;
+    document.getElementById('verifikasi-jenis-bukti-row').innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${mapping.jenisBuktiDukung || mapping.JenisBuktiDukung || '-'}</span>`;
 
     // --- Render Pohon Hirarki (Tingkatan 1-4) ---
     let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
