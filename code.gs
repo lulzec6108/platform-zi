@@ -364,11 +364,13 @@ function handleGetKinerjaTim(payload) {
     }
     // Anggota tidak dapat melihat kinerja tim, skip
     if (user.role && user.role.toLowerCase() === 'anggota') continue;
+    // Filter hanya status aktif (status user 'terkirim' atau status ketua 'menunggu verifikasi')
+    if (!(statusUser.includes('terkirim') || statusKetua.includes('menunggu verifikasi'))) continue;
     hasil.push({
       username: username,
       nama: userInfo.nama || username,
       pilar: tugasInfo.pilar || userInfo.pilar || '',
-      namaTugas: tugasInfo.namaTugas || '',
+      namaTugas: kode,
       kodeHirarki: kode,
       timestamp: row[idxTimestamp] || '',
       statusUser: row[idxStatusUser] || '',

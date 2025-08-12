@@ -1187,6 +1187,7 @@ function showVerifikasiDetail(item, mode = "detail") {
 }
 
 // Fungsi untuk memuat data kinerja tim
+let isLoadingKinerjaTim = false;
 async function loadKinerjaTim() {
     const loader = document.getElementById('kinerja-tim-loader');
     const content = document.getElementById('kinerja-tim-content');
@@ -1195,6 +1196,12 @@ async function loadKinerjaTim() {
     const user = JSON.parse(sessionStorage.getItem('user'));
 
     // Tampilkan loader dan sembunyikan konten
+    if (isLoadingKinerjaTim) {
+        console.warn('loadKinerjaTim already running, skipping duplicate call');
+        return;
+    }
+    isLoadingKinerjaTim = true;
+    console.log('Memuat Kinerja Tim');
     loader.style.display = 'block';
     content.style.display = 'none';
     noDataMessage.style.display = 'none';
@@ -1261,6 +1268,7 @@ row.innerHTML = `
         noDataMessage.textContent = 'Terjadi kesalahan saat memuat data.';
     } finally {
         loader.style.display = 'none';
+        isLoadingKinerjaTim = false;
     }
 }
 
