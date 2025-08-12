@@ -1165,17 +1165,15 @@ async function showVerifikasiDetail(item, mode = "detail") {
     jenisRow.innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${item.jenisBuktiDukung || '-'}</span>`;
 
     // --- Ambil detail MappingTugas berdasarkan kodeHirarki ---
-    let mapping = window._mappingTugasCache[item.kodeHirarki || item.namaTugas];
-    if (!mapping) {
-        // Coba ambil dari backend jika cache kosong
-        try {
-            const resp = await callApi('getMappingTugasByKode', 'GET', { kodeHirarki: item.kodeHirarki || item.namaTugas });
-            if (resp.success && resp.data) {
-                mapping = resp.data;
-                window._mappingTugasCache[item.kodeHirarki || item.namaTugas] = mapping;
-            }
-        } catch (e) { mapping = null; }
-    }
+    // --- Gunakan field MappingTugas langsung dari item ---
+    const mapping = {
+        tingkatan1: item.tingkatan1,
+        tingkatan2: item.tingkatan2,
+        tingkatan3: item.tingkatan3,
+        tingkatan4: item.tingkatan4,
+        panduanPenilaian: item.panduanPenilaian,
+        pilihanJawaban: item.pilihanJawaban
+    };
     // --- Render Pohon Hirarki (Tingkatan 1-4) ---
     let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
     if (!hierarchyBox) {
@@ -1185,31 +1183,32 @@ async function showVerifikasiDetail(item, mode = "detail") {
         document.querySelector('#verifikasiModal .modal-content').insertBefore(hierarchyBox, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
     }
     hierarchyBox.innerHTML = '';
-    if (mapping) {
-        const levels = [
-            { key: 'tingkatan1', label: 'Tingkatan 1' },
-            { key: 'tingkatan2', label: 'Tingkatan 2' },
-            { key: 'tingkatan3', label: 'Tingkatan 3' },
-            { key: 'tingkatan4', label: 'Tingkatan 4' }
-        ];
-        levels.forEach((lvl, idx) => {
-            if (mapping[lvl.key]) {
-                const div = document.createElement('div');
-                div.className = `hierarchy-level level-${idx+1}`;
-                div.style.marginLeft = `${idx * 18}px`;
-                div.style.fontWeight = idx === 0 ? 'bold' : 'normal';
-                div.textContent = mapping[lvl.key];
-                hierarchyBox.appendChild(div);
-            }
-        });
-    } else {
+    const levels = [
+        { key: 'tingkatan1', label: 'Tingkatan 1' },
+        { key: 'tingkatan2', label: 'Tingkatan 2' },
+        { key: 'tingkatan3', label: 'Tingkatan 3' },
+        { key: 'tingkatan4', label: 'Tingkatan 4' }
+    ];
+    let adaTingkatan = false;
+    levels.forEach((lvl, idx) => {
+        if (mapping[lvl.key]) {
+            adaTingkatan = true;
+            const div = document.createElement('div');
+            div.className = `hierarchy-level level-${idx+1}`;
+            div.style.marginLeft = `${idx * 18}px`;
+            div.style.fontWeight = idx === 0 ? 'bold' : 'normal';
+            div.textContent = mapping[lvl.key];
+            hierarchyBox.appendChild(div);
+        }
+    });
+    if (!adaTingkatan) {
         hierarchyBox.innerHTML = '<em>Detail tugas tidak ditemukan.</em>';
     }
 
     // --- Detail Lainnya (Panduan Penilaian, Pilihan Jawaban) ---
     let mappingHTML = '';
-    if (mapping) {
-        mappingHTML += `<strong>Panduan Penilaian:</strong> <span class="preserve-whitespace">${mapping.panduanPenilaian || '-'}<\/span><br/>`;
+    if (mapping.panduanPenilaian || mapping.pilihanJawaban) {
+        mappingHTML += `<strong>Panduan Penilaian:</strong> <span class=\"preserve-whitespace\">${mapping.panduanPenilaian || '-'}<\/span><br/>`;
         mappingHTML += `<strong>Pilihan Jawaban:</strong> ${mapping.pilihanJawaban || '-'}<br/>`;
     }
     let mappingRow = document.getElementById('verifikasi-mapping-row');

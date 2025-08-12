@@ -327,7 +327,13 @@ function handleGetKinerjaTim(payload) {
       namaTugas: row[mappingHeaders.indexOf('Nama Tugas')] || row[mappingHeaders.indexOf('Tugas')],
       pilar: row[mappingHeaders.indexOf('Pilar')],
       linkGDriveBukti: row[mappingHeaders.indexOf('Link GDrive Bukti')] || '',
-      linkReferensiMelawi: row[mappingHeaders.indexOf('Link Referensi Melawi')] || ''
+      linkReferensiMelawi: row[mappingHeaders.indexOf('Link Referensi Melawi')] || '',
+      tingkatan1: row[mappingHeaders.indexOf('Tingkatan 1')] || '',
+      tingkatan2: row[mappingHeaders.indexOf('Tingkatan 2')] || '',
+      tingkatan3: row[mappingHeaders.indexOf('Tingkatan 3')] || '',
+      tingkatan4: row[mappingHeaders.indexOf('Tingkatan 4')] || '',
+      panduanPenilaian: row[mappingHeaders.indexOf('Panduan Penilaian')] || '',
+      pilihanJawaban: row[mappingHeaders.indexOf('Pilihan Jawaban')] || ''
     };
   }
   // Indeks kolom di BuktiDukung
@@ -380,7 +386,13 @@ function handleGetKinerjaTim(payload) {
       catatanAdmin: row[idxCatatanAdmin] || '',
       linkGDriveBukti: tugasInfo.linkGDriveBukti || '',
       linkReferensiMelawi: tugasInfo.linkReferensiMelawi || '',
-      jenisBuktiDukung: row[idxJenisBukti] || ''
+      jenisBuktiDukung: row[idxJenisBukti] || '',
+      tingkatan1: tugasInfo.tingkatan1 || '',
+      tingkatan2: tugasInfo.tingkatan2 || '',
+      tingkatan3: tugasInfo.tingkatan3 || '',
+      tingkatan4: tugasInfo.tingkatan4 || '',
+      panduanPenilaian: tugasInfo.panduanPenilaian || '',
+      pilihanJawaban: tugasInfo.pilihanJawaban || ''
     });
   }
   return { success: true, data: hasil };
