@@ -298,10 +298,90 @@ function handleGetTugasSaya(payload) {
 }
 
 function handleGetKinerjaTim(payload) {
-  const sheet = ss.getSheetByName("BuktiDukung");
-  const data = sheet.getDataRange().getValues();
-  // Logika untuk mengambil dan memfilter data kinerja tim akan ditambahkan di sini
-  return { success: true, data: data }; // Placeholder
+  const user = getUserInfo(payload.username);
+  if (!user || !user.username) return { success: false, message: 'User tidak ditemukan' };
+
+  const buktiSheet = ss.getSheetByName("BuktiDukung");
+  const buktiData = buktiSheet.getDataRange().getValues();
+  const buktiHeaders = buktiData[0];
+  const mappingSheet = ss.getSheetByName("MappingTugas");
+  const mappingData = mappingSheet.getDataRange().getValues();
+  const mappingHeaders = mappingData[0];
+  const usersSheet = ss.getSheetByName("Users");
+  const usersData = usersSheet.getDataRange().getValues();
+
+  // Buat peta user (username -> {nama, pilar, role})
+  const userMap = {};
+  for (let i = 1; i < usersData.length; i++) {
+    userMap[usersData[i][0]] = {
+      nama: usersData[i][2],
+      pilar: usersData[i][3],
+      role: usersData[i][4]
+    };
+  }
+  // Buat peta tugas (kode hirarki -> info tugas)
+  const tugasMap = {};
+  for (let i = 1; i < mappingData.length; i++) {
+    const row = mappingData[i];
+    tugasMap[row[mappingHeaders.indexOf('Kode Hirarki')]] = {
+      namaTugas: row[mappingHeaders.indexOf('Nama Tugas')] || row[mappingHeaders.indexOf('Tugas')],
+      pilar: row[mappingHeaders.indexOf('Pilar')],
+      linkGDriveBukti: row[mappingHeaders.indexOf('Link GDrive Bukti')] || '',
+      linkReferensiMelawi: row[mappingHeaders.indexOf('Link Referensi Melawi')] || ''
+    };
+  }
+  // Indeks kolom di BuktiDukung
+  const idxUsername = buktiHeaders.indexOf('Username');
+  const idxKode = buktiHeaders.indexOf('Kode Hirarki');
+  const idxTimestamp = buktiHeaders.indexOf('Timestamp');
+  const idxStatusUser = buktiHeaders.indexOf('Status User');
+  const idxStatusKetua = buktiHeaders.indexOf('Status Ketua Pilar');
+  const idxCatatanKetua = buktiHeaders.indexOf('Catatan Ketua Pilar');
+  const idxStatusAdmin = buktiHeaders.indexOf('Status Admin');
+  const idxCatatanAdmin = buktiHeaders.indexOf('Catatan Admin');
+  const idxJenisBukti = buktiHeaders.indexOf('Jenis Bukti Dukung');
+
+  const hasil = [];
+  for (let i = 1; i < buktiData.length; i++) {
+    const row = buktiData[i];
+    const username = row[idxUsername];
+    const kode = row[idxKode];
+    const tugasInfo = tugasMap[kode] || {};
+    const userInfo = userMap[username] || {};
+    const statusKetua = (row[idxStatusKetua] || '').toLowerCase();
+    const statusUser = (row[idxStatusUser] || '').toLowerCase();
+    const statusAdmin = (row[idxStatusAdmin] || '').toLowerCase();
+    // Filter untuk admin: hanya tugas yang sudah di-approve ketua pilar
+    if (user.role && user.role.toLowerCase() === 'admin') {
+      const approved = statusKetua.includes('approved') || statusKetua.includes('disetujui') || statusKetua.includes('diterima') || statusKetua.includes('terverifikasi');
+      if (!approved) continue;
+    }
+    // Filter untuk ketua pilar: hanya tugas di pilarnya, status "Terkirim" atau "Menunggu Verifikasi"
+    if (user.role && user.role.toLowerCase() === 'ketua pilar') {
+      if (user.pilar !== tugasInfo.pilar) continue;
+      const waiting = statusKetua.includes('menunggu') || statusUser.includes('terkirim');
+      if (!(waiting || statusKetua === '' || statusKetua === null)) continue;
+    }
+    // Anggota tidak dapat melihat kinerja tim, skip
+    if (user.role && user.role.toLowerCase() === 'anggota') continue;
+    hasil.push({
+      username: username,
+      nama: userInfo.nama || username,
+      pilar: tugasInfo.pilar || userInfo.pilar || '',
+      namaTugas: tugasInfo.namaTugas || '',
+      kodeHirarki: kode,
+      timestamp: row[idxTimestamp] || '',
+      statusUser: row[idxStatusUser] || '',
+      statusKetua: row[idxStatusKetua] || '',
+      catatanKetua: row[idxCatatanKetua] || '',
+      statusAdmin: row[idxStatusAdmin] || '',
+      catatanAdmin: row[idxCatatanAdmin] || '',
+      linkGDriveBukti: tugasInfo.linkGDriveBukti || '',
+      linkReferensiMelawi: tugasInfo.linkReferensiMelawi || '',
+      jenisBuktiDukung: row[idxJenisBukti] || ''
+    });
+  }
+  return { success: true, data: hasil };
 }
 
 function handleLogin(payload) {
@@ -436,46 +516,51 @@ function handleSetStatusPenilaian(payload) {
   const idxCatatanKetua = headers.indexOf('Catatan Ketua Pilar');
   const idxStatusAdmin = headers.indexOf('Status Admin');
   const idxCatatanAdmin = headers.indexOf('Catatan Admin');
+  const idxStatusUser = headers.indexOf('Status User');
   const idxTimestamp = headers.indexOf('Timestamp');
 
-  if ([idxUsername, idxKode].some(i => i < 0)) {
-    return { success: false, message: 'Header kolom tidak lengkap di sheet BuktiDukung.' };
-  }
-
-  const role = String(payload.role || '').toLowerCase();
-  const targetUser = payload.targetUsername || payload.username; // fallback
+  const targetUser = payload.username;
   const kode = payload.kodeHirarki;
-  if (!targetUser || !kode) return { success: false, message: 'Parameter targetUsername/kodeHirarki tidak lengkap.' };
+  const role = payload.role;
+  const now = new Date();
 
-  // Find row by (username, kode hirarki)
-  let rowIndex = -1; // 1-based row index
+  let found = false;
+  let rowIndex = -1;
   for (let i = 1; i < values.length; i++) {
-    if ((values[i][idxUsername] || '') == targetUser && (values[i][idxKode] || '') == kode) {
-      rowIndex = i + 1;
+    if (values[i][idxUsername] === targetUser && values[i][idxKode] === kode) {
+      found = true;
+      rowIndex = i + 1; // Sheet is 1-indexed, skip header
       break;
     }
   }
 
-  // Prepare write columns per role
-  let statusCol = -1, catatanCol = -1;
-  if (role.includes('admin')) {
+  // Determine which columns to update
+  let statusCol, catatanCol;
+  if (role && role.toLowerCase() === 'admin') {
     statusCol = idxStatusAdmin;
     catatanCol = idxCatatanAdmin;
-  } else if (role.includes('ketua')) {
+  } else {
     statusCol = idxStatusKetua;
     catatanCol = idxCatatanKetua;
-  } else {
-    return { success: false, message: 'Role tidak diizinkan.' };
-  }
-  if (statusCol < 0 || catatanCol < 0) {
-    return { success: false, message: 'Kolom status/catatan untuk peran tidak ditemukan.' };
   }
 
-  const now = new Date();
-  if (rowIndex > 0) {
-    // Update
-    sheet.getRange(rowIndex, statusCol + 1).setValue(payload.status || '');
-    sheet.getRange(rowIndex, catatanCol + 1).setValue(payload.catatan || '');
+  if (found) {
+    // Allow admin to change status from Approved to Ditolak Admin
+    if (role && role.toLowerCase() === 'admin' && payload.status && payload.status.toLowerCase() === 'ditolak admin') {
+      // Set status admin
+      if (statusCol >= 0) sheet.getRange(rowIndex, statusCol + 1).setValue('Ditolak Admin');
+      if (catatanCol >= 0) sheet.getRange(rowIndex, catatanCol + 1).setValue(payload.catatan || '');
+      // Reset status user to allow correction by anggota
+      if (idxStatusUser >= 0) sheet.getRange(rowIndex, idxStatusUser + 1).setValue('Perlu Perbaikan');
+      // Kosongkan status ketua pilar agar setelah diperbaiki tidak perlu verifikasi ulang
+      if (idxStatusKetua >= 0) sheet.getRange(rowIndex, idxStatusKetua + 1).setValue('');
+      // Timestamp
+      if (idxTimestamp >= 0) sheet.getRange(rowIndex, idxTimestamp + 1).setValue(now);
+      return { success: true, message: 'Status berhasil diperbarui dan tugas dikembalikan ke anggota untuk perbaikan.' };
+    }
+    // Normal update (approve/reject by ketua pilar or admin)
+    if (statusCol >= 0) sheet.getRange(rowIndex, statusCol + 1).setValue(payload.status || '');
+    if (catatanCol >= 0) sheet.getRange(rowIndex, catatanCol + 1).setValue(payload.catatan || '');
     if (idxTimestamp >= 0) sheet.getRange(rowIndex, idxTimestamp + 1).setValue(now);
     return { success: true, message: 'Status berhasil diperbarui.' };
   } else {

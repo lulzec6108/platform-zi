@@ -88,31 +88,41 @@ document.addEventListener('DOMContentLoaded', function () {
     // Setup event listener untuk tombol simpan di modal verifikasi
     const saveVerifikasiBtn = document.getElementById('save-verifikasi-btn');
     saveVerifikasiBtn.addEventListener('click', async () => {
-        const statusSelect = document.getElementById('verifikasi-status-select');
-        const catatanText = document.getElementById('verifikasi-catatan');
-        const newStatus = statusSelect.value;
-        const catatan = catatanText.value;
+    const statusSelect = document.getElementById('verifikasi-status-select');
+    const catatanText = document.getElementById('verifikasi-catatan');
+    let newStatus = statusSelect.value;
+    const catatan = catatanText.value;
+    const mode = saveVerifikasiBtn.dataset.mode || "detail";
+    const userRole = JSON.parse(sessionStorage.getItem('user')).role;
 
-        if (!newStatus) {
-            M.toast({ html: 'Silakan pilih status terlebih dahulu.' });
+    // If admin is revoking approval, force status to Ditolak Admin
+    if (mode === 'revoke' && userRole.toLowerCase() === 'admin') {
+        newStatus = 'Ditolak Admin';
+        if (!catatan.trim()) {
+            M.toast({ html: 'Catatan wajib diisi untuk membatalkan persetujuan.' });
             return;
         }
+    }
 
-        if (newStatus === 'Rejected' && !catatan.trim()) {
-            M.toast({ html: 'Catatan wajib diisi jika status ditolak (Rejected).' });
-            return;
-        }
+    if (!newStatus) {
+        M.toast({ html: 'Silakan pilih status terlebih dahulu.' });
+        return;
+    }
+    if ((newStatus === 'Rejected' || newStatus === 'Ditolak Admin') && !catatan.trim()) {
+        M.toast({ html: 'Catatan wajib diisi jika status ditolak.' });
+        return;
+    }
 
-        saveVerifikasiBtn.disabled = true;
-        saveVerifikasiBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...`;
+    saveVerifikasiBtn.disabled = true;
+    saveVerifikasiBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...`;
 
-        const payload = {
-            role: JSON.parse(sessionStorage.getItem('user')).role, // Perbaikan: Mengambil role dinamis dari state
-            targetUsername: saveVerifikasiBtn.dataset.targetUsername,
-            kodeHirarki: saveVerifikasiBtn.dataset.kodeHirarki,
-            status: newStatus,
-            catatan: catatan
-        };
+    const payload = {
+        role: userRole, // Perbaikan: Mengambil role dinamis dari state
+        targetUsername: saveVerifikasiBtn.dataset.targetUsername,
+        kodeHirarki: saveVerifikasiBtn.dataset.kodeHirarki,
+        status: newStatus,
+        catatan: catatan
+    };
 
         try {
             const result = await callApi('handleSetStatusPenilaian', payload);
@@ -127,9 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         el.close();
                     }
                 } catch (e) {
-                    console.warn('Tidak dapat menutup modal verifikasi:', e);
+                    console.warn('Tidak dapat menutup modal:', e);
                 }
-                switchView('kinerja-tim'); // Refresh tampilan
+                loadKinerjaTim(); // Muat ulang data setelah perubahan status
+                M.toast({ html: 'Data berhasil diperbarui!' });
             } else {
                 throw new Error(result.message || 'Gagal memperbarui status.');
             }
@@ -1130,7 +1141,7 @@ async function savePenilaian(tugas, submissionType) {
     }
 }
 
-function showVerifikasiDetail(item) {
+function showVerifikasiDetail(item, mode = "detail") {
     document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota;
     document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas;
     document.getElementById('verifikasi-waktu-submisi').textContent = new Date(item.waktuSubmisi).toLocaleString('id-ID');
@@ -1138,12 +1149,36 @@ function showVerifikasiDetail(item) {
     const saveBtn = document.getElementById('save-verifikasi-btn');
     saveBtn.dataset.targetUsername = item.targetUsername;
     saveBtn.dataset.kodeHirarki = item.kodeHirarki;
+    saveBtn.dataset.mode = mode;
+
+    // Set modal status select and notes
+    const statusSelect = document.getElementById('verifikasi-status-select');
+    const catatanText = document.getElementById('verifikasi-catatan');
+    if (mode === 'revoke') {
+        // Admin revoke: force status to 'Ditolak Admin' and disable select
+        statusSelect.innerHTML = `<option value="Ditolak Admin" selected>Ditolak Admin</option>`;
+        statusSelect.disabled = true;
+        catatanText.value = '';
+        catatanText.placeholder = 'Catatan wajib diisi untuk membatalkan persetujuan';
+    } else {
+        // Normal: show both Approved/Rejected
+        statusSelect.innerHTML = `
+            <option value="" disabled selected>Pilih Status</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        `;
+        statusSelect.disabled = false;
+        catatanText.value = '';
+        catatanText.placeholder = "Catatan (Wajib diisi jika 'Rejected')";
+    }
+    if (window.M && M.FormSelect && typeof M.FormSelect.init === 'function') {
+        M.FormSelect.init(statusSelect);
+    }
 
     try {
         if (window.M && M.Modal && typeof M.Modal.getInstance === 'function') {
             M.Modal.getInstance(document.getElementById('verifikasiModal')).open();
         } else if (document.getElementById('verifikasiModal') && typeof document.getElementById('verifikasiModal').showModal === 'function') {
-            // Fallback untuk <dialog> jika ada
             document.getElementById('verifikasiModal').showModal();
         }
     } catch (e) {
@@ -1187,16 +1222,32 @@ async function loadKinerjaTim() {
                     return `<span class="status-badge-small ${color}">${status}</span>`;
                 };
                 
-                row.innerHTML = `
-                    <td>${item.namaAnggota || 'N/A'}</td>
-                    <td>${item.namaTugas || 'N/A'}</td>
-                    <td>${item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : 'N/A'}</td>
-                    <td>${createStatusBadge(item.statusKetua)}</td>
-                    <td>${createStatusBadge(item.statusAdmin)}</td>
-                    <td>
-                        <button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)})'>Detail</button>
-                    </td>
-                `;
+                let actionButtons = '';
+const userRole = user.role ? user.role.toLowerCase() : '';
+const statusAdmin = (item.statusAdmin || '').toLowerCase();
+const statusKetua = (item.statusKetua || '').toLowerCase();
+
+// Show 'Detail' for all, but show 'Revoke Approval' only if admin and already approved
+if (userRole === 'admin' && statusAdmin.includes('setuju')) {
+    actionButtons = `
+        <button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)}, "detail")'>Detail</button>
+        <button class="btn btn-small waves-effect waves-light red" onclick='showVerifikasiDetail(${JSON.stringify(item)}, "revoke")'>Revoke Approval</button>
+    `;
+} else if ((userRole === 'admin' && statusAdmin !== 'setuju') || (userRole === 'ketua pilar' && statusKetua !== 'setuju')) {
+    // Show Detail for admin (not yet approved) and ketua pilar (not yet approved)
+    actionButtons = `<button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)}, "detail")'>Detail</button>`;
+} else {
+    actionButtons = `<button class="btn btn-small waves-effect waves-light blue" onclick='showVerifikasiDetail(${JSON.stringify(item)}, "detail")'>Detail</button>`;
+}
+
+row.innerHTML = `
+    <td>${item.namaAnggota || 'N/A'}</td>
+    <td>${item.namaTugas || 'N/A'}</td>
+    <td>${item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : 'N/A'}</td>
+    <td>${createStatusBadge(item.statusKetua)}</td>
+    <td>${createStatusBadge(item.statusAdmin)}</td>
+    <td>${actionButtons}</td>
+`;
                 tableBody.appendChild(row);
             });
             content.style.display = 'block';
