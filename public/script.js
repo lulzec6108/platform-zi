@@ -1156,22 +1156,8 @@ async function showVerifikasiDetail(item, mode = "detail") {
     document.getElementById('verifikasi-waktu-submisi').textContent = item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : (item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : '-');
 
     // Ambil MappingTugas dari cache atau fetch jika belum ada
-    let mapping = null;
     const kode = item.kodeHirarki || item.kode || item.namaTugas;
-    if (window._mappingTugasCache[kode]) {
-        mapping = window._mappingTugasCache[kode];
-    } else {
-        try {
-            const result = await callApi('getMappingTugasForUser', 'GET', { kode });
-            if (result.success && result.data && result.data.length > 0) {
-                mapping = result.data[0];
-                window._mappingTugasCache[kode] = mapping;
-            }
-        } catch (e) {
-            mapping = null;
-        }
-    }
-    mapping = mapping || item;
+    let mapping = window._mappingTugasCache[kode] || item;
 
     // Render Nilai dan Jenis Bukti Dukung
     const nilaiTampil = mapping.nilai || mapping.Nilai || item.nilai || item.Nilai || '-';
