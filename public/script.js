@@ -1195,9 +1195,25 @@ async function showVerifikasiDetail(item, mode = "detail") {
         }
     });
     if (adaTingkatan) {
-        hierarchyBox.innerHTML = `<div style="margin-bottom:6px;font-size:0.96em;font-weight:600;color:#5a5a5a;">Pohon Hirarki Tugas:</div>` + treeHTML;
+        hierarchyBox.innerHTML = `<div style='margin-bottom:6px;font-size:0.96em;font-weight:600;color:#5a5a5a;'>Pohon Hirarki Tugas:</div><div class='hierarchy-tree'>${treeHTML}</div>`;
     } else {
         hierarchyBox.innerHTML = '<em>Detail tugas tidak ditemukan.</em>';
+    }
+
+    // Link GDrive dan Referensi dari MappingTugas jika ada
+    let gdriveEl = document.getElementById('verifikasi-link-gdrive');
+    let refEl = document.getElementById('verifikasi-link-referensi');
+    const gdriveLink = mapping.linkGDrive || item.linkGDrive;
+    const referensiLink = mapping.linkReferensi || item.linkReferensi;
+    if (gdriveLink && gdriveLink.startsWith('http')) {
+        gdriveEl.innerHTML = `<a href="${gdriveLink}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">folder_open</i>Lihat Bukti Dukung</a>`;
+    } else {
+        gdriveEl.innerHTML = '<em>Tidak ada link GDrive</em>';
+    }
+    if (referensiLink && referensiLink.startsWith('http')) {
+        refEl.innerHTML = `<a href="${referensiLink}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">link</i>Lihat Referensi</a>`;
+    } else {
+        refEl.innerHTML = '<em>Tidak ada link referensi</em>';
     }
 
     // Render Panduan Penilaian dan Pilihan Jawaban
