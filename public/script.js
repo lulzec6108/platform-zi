@@ -1241,9 +1241,9 @@ if (userRole === 'admin' && statusAdmin.includes('setuju')) {
 }
 
 row.innerHTML = `
-    <td>${item.namaAnggota || 'N/A'}</td>
+    <td>${item.nama || 'N/A'}</td>
     <td>${item.namaTugas || 'N/A'}</td>
-    <td>${item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : 'N/A'}</td>
+    <td>${item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : 'N/A'}</td>
     <td>${createStatusBadge(item.statusKetua)}</td>
     <td>${createStatusBadge(item.statusAdmin)}</td>
     <td>${actionButtons}</td>
