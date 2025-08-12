@@ -1141,10 +1141,84 @@ async function savePenilaian(tugas, submissionType) {
     }
 }
 
-function showVerifikasiDetail(item, mode = "detail") {
-    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota;
-    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas;
-    document.getElementById('verifikasi-waktu-submisi').textContent = new Date(item.waktuSubmisi).toLocaleString('id-ID');
+// --- Cache for MappingTugas ---
+window._mappingTugasCache = window._mappingTugasCache || {};
+async function showVerifikasiDetail(item, mode = "detail") {
+    document.getElementById('verifikasi-nama-anggota').textContent = item.namaAnggota || item.nama || '-';
+    document.getElementById('verifikasi-nama-tugas').textContent = item.namaTugas || item.kodeHirarki || '-';
+    document.getElementById('verifikasi-waktu-submisi').textContent = item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : (item.waktuSubmisi ? new Date(item.waktuSubmisi).toLocaleString('id-ID') : '-');
+
+    // Tambahan: Tampilkan Nilai dan Jenis Bukti Dukung
+    let nilaiRow = document.getElementById('verifikasi-nilai-row');
+    let jenisRow = document.getElementById('verifikasi-jenis-row');
+    if (!nilaiRow) {
+        nilaiRow = document.createElement('p');
+        nilaiRow.id = 'verifikasi-nilai-row';
+        document.querySelector('#verifikasiModal .modal-content').insertBefore(nilaiRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
+    }
+    if (!jenisRow) {
+        jenisRow = document.createElement('p');
+        jenisRow.id = 'verifikasi-jenis-row';
+        document.querySelector('#verifikasiModal .modal-content').insertBefore(jenisRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
+    }
+    nilaiRow.innerHTML = `<strong>Nilai:</strong> <span>${item.nilai || '-'}</span>`;
+    jenisRow.innerHTML = `<strong>Jenis Bukti Dukung:</strong> <span>${item.jenisBuktiDukung || '-'}</span>`;
+
+    // --- Ambil detail MappingTugas berdasarkan kodeHirarki ---
+    let mapping = window._mappingTugasCache[item.kodeHirarki || item.namaTugas];
+    if (!mapping) {
+        // Coba ambil dari backend jika cache kosong
+        try {
+            const resp = await callApi('getMappingTugasByKode', 'GET', { kodeHirarki: item.kodeHirarki || item.namaTugas });
+            if (resp.success && resp.data) {
+                mapping = resp.data;
+                window._mappingTugasCache[item.kodeHirarki || item.namaTugas] = mapping;
+            }
+        } catch (e) { mapping = null; }
+    }
+    // --- Render Pohon Hirarki (Tingkatan 1-4) ---
+    let hierarchyBox = document.getElementById('verifikasi-hierarchy-box');
+    if (!hierarchyBox) {
+        hierarchyBox = document.createElement('div');
+        hierarchyBox.id = 'verifikasi-hierarchy-box';
+        hierarchyBox.style.marginBottom = '10px';
+        document.querySelector('#verifikasiModal .modal-content').insertBefore(hierarchyBox, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
+    }
+    hierarchyBox.innerHTML = '';
+    if (mapping) {
+        const levels = [
+            { key: 'tingkatan1', label: 'Tingkatan 1' },
+            { key: 'tingkatan2', label: 'Tingkatan 2' },
+            { key: 'tingkatan3', label: 'Tingkatan 3' },
+            { key: 'tingkatan4', label: 'Tingkatan 4' }
+        ];
+        levels.forEach((lvl, idx) => {
+            if (mapping[lvl.key]) {
+                const div = document.createElement('div');
+                div.className = `hierarchy-level level-${idx+1}`;
+                div.style.marginLeft = `${idx * 18}px`;
+                div.style.fontWeight = idx === 0 ? 'bold' : 'normal';
+                div.textContent = mapping[lvl.key];
+                hierarchyBox.appendChild(div);
+            }
+        });
+    } else {
+        hierarchyBox.innerHTML = '<em>Detail tugas tidak ditemukan.</em>';
+    }
+
+    // --- Detail Lainnya (Panduan Penilaian, Pilihan Jawaban) ---
+    let mappingHTML = '';
+    if (mapping) {
+        mappingHTML += `<strong>Panduan Penilaian:</strong> <span class="preserve-whitespace">${mapping.panduanPenilaian || '-'}<\/span><br/>`;
+        mappingHTML += `<strong>Pilihan Jawaban:</strong> ${mapping.pilihanJawaban || '-'}<br/>`;
+    }
+    let mappingRow = document.getElementById('verifikasi-mapping-row');
+    if (!mappingRow) {
+        mappingRow = document.createElement('div');
+        mappingRow.id = 'verifikasi-mapping-row';
+        document.querySelector('#verifikasiModal .modal-content').insertBefore(mappingRow, document.querySelector('#verifikasiModal .divider:nth-of-type(2)'));
+    }
+    mappingRow.innerHTML = mappingHTML;
 
     const saveBtn = document.getElementById('save-verifikasi-btn');
     saveBtn.dataset.targetUsername = item.targetUsername;
