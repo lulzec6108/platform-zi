@@ -1215,6 +1215,7 @@ async function showVerifikasiDetail(item, mode = "detail") {
     } else {
         refEl.innerHTML = '<em>Tidak ada link referensi</em>';
     }
+    // --- Hapus semua deklarasi let/const/var gdriveEl/refEl setelah ini di fungsi ini ---
 
     // Render Panduan Penilaian dan Pilihan Jawaban
     let mappingHTML = '';
@@ -1224,15 +1225,14 @@ async function showVerifikasiDetail(item, mode = "detail") {
     }
     document.getElementById('verifikasi-mapping-row').innerHTML = mappingHTML;
 
-    // Render link GDrive
-    const gdriveEl = document.getElementById('verifikasi-link-gdrive');
+    // Render link GDrive (duplikat, HAPUS deklarasi)
+    // gdriveEl sudah dideklarasikan di atas, cukup assignment saja jika perlu
     if (mapping.linkGDrive && mapping.linkGDrive.startsWith('http')) {
         gdriveEl.innerHTML = `<a href="${mapping.linkGDrive}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">folder_open<\/i>Lihat Bukti Dukung<\/a>`;
     } else {
         gdriveEl.innerHTML = '<em>Tidak ada link GDrive</em>';
     }
-    // Render link Referensi
-    const refEl = document.getElementById('verifikasi-link-referensi');
+    // Render link Referensi (duplikat, HAPUS deklarasi)
     if (mapping.linkReferensi && mapping.linkReferensi.startsWith('http')) {
         refEl.innerHTML = `<a href="${mapping.linkReferensi}" target="_blank" rel="noopener noreferrer"><i class="material-icons left">link<\/i>Lihat Referensi<\/a>`;
     } else {
